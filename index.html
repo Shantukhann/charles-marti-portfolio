@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M30,80 A30,30 0 1,1 30,20 L50,60 L70,20 L70,80' fill='none' stroke='%231f2937' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Charles Marti - Chef de Projet Événementiel</title>
+    <!-- Le Favicon est maintenant correctement placé dans le head -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'><path d='M 26,36 A 14,14 0 0,1 26,12 L 34,24 L 42,12 L 42,36' fill='none' stroke='%231f2937' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
@@ -185,6 +187,7 @@
             </a>
             
             <div class="hidden md:flex items-center space-x-8">
+                <a onclick="switchPage('page-apropos')" class="cursor-pointer text-sm tracking-wide text-pastel-text hover:text-pastel-heading transition-colors font-medium">Mon Parcours</a>
                 <a onclick="switchPage('page-cv', 'experience')" class="cursor-pointer text-sm tracking-wide text-pastel-text hover:text-pastel-heading transition-colors">Expériences</a>
                 <a onclick="switchPage('page-cv', 'skills')" class="cursor-pointer text-sm tracking-wide text-pastel-text hover:text-pastel-heading transition-colors">Compétences</a>
                 <a onclick="switchPage('page-realisations')" class="cursor-pointer text-sm tracking-wide text-pastel-text hover:text-pastel-heading font-medium text-pastel-blue hover:text-blue-400 transition-colors">Réalisations</a>
@@ -202,6 +205,7 @@
         
         <div id="mobile-menu" class="hidden md:hidden bg-pastel-bg border-t border-gray-100 absolute w-full shadow-sm">
             <div class="px-6 py-4 space-y-4">
+                <a onclick="switchPage('page-apropos')" class="block cursor-pointer text-sm text-pastel-text font-medium">Mon Parcours</a>
                 <a onclick="switchPage('page-cv', 'experience')" class="block cursor-pointer text-sm text-pastel-text">Expériences</a>
                 <a onclick="switchPage('page-cv', 'skills')" class="block cursor-pointer text-sm text-pastel-text">Compétences</a>
                 <a onclick="switchPage('page-realisations')" class="block cursor-pointer text-sm font-medium text-pastel-blue">Réalisations</a>
@@ -221,7 +225,20 @@
         
         <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
             <div class="max-w-4xl mx-auto px-6 relative z-10 text-center mt-16">
-                <span class="inline-block py-1 px-3 rounded-full bg-pastel-blue/30 text-pastel-text text-xs tracking-widest uppercase mb-8 reveal">Portfolio</span>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <!-- Début du logo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" style="width: 300px; height: 300px; display: block; margin: 0 auto; margin-bottom: 20px;">
+                        <defs>
+                            <linearGradient id="mon-degrade" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#2D3035" />
+                                <stop offset="100%" stop-color="#7EA9AB" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 24,37 A 14,14 0 0,1 24,13 L 32,25 L 40,13 L 40,37" fill="none" stroke="url(#mon-degrade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- Fin du logo -->
+                </div>
+
                 <h1 class="text-5xl md:text-7xl font-semibold text-gradient tracking-tight mb-6 reveal delay-100">
                     Charles Marti
                 </h1>
@@ -521,6 +538,91 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- PAGE 3 : MON PARCOURS / À PROPOS           -->
+    <!-- ========================================== -->
+    <div id="page-apropos" class="hidden min-h-screen pt-32 pb-24 relative z-10 bg-white/30">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center md:text-left mb-16 reveal">
+                <button onclick="switchPage('page-cv')" class="mb-6 inline-flex items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Retour au CV
+                </button>
+                <h3 class="text-4xl font-medium text-pastel-heading mb-4">Mon ADN & Mon Parcours</h3>
+                <div class="w-16 h-1 bg-pastel-green mx-auto md:mx-0 rounded-full"></div>
+            </div>
+
+            <!-- Intro ADN -->
+            <div class="reveal modern-card p-8 md:p-10 mb-12">
+                <h4 class="text-2xl font-medium text-pastel-heading mb-4"><i class="fa-solid fa-bolt text-pastel-blue mr-3"></i>L'Homme de Terrain</h4>
+                <p class="text-pastel-text font-light leading-relaxed text-lg mb-6">
+                    Je suis animé par la recherche de l'action, du mouvement et du terrain. Je refuse les postes exclusivement sédentaires : l'événementiel n'est pas seulement un métier pour moi, c'est un engagement total. J'aime résoudre des problèmes en temps réel, encadrer des équipes et voir l'aboutissement physique de mois de préparation. Face à l'imprévu, je ne panique pas : je trouve toujours une issue fonctionnelle.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-4 py-2 bg-white rounded-full text-sm font-medium border border-gray-100 shadow-sm"><i class="fa-solid fa-fire text-pastel-pink mr-2"></i> Résilient</span>
+                    <span class="px-4 py-2 bg-white rounded-full text-sm font-medium border border-gray-100 shadow-sm"><i class="fa-solid fa-handshake text-pastel-blue mr-2"></i> Fédérateur</span>
+                    <span class="px-4 py-2 bg-white rounded-full text-sm font-medium border border-gray-100 shadow-sm"><i class="fa-solid fa-lightbulb text-pastel-green mr-2"></i> Proactif</span>
+                </div>
+            </div>
+
+            <!-- Chronologie Narrative -->
+            <div class="space-y-12">
+                <div class="reveal">
+                    <h4 class="text-xl font-medium text-pastel-heading mb-6">Une trajectoire dictée par le pragmatisme</h4>
+                    <div class="relative timeline-line ml-3 md:ml-4 space-y-10">
+                        
+                        <div class="relative pl-8 md:pl-10">
+                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-blue rounded-full -left-[9px] top-1"></div>
+                            <h5 class="text-lg font-medium text-pastel-heading mb-2">Le déclic et le choix de l'action</h5>
+                            <p class="text-pastel-text font-light leading-relaxed">
+                                Après un début en école d'ingénieurs, j'ai découvert la vie associative étudiante. Ce fut une véritable révélation : un goût viscéral pour l'événementiel, né de l'envie de rassembler les gens et de créer des souvenirs mémorables. J'ai alors assumé une réorientation vers un BTS Communication en alternance, avec la conviction forte que l'expérience concrète en entreprise et la réalité du terrain valent plus qu'une longue poursuite d'études théoriques.
+                            </p>
+                        </div>
+
+                        <div class="relative pl-8 md:pl-10">
+                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-pink rounded-full -left-[9px] top-1"></div>
+                            <h5 class="text-lg font-medium text-pastel-heading mb-2">Les fondations exigeantes</h5>
+                            <p class="text-pastel-text font-light leading-relaxed">
+                                Mon premier poste au Pavillon d'Armenonville a été une expérience fondatrice. Travailler en tant que Chef de projet dans un lieu aussi prestigieux et exigeant a forgé ma rigueur logistique, consolidé mon sang-froid et validé définitivement mon choix de carrière.
+                            </p>
+                        </div>
+
+                        <div class="relative pl-8 md:pl-10">
+                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-green rounded-full -left-[9px] top-1"></div>
+                            <h5 class="text-lg font-medium text-pastel-heading mb-2">L'autonomie et l'évolution</h5>
+                            <p class="text-pastel-text font-light leading-relaxed">
+                                Débauché par un client (témoignant de la qualité de mon relationnel et de mon travail) pour rejoindre le Groupe Eden System. J'y ai d'abord géré la marque B2C "Studios Eden" en totale autonomie, acquérant une expertise pointue des codes étudiants. J'ai ensuite évolué en interne pour piloter "Utopia", ciblant l'événementiel d'entreprise B2B. Une preuve de ma polyvalence : je peux piloter un projet de A à Z sans micro-management.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Couteau Suisse Numérique -->
+            <div class="reveal delay-100 p-8 md:p-10 mt-12 bg-pastel-heading text-white rounded-[1.25rem] border border-white/20 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 ease-out">
+                <h4 class="text-xl font-medium mb-4"><i class="fa-solid fa-microchip text-pastel-blue mr-3"></i> Le "Couteau-Suisse Numérique"</h4>
+                <p class="text-white/80 font-light leading-relaxed mb-6">
+                    Si je vis pour le terrain, je m'appuie fortement sur la technologie pour optimiser mon temps et mes process. Doté d'une forte curiosité technique, j'apprends extrêmement vite et j'intègre les bons outils pour décupler mon efficacité.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                        <h5 class="font-medium text-pastel-blue mb-1">Structuration & Process</h5>
+                        <p class="text-sm font-light text-white/70">Utilisation avancée de Notion (création de bases de données, tableaux de bord automatisés pour le suivi de leads ou de candidatures).</p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                        <h5 class="font-medium text-pastel-green mb-1">CRM & Vente</h5>
+                        <p class="text-sm font-light text-white/70">Maîtrise de Sellsy pour le suivi stratégique commercial, la gestion client et les conversions.</p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20 sm:col-span-2">
+                        <h5 class="font-medium text-pastel-pink mb-1">Intelligence Artificielle</h5>
+                        <p class="text-sm font-light text-white/70">Utilisation quotidienne de l'IA (ChatGPT, Midjourney, Gemini...) sous toutes ses formes pour la rédaction, l'idéation, et les gains de productivité opérationnels.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <footer class="bg-pastel-bg py-12 border-t border-gray-100 text-center relative z-50">
         <div class="max-w-4xl mx-auto px-6 reveal">
             <h4 class="text-xl font-medium text-pastel-heading mb-2">Contactez-moi</h4>
@@ -563,6 +665,7 @@
             document.getElementById('mobile-menu').classList.add('hidden');
             document.getElementById('page-cv').classList.add('hidden');
             document.getElementById('page-realisations').classList.add('hidden');
+            document.getElementById('page-apropos').classList.add('hidden');
             
             const page = document.getElementById(pageId);
             page.classList.remove('hidden');
