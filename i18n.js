@@ -386,7 +386,8 @@
     new MutationObserver(muts => {
         if (lang !== 'en') return;
         muts.forEach(m => m.addedNodes.forEach(n => {
-            if (n.nodeType === 1 && n.closest && n.closest('.count')) return;
+            const host = n.nodeType === 1 ? n : n.parentElement;
+            if (host && host.closest && host.closest('.count')) return;
             translateTree(n);
         }));
     }).observe(document.body, { childList: true, subtree: true });

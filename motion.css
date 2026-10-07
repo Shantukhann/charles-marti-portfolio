@@ -730,3 +730,27 @@ html.dark ::selection { background: rgba(106,140,240,.35); color: #fff; }
     #navbar nav > a > span { display: none !important; }
     #navbar .md\:flex > * + * { margin-left: 1.15rem !important; }
 }
+
+/* ---------- v37 : logo du voile avec halo ---------- */
+.cv-logo { filter: drop-shadow(0 8px 22px rgba(106,140,240,.38)); }
+.curtain.is-in .cv-logo { animation: cv-logo-in .9s cubic-bezier(.2,.8,.2,1) .35s backwards; }
+@keyframes cv-logo-in { from { opacity: 0; transform: scale(.86); } }
+html.dark .cv-logo { filter: drop-shadow(0 8px 26px rgba(130,150,255,.5)); }
+
+/* =====================================================
+   v37 : transition de page plus riche
+   ===================================================== */
+/* La page qui part s'efface en douceur dans le flou, comme si le liquide la recouvrait */
+.motion .page-leave {
+    filter: blur(5px) saturate(.9);
+    transition: transform 1.1s cubic-bezier(.45,0,.55,1), opacity 1.1s ease, filter 1.1s ease;
+}
+/* Le logo apparaît avec un léger zoom et une lueur douce */
+.cv-logo {
+    transform: scale(.86); opacity: 0;
+    filter: drop-shadow(0 10px 26px rgba(106,140,240,.38));
+    transition: transform .6s ease, opacity .3s ease;
+}
+.curtain.is-in .cv-logo   { transform: scale(1); opacity: 1; transition: transform 1s cubic-bezier(.2,.8,.2,1) .4s, opacity .4s ease .4s; }
+.curtain.is-hold .cv-logo { transform: scale(1); opacity: 1; transition: none; }
+.curtain.is-out .cv-logo  { transform: scale(1.1); opacity: 0; transition: transform .5s ease, opacity .35s ease; }

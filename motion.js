@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 35;
+    window.MOTION_VERSION = 38;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -177,37 +177,45 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.02+vec2(5.2,1.3);a*=.5;}return v;}
-float smin(float a,float b,float k){float h=max(k-abs(a-b),0.)/k;return min(a,b)-h*h*k*.25;}
-float tongueCell(float i,float fx,float cols,float seed,float Lmax,float rf,float t,float y){
-  float h=hash(vec2(i,seed+uS));
-  float h2=hash(vec2(i*1.7+3.1,seed*2.3+uS*.7));
-  float h3=hash(vec2(i*2.9+7.7,seed+uS*1.3));
-  float L=(.1+pow(h,1.3)*Lmax)*(.9+.1*sin(t*2.+i*2.3+uS));
-  float r=rf*(.4+h3*1.0)/cols;                  // épaisseur différente d'une coulée à l'autre
-  float off=(h2-.5)*.55/cols;                   // décalage latéral aléatoire
-  float dx=fx/cols-off;
-  float seg=max(L-r,0.);
-  return length(vec2(dx,max(y-seg,0.)))-r;      // capsule : bout rond
-}
-float tongue(float X,float y,float cols,float seed,float Lmax,float rf,float t){
-  float x=X*cols+seed+uS*1.7; float i=floor(x); float f=fract(x);
-  float d=1e3;
-  for(int k=-1;k<=1;k++){ d=min(d,tongueCell(i+float(k),f-.5-float(k),cols,seed,Lmax,rf,t,y)); }
-  return d;
-}
-float shapeA(float X,float y,float t){
-  float v=fract(uS*.137);
-  float a=tongue(X,y,2.8*(.86+.28*v),0.,.85,.32,t);
-  float b=tongue(X,y,6.3*(.9+.2*(1.-v)),5.3,.5,.30,t);
-  float c=tongue(X,y,13.,11.1,.26,.26,t);
-  return smin(smin(smin(a,b,.07),c,.05),y-.06,.10);
-}
-void main(){
-  vec2 uv=gl_FragCoord.xy/uRes; float asp=uRes.x/uRes.y;
-  float t=uTime;
+float gT, gAsp, gA, gB;
 
-  // mêmes nappes marbrées que le fond, un peu plus contrastées
-  vec2 p=(uv-.5)*vec2(asp,1.)*1.5;
+// ondulation de la vague : trois houles de tailles différentes + une variation organique ; la phase suit la progression
+float wave(float X,float seed,float ph){
+  return .10*sin(X*3.4+ph+seed)
+       + .055*sin(X*6.3-ph*1.4+seed*2.1)
+       + .022*sin(X*11.+ph*2.2+seed*.7)
+       + (fbm(vec2(X*1.3+seed,ph*.2))-.45)*.12;
+}
+
+// distance signée au fluide : positive à l'intérieur ; la vague monte du bas, puis continue pour libérer la page
+float metric(vec2 uv){
+  float X=uv.x*gAsp;
+  float m1=(gA+wave(X,uS,uP*4.))-uv.y;                 // crête qui avance
+  float m2=uv.y-(gB+wave(X,uS+17.,uP*3.2+2.));         // bord de fuite
+  return min(m1,m2);
+}
+// épaisseur du liquide : profil en dôme près des bords
+float domeH(float m){ float k=clamp(m/.14,0.,1.); return sqrt(max(0.,1.-(1.-k)*(1.-k)))*.14; }
+
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  gAsp=uRes.x/uRes.y; gT=uTime; gA=uP*1.6-.3; gB=(uP-1.)*1.6-.3;
+
+  float m=metric(uv);
+  if(m<-.13){ gl_FragColor=vec4(0.); return; }
+
+  // relief : la normale se déduit de la variation d'épaisseur
+  vec3 n=vec3(0.,0.,1.);
+  if(m<.25){
+    float e=1.6/uRes.y;
+    float hx=domeH(metric(uv+vec2(e,0.)))-domeH(metric(uv-vec2(e,0.)));
+    float hy=domeH(metric(uv+vec2(0.,e)))-domeH(metric(uv-vec2(0.,e)));
+    n=normalize(vec3(-hx/(2.*e)*.9,-hy/(2.*e)*.9,1.));
+  }
+
+  // mêmes nappes marbrées que le fond ; la réfraction déforme les couleurs vues à travers le liquide
+  vec2 p=(uv-.5)*vec2(gAsp,1.)*1.5+n.xy*.35;
+  float t=gT;
   vec2 q=vec2(fbm(p+t*.7),fbm(p+vec2(5.2,1.3)-t*.6));
   vec2 s=vec2(fbm(p+2.*q+vec2(1.7,9.2)+t*.5),fbm(p+2.*q+vec2(8.3,2.8)-t*.45));
   float f=fbm(p+2.*s);
@@ -216,29 +224,27 @@ void main(){
   col=mix(col,uC4,smoothstep(.55,1.,s.x)*.6);
   col=mix(uBase,col,uK);
 
-  // le fluide coule depuis le haut : épaisses coulées à bouts ronds, raccordées comme du miel
-  float X=uv.x*asp;
-  float dist=1.-uv.y;
-  float A=uP*2.25-1.1;
-  float Xw=X+(fbm(vec2(dist*2.6,t*.5))-.45)*.10+(fbm(vec2(dist*6.,t*.8+3.))-.45)*.03;
-  float sA=shapeA(Xw,dist-A,t);
-  float cov1=1.-smoothstep(-.008,.008,sA);
+  // rides : de fines vagues successives derrière la crête, qui s'estompent en profondeur
+  float ripple=sin(m*42.-uP*9.)*smoothstep(.45,.0,m)*smoothstep(-.02,.03,m);
+  col*=1.+.05*ripple;
 
-  // retour : le fluide descend en lobes lisses et libère la page par le haut
-  float lobes=((fbm(vec2(X*(1.1+.5*fract(uS*.071))+4.+uS,t*.5))-.35)*.95+(fbm(vec2(X*2.6+uS,t*.7))-.35)*.1)*(.8+.4*fract(uS*.37));
-  float fldB=dist-lobes;
-  float B=(uP-1.)*2.1-.6;
-  float cov2=smoothstep(B-.012,B+.012,fldB);
-  float cov=cov1*cov2;
+  // lumière : ombrage doux, reflet brillant, bord irisé, transparence aux endroits fins
+  vec3 L=normalize(vec3(-.45,.7,.55));
+  col*=mix(.9,1.08,clamp(dot(n,L),0.,1.));
+  float spec=pow(max(reflect(-L,n).z,0.),26.);
+  float fres=pow(1.-n.z,2.2);
+  vec3 irid=.5+.5*cos(6.2831*(vec3(0.,.33,.67)+fres*1.1+uv.y*.4+t*.3));
+  col=mix(col,irid,fres*.3);
+  col+=spec*.5;
 
-  // épaisseur : assombrissement doux, liseré brillant et reflet intérieur
-  col*=1.-.03*(1.-clamp(-sA/.10,0.,1.))-.03*(1.-clamp((fldB-B)/.10,0.,1.));
-  float rim=exp(-pow(sA/.012,2.))+exp(-pow((fldB-B)/.012,2.));
-  float gloss=exp(-pow((sA+.05)/.014,2.))+exp(-pow((fldB-B-.05)/.014,2.));
-  col=mix(col,vec3(1.),clamp(rim,0.,1.)*.5+clamp(gloss,0.,1.)*.2);
+  // écume sur la crête
+  float nz=fbm(vec2(uv.x*14.+uP*3.,uv.y*38.));
+  float foam=(1.-clamp(m/.075,0.,1.))*(.45+1.1*nz);
+  col=mix(col,vec3(1.),clamp(foam,0.,1.)*.6);
 
-  // ombre portée sous le front d'attaque
-  float sh=(1.-smoothstep(0.,.12,sA))*step(0.,sA)*(1.-step(1.,uP))*.06;
+  float cov=smoothstep(-.006,.006,m);
+  // ombre portée au-dessus de la crête qui monte
+  float sh=(1.-smoothstep(0.,.12,-m))*step(m,0.)*(1.-step(1.,uP))*.07;
   gl_FragColor=vec4(col*cov+vec3(.15,.17,.28)*sh,cov+sh);
 }`;
         const sh = (type, src) => { const x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); return x; };
@@ -272,7 +278,7 @@ void main(){
         let curBase = LIGHT_BASE.slice(), curK = 0.8;
 
         function resize() {
-            const k = lite ? 0.35 : 0.6;
+            const k = lite ? 0.45 : 0.85;
             canvas.width = Math.max(2, Math.round(innerWidth * k));
             canvas.height = Math.max(2, Math.round(innerHeight * k));
             gl.viewport(0, 0, canvas.width, canvas.height);
@@ -543,8 +549,12 @@ void main(){
         requestAnimationFrame(frame);
     })();
 
+    /* Les cartes qui contiennent un dégradé (chiffres clés, logo SVG) restent en 2D : dans un rendu 3D,
+       le navigateur peut les faire disparaître ou clignoter au survol. */
+    $$('.modern-card').forEach(c => { if (c.querySelector('.text-gradient, svg')) c.classList.add('no3d'); });
+
     /* ---------- Cartes : le contenu se décale en profondeur au survol (3D) ---------- */
-    $$('.modern-card:not(.form-card)').forEach(card => {
+    $$('.modern-card:not(.form-card):not(.no3d)').forEach(card => {
         $$('h4, h5', card).forEach(el => el.classList.add('z2'));
         $$('span.uppercase, p.font-bold', card).forEach(el => el.classList.add('z3'));
         $$('.w-14', card).forEach(el => el.classList.add('z3'));
@@ -585,6 +595,7 @@ void main(){
             });
         });
         $$('#page-apropos .count[data-to]').forEach(s => spans.push(s));
+        spans.forEach(s => { s.textContent = '0' + (s.dataset.suffix || ''); });
         const io = new IntersectionObserver(es => es.forEach(e => {
             if (!e.isIntersecting) return;
             io.unobserve(e.target);
@@ -594,7 +605,7 @@ void main(){
                 e.target.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 3)))) + suffix;
                 if (k < 1) requestAnimationFrame(tick);
             })(t0);
-        }), { threshold: 0.8 });
+        }), { threshold: 0.3 });
         spans.forEach(s => io.observe(s));
     })();
     /* ---------- Interactions souris (écrans précis uniquement) ---------- */
@@ -641,7 +652,7 @@ void main(){
             card.style.removeProperty('--py');
         });
     };
-    $$('.modern-card:not(.form-card), .gallery-item').forEach(bindTilt);
+    $$('.modern-card:not(.form-card):not(.no3d), .gallery-item').forEach(bindTilt);
     const galleryHost = $('#gallery-grid');
     if (galleryHost) new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
         if (n.nodeType === 1 && n.classList.contains('gallery-item')) bindTilt(n);
