@@ -3,18 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        /* Thème et langue appliqués avant l'affichage : pas de flash clair au chargement en mode sombre */
+        (function () { try {
+            var d = document.documentElement, t = localStorage.getItem('site-theme'), l = localStorage.getItem('site-lang'),
+                q = new URLSearchParams(location.search).get('lang');
+            if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) d.classList.add('dark');
+            d.lang = (q === 'en' || q === 'fr') ? q : (l || ((navigator.language || 'fr').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en'));
+        } catch (e) {} })();
+    </script>
     <title>Charles Marti - Chef de Projet Événementiel</title>
     <meta name="description" content="Charles Marti, chef de projet événementiel à Paris : séminaires, galas et soirées jusqu'à 2000 participants, pour écoles et entreprises.">
     <meta name="theme-color" content="#FCFBF9">
 
-    <!-- Open Graph (ajoute og:image avec une URL absolue une fois le site en ligne) -->
+    <!-- Open Graph (décommente og:image avec une URL absolue une fois le site en ligne) -->
     <meta property="og:type" content="website">
     <meta property="og:locale" content="fr_FR">
     <meta property="og:title" content="Charles Marti - Chef de Projet Événementiel">
     <meta property="og:description" content="Séminaires, galas et soirées jusqu'à 2000 participants. Découvrez mon parcours et mes réalisations.">
-    <!-- <meta property="og:image" content="https://TON-DOMAINE/images/CK-SD-PA.jpg -->
+    <!-- <meta property="og:image" content="https://TON-DOMAINE/images/CK-SD-PA.jpg"> -->
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236A8CF0'/><stop offset='1' stop-color='%23DD829F'/></linearGradient></defs><path d='M 26,36 A 14,14 0 0,1 26,12 L 34,24 L 42,12 L 42,36' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Charles Marti",
+        "jobTitle": "Chef de projet événementiel",
+        "description": "Séminaires, galas et soirées jusqu'à 2000 participants, pour écoles et entreprises.",
+        "address": { "@type": "PostalAddress", "addressLocality": "Paris", "addressCountry": "FR" },
+        "sameAs": ["https://www.linkedin.com/in/charles-marti-2173971ab/"]
+    }
+    </script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236A8CF0'/><stop offset='1' stop-color='%23DD829F'/></linearGradient></defs><path d='M 26,36 A 14,14 0 0,1 26,12 L 34,24 L 42,12 L 42,41' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,8 +198,12 @@
         }
     </style>
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
+
+    <!-- Motion design -->
+    <link rel="stylesheet" href="motion.css?v=35">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
+    <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
 
     <div class="fluid-container" aria-hidden="true">
         <div class="fluid-shape shape-1"></div>
@@ -197,7 +222,7 @@
                             <stop offset="100%" stop-color="#DD829F" />
                         </linearGradient>
                     </defs>
-                    <path d="M 26,36 A 14,14 0 0,1 26,12 L 34,24 L 42,12 L 42,36" fill="none" stroke="url(#cm-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M 26,36 A 14,14 0 0,1 26,12 L 34,24 L 42,12 L 42,41" fill="none" stroke="url(#cm-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span class="text-xl font-medium tracking-wide text-pastel-heading group-hover:opacity-70 transition-opacity hidden sm:block">Charles Marti.</span>
             </a>
@@ -208,27 +233,37 @@
                 <a href="#skills" class="text-sm tracking-wide text-pastel-text hover:text-pastel-heading transition-colors">Compétences</a>
                 <a href="#realisations" class="text-sm tracking-wide font-medium text-pastel-blue-dark hover:text-pastel-heading transition-colors">Réalisations</a>
                 <div class="relative" id="contact-menu">
-                    <button type="button" id="contact-toggle" class="contact-btn inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium text-pastel-heading hover:-translate-y-0.5 transition-transform duration-300" aria-haspopup="true" aria-expanded="false" aria-controls="contact-dropdown">
+                    <button type="button" id="contact-toggle" class="contact-btn inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium text-pastel-heading hover:-translate-y-0.5 transition-transform duration-300" aria-expanded="false" aria-controls="contact-dropdown">
                         <i class="fa-regular fa-paper-plane" aria-hidden="true"></i> Contact
                         <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300" id="contact-chevron" aria-hidden="true"></i>
                     </button>
-                    <div id="contact-dropdown" class="contact-panel hidden absolute right-0 mt-3 w-60 rounded-2xl p-2" role="menu">
-                        <a href="#" data-user="charlesmjb" data-domain="gmail.com" role="menuitem" class="contact-option flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pastel-heading">
+                    <div id="contact-dropdown" class="contact-panel hidden absolute right-0 mt-3 w-60 rounded-2xl p-2">
+                        <a href="#" data-user="charlesmjb" data-domain="gmail.com" class="contact-option flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pastel-heading">
                             <span class="w-8 h-8 rounded-full bg-white/70 flex items-center justify-center text-pastel-pink-accent"><i class="fa-regular fa-envelope" aria-hidden="true"></i></span>
                             Par e-mail
                         </a>
-                        <a href="https://www.linkedin.com/in/charles-marti-2173971ab/" data-linkedin target="_blank" rel="noopener noreferrer" role="menuitem" class="contact-option flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pastel-heading">
+                        <a href="https://www.linkedin.com/in/charles-marti-2173971ab/" data-linkedin target="_blank" rel="noopener noreferrer" class="contact-option flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pastel-heading">
                             <span class="w-8 h-8 rounded-full bg-white/70 flex items-center justify-center text-pastel-blue-accent"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></span>
                             Sur LinkedIn
+                        </a>
+                        <a href="#contact" role="menuitem" class="contact-option flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pastel-heading">
+                            <span class="w-8 h-8 rounded-full bg-white/70 flex items-center justify-center text-pastel-green-accent"><i class="fa-regular fa-address-card" aria-hidden="true"></i></span>
+                            Fiche contact
                         </a>
                     </div>
                 </div>
                 <a href="CV_Charles_MARTI.pdf" download="CV_Charles_MARTI.pdf" class="inline-flex items-center gap-2 px-5 py-2 bg-pastel-heading text-white rounded-full text-sm font-medium hover:bg-pastel-text transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5">
                     <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> CV
                 </a>
+                <div class="flex items-center gap-2 -ml-3">
+                    <button type="button" class="nav-tool lang-toggle" data-i18n-skip aria-label="Switch the site to English" title="English">EN</button>
+                    <button type="button" class="nav-tool theme-toggle" data-i18n-skip aria-pressed="false" aria-label="Passer en mode sombre"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
+                </div>
             </div>
 
-            <div class="md:hidden">
+            <div class="md:hidden flex items-center gap-1">
+                    <button type="button" class="nav-tool lang-toggle" data-i18n-skip aria-label="Switch the site to English" title="English">EN</button>
+                    <button type="button" class="nav-tool theme-toggle" data-i18n-skip aria-pressed="false" aria-label="Passer en mode sombre"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
                 <button id="mobile-menu-btn" type="button" class="text-pastel-text p-2" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
                     <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 </button>
@@ -247,6 +282,9 @@
                     </a>
                     <a href="https://www.linkedin.com/in/charles-marti-2173971ab/" data-linkedin target="_blank" rel="noopener noreferrer" class="contact-option flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-pastel-heading">
                         <i class="fa-brands fa-linkedin-in w-5 text-pastel-blue-accent" aria-hidden="true"></i> Mon profil LinkedIn
+                    </a>
+                    <a href="#contact" class="contact-option flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-pastel-heading">
+                        <i class="fa-regular fa-address-card w-5 text-pastel-green-accent" aria-hidden="true"></i> Fiche contact
                     </a>
                 </div>
                 <div class="pt-2 mt-2 border-t border-gray-200">
@@ -273,7 +311,7 @@
                             <stop offset="100%" stop-color="#DD829F" />
                             </linearGradient>
                         </defs>
-                        <path d="M 24,37 A 14,14 0 0,1 24,13 L 32,25 L 40,13 L 40,37" fill="none" stroke="url(#mon-degrade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M 24,37 A 14,14 0 0,1 24,13 L 32,25 L 40,13 L 40,42" fill="none" stroke="url(#mon-degrade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
 
@@ -297,7 +335,8 @@
         <section id="experience" class="py-24 relative z-10 bg-white/30 border-y border-gray-100">
             <div class="max-w-5xl mx-auto px-6">
                 <div class="mb-16 reveal">
-                    <h3 class="text-3xl font-medium title-pastel mb-2">Expériences Professionnelles</h3>
+                    <p class="eyebrow">01 · Parcours pro</p>
+                    <h3 class="text-3xl font-medium title-pastel mb-2">Expériences <span class="grad">Professionnelles</span></h3>
                     <div class="w-12 h-0.5 bg-pastel-blue-accent"></div>
                 </div>
 
@@ -311,7 +350,7 @@
                                 <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-blue/30 px-3 py-1 rounded-full uppercase">Depuis avril 2024</span>
                                 <h4 class="mt-4 text-xl font-medium text-pastel-heading">Chef de projet événementiel</h4>
                                 <p class="text-pastel-text font-medium mt-1">GROUPE EDEN System</p>
-                                <p class="text-pastel-text/70 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Paris 8 (75)</p>
+                                <p class="text-pastel-text/80 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Paris 8 (75)</p>
                             </div>
                             <div class="lg:w-2/3">
                                 <ul class="space-y-3 text-pastel-text font-light text-sm md:text-base leading-relaxed">
@@ -339,7 +378,7 @@
                                 <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-pink/50 px-3 py-1 rounded-full uppercase">2023 - 2024</span>
                                 <h4 class="mt-4 text-xl font-medium text-pastel-heading">Chef de projet événementiel</h4>
                                 <p class="text-pastel-text font-medium mt-1">GROUPE BUTARD</p>
-                                <p class="text-pastel-text/70 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Pavillon d'Armenonville, Paris 16</p>
+                                <p class="text-pastel-text/80 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Pavillon d'Armenonville, Paris 16</p>
                             </div>
                             <div class="lg:w-2/3">
                                 <ul class="space-y-3 text-pastel-text font-light text-sm md:text-base leading-relaxed">
@@ -368,9 +407,9 @@
                         <div class="flex flex-col lg:flex-row gap-6 items-start modern-card p-6 md:p-8">
                             <div class="lg:w-1/3 shrink-0">
                                 <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-green/50 px-3 py-1 rounded-full uppercase">2020 - 2022</span>
-                                <h4 class="mt-4 text-xl font-medium text-pastel-heading">Assistant Chargé de com</h4>
+                                <h4 class="mt-4 text-xl font-medium text-pastel-heading">Assistant chargé de communication</h4>
                                 <p class="text-pastel-text font-medium mt-1">ARISTID (ex CAcom)</p>
-                                <p class="text-pastel-text/70 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Clichy</p>
+                                <p class="text-pastel-text/80 text-sm"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i> Clichy</p>
                                 <p class="text-xs font-medium text-pastel-green-dark mt-2 px-2 py-1 bg-pastel-green/20 inline-block rounded">Alternance</p>
                             </div>
                             <div class="lg:w-2/3">
@@ -394,7 +433,8 @@
         <section id="skills" class="py-24 relative z-10">
             <div class="max-w-6xl mx-auto px-6">
                 <div class="mb-16 reveal">
-                    <h3 class="text-3xl font-medium title-pastel mb-2">Expertises & Formation</h3>
+                    <p class="eyebrow">02 · Compétences</p>
+                    <h3 class="text-3xl font-medium title-pastel mb-2">Expertises & <span class="grad">Formation</span></h3>
                     <div class="w-12 h-0.5 bg-pastel-green-accent"></div>
                 </div>
 
@@ -497,7 +537,8 @@
         <section id="interests" class="py-24 bg-white/40 border-t border-gray-100 relative z-10">
             <div class="max-w-6xl mx-auto px-6">
                 <div class="text-center mb-16 reveal">
-                    <h3 class="text-3xl font-medium title-pastel mb-2">Soft Skills & Hobbies</h3>
+                    <p class="eyebrow">03 · Profil</p>
+                    <h3 class="text-3xl font-medium title-pastel mb-2">Soft Skills & <span class="grad">Hobbies</span></h3>
                     <div class="w-12 h-0.5 bg-pastel-pink-accent mx-auto"></div>
                 </div>
 
@@ -538,6 +579,94 @@
                 </div>
             </div>
         </section>
+
+
+        <section id="contact" class="py-24 relative z-10 border-t border-gray-100">
+            <div class="max-w-5xl mx-auto px-6">
+                <div class="mb-12 reveal">
+                    <p class="eyebrow">04 · Contact</p>
+                    <h3 class="text-3xl font-medium title-pastel mb-2">Travaillons <span class="grad">ensemble</span></h3>
+                    <div class="w-12 h-0.5 bg-pastel-pink-accent"></div>
+                    <p class="mt-5 max-w-2xl font-light text-pastel-text leading-relaxed">Un poste, un événement, une collaboration ? Voici comment me joindre.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                    <!-- Fiche d'identité -->
+                    <div class="lg:col-span-2 modern-card reveal p-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 shrink-0 rounded-2xl bg-white shadow-sm border border-white flex items-center justify-center">
+                                <svg viewBox="0 0 50 50" class="w-10 h-10" aria-hidden="true">
+                                    <defs><linearGradient id="fc-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6A8CF0"/><stop offset="100%" stop-color="#DD829F"/></linearGradient></defs>
+                                    <path d="M 24,37 A 14,14 0 0,1 24,13 L 32,25 L 40,13 L 40,42" fill="none" stroke="url(#fc-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-medium text-pastel-heading">Charles Marti</h4>
+                                <p class="text-sm font-light text-pastel-text">Chef de projet événementiel</p>
+                            </div>
+                        </div>
+
+                        <ul class="mt-7 text-sm">
+                            <li class="flex items-center gap-4 py-3.5 border-t border-gray-100">
+                                <span class="w-9 h-9 shrink-0 rounded-full bg-pastel-pink/50 flex items-center justify-center text-pastel-pink-accent"><i class="fa-regular fa-envelope" aria-hidden="true"></i></span>
+                                <div class="min-w-0">
+                                    <p class="text-xs uppercase tracking-widest text-pastel-text/70">E-mail</p>
+                                    <p id="fc-email" class="font-medium text-pastel-heading break-all">Me contacter par e-mail</p>
+                                </div>
+                            </li>
+                            <li class="flex items-center gap-4 py-3.5 border-t border-gray-100">
+                                <span class="w-9 h-9 shrink-0 rounded-full bg-pastel-blue/50 flex items-center justify-center text-pastel-blue-accent"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></span>
+                                <div class="min-w-0">
+                                    <p class="text-xs uppercase tracking-widest text-pastel-text/70">LinkedIn</p>
+                                    <a href="https://www.linkedin.com/in/charles-marti-2173971ab/" data-linkedin target="_blank" rel="noopener noreferrer" class="font-medium text-pastel-heading hover:text-pastel-blue-dark transition-colors">Charles Marti</a>
+                                </div>
+                            </li>
+                            <li class="flex items-center gap-4 py-3.5 border-t border-gray-100">
+                                <span class="w-9 h-9 shrink-0 rounded-full bg-pastel-green/50 flex items-center justify-center text-pastel-green-accent"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest text-pastel-text/70">Localisation</p>
+                                    <p class="font-medium text-pastel-heading">Paris (75)</p>
+                                </div>
+                            </li>
+                            <li class="flex items-center gap-4 py-3.5 border-t border-gray-100">
+                                <span class="w-9 h-9 shrink-0 rounded-full bg-pastel-blue/50 flex items-center justify-center text-pastel-blue-accent"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i></span>
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest text-pastel-text/70">Mobilité</p>
+                                    <p class="font-medium text-pastel-heading">Permis A2 et B</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="lg:col-span-3 modern-card reveal delay-100 p-8 flex flex-col">
+                        <h4 class="text-lg font-medium text-pastel-heading">Que souhaitez-vous me dire ?</h4>
+                        <p class="mt-1 text-sm font-light text-pastel-text">Choisissez un motif : l'objet du message est rempli pour vous.</p>
+
+                        <div class="mt-5 flex flex-wrap gap-2.5" role="group" aria-label="Motif du message">
+                            <button type="button" class="fc-topic is-active" data-subject="Opportunité professionnelle" aria-pressed="true"><i class="fa-solid fa-briefcase mr-2" aria-hidden="true"></i>Un poste</button>
+                            <button type="button" class="fc-topic" data-subject="Organisation d'un événement" aria-pressed="false"><i class="fa-solid fa-champagne-glasses mr-2" aria-hidden="true"></i>Un événement</button>
+                            <button type="button" class="fc-topic" data-subject="Proposition de collaboration" aria-pressed="false"><i class="fa-solid fa-handshake mr-2" aria-hidden="true"></i>Une collaboration</button>
+                            <button type="button" class="fc-topic" data-subject="Bonjour" aria-pressed="false"><i class="fa-regular fa-comment mr-2" aria-hidden="true"></i>Autre</button>
+                        </div>
+
+                        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a id="fc-mail" href="#" data-user="charlesmjb" data-domain="gmail.com" class="inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-pastel-heading text-white rounded-full font-medium hover:bg-pastel-text transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5">
+                                <i class="fa-regular fa-paper-plane" aria-hidden="true"></i> Écrire un e-mail
+                            </a>
+                            <button type="button" id="fc-copy" class="inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-white border border-pastel-blue text-pastel-heading rounded-full font-medium hover:bg-pastel-blue/20 transition-all duration-300 hover:-translate-y-0.5">
+                                <i class="fa-regular fa-copy" aria-hidden="true"></i> <span id="fc-copy-label">Copier l'adresse</span>
+                            </button>
+                            <a href="CV_Charles_MARTI.pdf" download="CV_Charles_MARTI.pdf" class="sm:col-span-2 inline-flex items-center justify-center gap-3 px-6 py-3.5 bg-white border border-pastel-blue text-pastel-heading rounded-full font-medium hover:bg-pastel-blue/20 transition-all duration-300 hover:-translate-y-0.5">
+                                <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Télécharger mon CV
+                            </a>
+                        </div>
+                        <p class="mt-auto pt-6 text-xs font-light text-pastel-text/80" id="fc-status" role="status" aria-live="polite">Le bouton « Écrire un e-mail » ouvre votre messagerie avec l'objet déjà rempli.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- PAGE 2 : RÉALISATIONS -->
@@ -547,252 +676,274 @@
                 <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
                     <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Retour au CV
                 </a>
-                <h3 class="text-4xl font-medium title-pastel mb-4">Mes Réalisations</h3>
+                <p class="eyebrow">Portfolio</p>
+                    <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
                 <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
                 <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
                     Découvrez en images et en vidéos une sélection des événements que j'ai conçus, produits et coordonnés.
                 </p>
             </div>
 
-            <div class="flex flex-wrap justify-center md:justify-start gap-3 mb-10 reveal" role="group" aria-label="Filtrer les réalisations">
-                <button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true">Tout</button>
-                <button type="button" class="filter-btn" data-filter="galas" aria-pressed="false">Galas & soirées</button>
-                <button type="button" class="filter-btn" data-filter="corporate" aria-pressed="false">Corporate</button>
-                <button type="button" class="filter-btn" data-filter="lieux" aria-pressed="false">Lieux & scénographie</button>
+            <div id="gallery-bar" class="mb-10 reveal flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div id="gallery-filters" class="flex flex-wrap justify-center md:justify-start gap-3" role="group" aria-label="Filtrer les réalisations"></div>
+                <p id="gallery-count" data-i18n-skip class="text-sm font-light text-pastel-text text-center sm:text-right" aria-live="polite"></p>
             </div>
 
-            <!-- Pour ajouter une réalisation : copie un bloc "gallery-item", change data-src, data-caption, data-cat (galas / corporate / lieux) et le texte -->
-            <div id="gallery-grid" class="gallery-grid grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 grid-flow-dense auto-rows-[150px] sm:auto-rows-[190px] md:auto-rows-[220px]">
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer col-span-2 row-span-2" role="button" tabindex="0"
-                         data-type="image" data-cat="galas"
-                         data-src="images/CK-SD-PA.jpg"
-                         data-caption="Gala de grande envergure - Cocktail (1200 participants)"
-                         aria-label="Voir la photo : Gala étudiant">
-                        <img src="images/CK-SD-PA.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/D6E4E5/2D3035?text=Gala'"
-                             alt="Gala étudiant, cocktail de 1200 participants" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Gala étudiant</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Cocktail · 1200 participants</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
+            <!-- La galerie se construit depuis la liste PROJECTS (voir le script, section « Réalisations ») -->
+            <div id="gallery-grid" class="gallery-masonry" aria-busy="true">
+                <div class="g-skel" style="height: 230px"></div>
+                <div class="g-skel" style="height: 320px"></div>
+                <div class="g-skel" style="height: 260px"></div>
+                <div class="g-skel" style="height: 300px"></div>
+                <div class="g-skel" style="height: 240px"></div>
+                <div class="g-skel" style="height: 280px"></div>
+            </div>
 
-                    <!-- REMPLACE VIDEO_ID_ICI par l'identifiant de ta vidéo YouTube -->
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer col-span-2" role="button" tabindex="0"
-                         data-type="youtube" data-cat="corporate"
-                         data-src="https://www.youtube-nocookie.com/embed/VIDEO_ID_ICI"
-                         data-caption="Teaser vidéo - Séminaire d'entreprise Corporate"
-                         aria-label="Lancer la vidéo : Séminaire Corporate">
-                        <img src="images/miniature-video.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/F5E6E8/2D3035?text=Video+Seminaire'"
-                             alt="Miniature de la vidéo du séminaire corporate" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Séminaire Corporate</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Teaser vidéo</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer row-span-2" role="button" tabindex="0"
-                         data-type="image" data-cat="lieux"
-                         data-src="images/Diner-500-personnes-PA.jpg"
-                         data-caption="Événement au Pavillon d'Armenonville (2000 personnes) - Scénographie"
-                         aria-label="Voir la photo : Pavillon d'Armenonville">
-                        <img src="images/Diner-500-personnes-PA.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/E3EBD2/2D3035?text=Armenonville'"
-                             alt="Dîner au Pavillon d'Armenonville" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Pavillon d'Armenonville</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Jusqu'à 2000 personnes</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer " role="button" tabindex="0"
-                         data-type="image" data-cat="galas"
-                         data-src="images/soiree-etudiante.jpg"
-                         data-caption="Soirée étudiante - Studios Eden"
-                         aria-label="Voir la photo : Soirée étudiante">
-                        <img src="images/soiree-etudiante.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/FBDDE4/2D3035?text=Soiree+etudiante'"
-                             alt="Soirée étudiante Studios Eden" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Soirée étudiante</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Studios Eden</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer " role="button" tabindex="0"
-                         data-type="image" data-cat="corporate"
-                         data-src="images/evenement-entreprise.jpg"
-                         data-caption="Événement d'entreprise - Utopia (B2B)"
-                         aria-label="Voir la photo : Événement d'entreprise">
-                        <img src="images/evenement-entreprise.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/D9E4FC/2D3035?text=Utopia'"
-                             alt="Événement d'entreprise Utopia" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Événement d'entreprise</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Utopia · B2B</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer row-span-2" role="button" tabindex="0"
-                         data-type="image" data-cat="lieux"
-                         data-src="images/scenographie.jpg"
-                         data-caption="Scénographie et décoration événementielle"
-                         aria-label="Voir la photo : Scénographie">
-                        <img src="images/scenographie.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/DDF0C2/2D3035?text=Scenographie'"
-                             alt="Scénographie événementielle" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Scénographie</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Décor & ambiance</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer col-span-2" role="button" tabindex="0"
-                         data-type="image" data-cat="galas"
-                         data-src="images/diner-gala.jpg"
-                         data-caption="Dîner de gala dans un lieu prestigieux parisien"
-                         aria-label="Voir la photo : Dîner de gala">
-                        <img src="images/diner-gala.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/CBEAF1/2D3035?text=Diner+de+gala'"
-                             alt="Dîner de gala" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Dîner de gala</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Lieu prestigieux parisien</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer " role="button" tabindex="0"
-                         data-type="image" data-cat="corporate"
-                         data-src="images/seminaire.jpg"
-                         data-caption="Séminaire d'entreprise - conception et production"
-                         aria-label="Voir la photo : Séminaire d'entreprise">
-                        <img src="images/seminaire.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/F5E6E8/2D3035?text=Seminaire'"
-                             alt="Séminaire d'entreprise" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Séminaire d'entreprise</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Conception & production</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
-
-                    <div class="gallery-item group relative overflow-hidden rounded-2xl cursor-pointer " role="button" tabindex="0"
-                         data-type="image" data-cat="galas"
-                         data-src="images/lumiere-son.jpg"
-                         data-caption="Événement privé - lumière et système son"
-                         aria-label="Voir la photo : Lumière & son">
-                        <img src="images/lumiere-son.jpg" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='https://placehold.co/800x800/E3EBD2/2D3035?text=Lumiere+et+son'"
-                             alt="Régie lumière et son" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">
-                            <span class="block font-medium text-sm md:text-base leading-tight">Lumière & son</span>
-                            <span class="block text-xs md:text-sm text-white/80 font-light mt-0.5">Événement privé</span>
-                        </span>
-                        <span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
-                    </div>
+            <!-- Affiché tant qu'aucun support n'est disponible -->
+            <div id="gallery-empty" class="hidden modern-card p-10 md:p-14 text-center max-w-2xl mx-auto">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-pastel-blue/40 flex items-center justify-center text-pastel-blue-accent"><i class="fa-regular fa-images text-2xl" aria-hidden="true"></i></div>
+                <h4 class="mt-6 text-xl font-medium text-pastel-heading">Ma sélection arrive bientôt</h4>
+                <p class="mt-3 font-light text-pastel-text leading-relaxed">Je prépare mes photos et vidéos d'événements. En attendant, retrouvez mon parcours et mes chiffres clés.</p>
+                <div class="mt-7 flex flex-col sm:flex-row justify-center gap-3">
+                    <a href="#experience" class="inline-flex items-center justify-center gap-3 px-7 py-3 bg-pastel-heading text-white rounded-full font-medium hover:bg-pastel-text transition-all duration-300 hover:-translate-y-0.5"><i class="fa-solid fa-briefcase" aria-hidden="true"></i> Mes expériences</a>
+                    <a href="#contact" class="inline-flex items-center justify-center gap-3 px-7 py-3 bg-white border border-pastel-blue text-pastel-heading rounded-full font-medium hover:bg-pastel-blue/20 transition-all duration-300 hover:-translate-y-0.5"><i class="fa-regular fa-envelope" aria-hidden="true"></i> Me contacter</a>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- PAGE 3 : MON PARCOURS -->
     <div id="page-apropos" class="hidden min-h-screen pt-32 pb-24 relative z-10 bg-white/30">
-        <div class="max-w-4xl mx-auto px-6">
-            <div class="text-center md:text-left mb-16 reveal">
+        <div class="max-w-5xl mx-auto px-6">
+
+            <!-- En-tête -->
+            <div class="text-center md:text-left mb-14 reveal">
                 <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors group">
                     <i class="fa-solid fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform" aria-hidden="true"></i> Retour au CV
                 </a>
-                <h3 class="text-4xl font-medium title-pastel mb-4">Mon ADN & Mon Parcours</h3>
+                <p class="eyebrow">À propos</p>
+                    <h3 class="text-4xl font-medium title-pastel mb-4">Mon ADN & Mon <span class="grad">Parcours</span></h3>
                 <div class="w-16 h-1 bg-pastel-green-accent mx-auto md:mx-0 rounded-full"></div>
-            </div>
-
-            <div class="reveal modern-card p-8 md:p-10 mb-12 border-l-4 border-l-pastel-blue-accent">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-pastel-blue/30 flex items-center justify-center text-pastel-blue-accent">
-                        <i class="fa-solid fa-bolt text-xl" aria-hidden="true"></i>
-                    </div>
-                    <h4 class="text-2xl font-medium text-pastel-heading">L'Homme de Terrain</h4>
-                </div>
-                <p class="text-pastel-text font-light leading-relaxed text-lg mb-8">
-                    Je suis animé par la recherche de l'action, du mouvement et du terrain. Je refuse les postes exclusivement sédentaires : l'événementiel n'est pas seulement un métier pour moi, c'est un engagement total. J'aime résoudre des problèmes en temps réel, encadrer des équipes et voir l'aboutissement physique de mois de préparation. Face à l'imprévu, je ne panique pas : je trouve toujours une issue fonctionnelle.
+                <p class="mt-6 text-lg font-light text-pastel-text max-w-3xl leading-relaxed">
+                    Chef de projet événementiel, je conçois, produis et coordonne des séminaires, galas et soirées jusqu'à 2000 participants. Voici ce qui me définit, d'où je viens, et ce que je recherche.
                 </p>
-                <div class="flex flex-wrap gap-4">
-                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-default">
-                        <i class="fa-solid fa-fire text-pastel-pink-accent mr-2" aria-hidden="true"></i> Résilient
-                    </span>
-                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-default">
-                        <i class="fa-solid fa-handshake text-pastel-blue-accent mr-2" aria-hidden="true"></i> Fédérateur
-                    </span>
-                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-default">
-                        <i class="fa-solid fa-lightbulb text-pastel-green-accent mr-2" aria-hidden="true"></i> Proactif
-                    </span>
+            </div>
+
+            <!-- Chiffres clés -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-20">
+                <div class="modern-card reveal p-6 text-center">
+                    <p class="text-4xl md:text-5xl font-semibold text-gradient"><span class="count" data-to="2000">2000</span></p>
+                    <h4 class="mt-2 text-sm font-medium text-pastel-heading">participants</h4>
+                    <p class="text-xs font-light text-pastel-text mt-1 leading-snug">Taille maximale des événements pilotés</p>
+                </div>
+                <div class="modern-card reveal delay-100 p-6 text-center">
+                    <p class="text-4xl md:text-5xl font-semibold text-gradient"><span class="count" data-to="1" data-suffix=" M€+">1 M€+</span></p>
+                    <h4 class="mt-2 text-sm font-medium text-pastel-heading">de chiffre d'affaires</h4>
+                    <p class="text-xs font-light text-pastel-text mt-1 leading-snug">Réalisé en 2023, avec une forte rentabilité</p>
+                </div>
+                <div class="modern-card reveal delay-200 p-6 text-center">
+                    <p class="text-4xl md:text-5xl font-semibold text-gradient"><span class="count" data-to="1">1</span></p>
+                    <h4 class="mt-2 text-sm font-medium text-pastel-heading">marque gérée en autonomie</h4>
+                    <p class="text-xs font-light text-pastel-text mt-1 leading-snug">Au sein du Groupe Eden System</p>
+                </div>
+                <div class="modern-card reveal delay-300 p-6 text-center">
+                    <p class="text-4xl md:text-5xl font-semibold text-gradient">360°</p>
+                    <h4 class="mt-2 text-sm font-medium text-pastel-heading">gestion de projet</h4>
+                    <p class="text-xs font-light text-pastel-text mt-1 leading-snug">Budget, logistique, équipes, facturation</p>
                 </div>
             </div>
 
-            <div class="space-y-12">
-                <div class="reveal">
-                    <h4 class="text-xl font-medium text-pastel-heading mb-8 pl-4 border-l-4 border-pastel-pink-accent">Une trajectoire dictée par le pragmatisme</h4>
-                    <div class="relative timeline-line ml-3 md:ml-4 space-y-12">
-
-                        <div class="relative pl-8 md:pl-10 group">
-                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-blue-accent rounded-full -left-[9px] top-1 group-hover:scale-125 transition-transform duration-300"></div>
-                            <h5 class="text-lg font-medium text-pastel-heading mb-3">Le déclic et le choix de l'action</h5>
-                            <p class="text-pastel-text font-light leading-relaxed">
-                                Après un début en école d'ingénieurs, j'ai découvert la vie associative étudiante. Ce fut une véritable révélation : un goût viscéral pour l'événementiel, né de l'envie de rassembler les gens et de créer des souvenirs mémorables. J'ai alors assumé une réorientation vers un BTS Communication en alternance, avec la conviction forte que l'expérience concrète en entreprise et la réalité du terrain valent plus qu'une longue poursuite d'études théoriques.
-                            </p>
+            <!-- Ce que j'apporte -->
+            <div class="mb-20">
+                <div class="mb-8 reveal">
+                    <h4 class="text-xl font-medium text-pastel-heading pl-4 border-l-4 border-pastel-blue-accent">Ce que j'apporte à une équipe</h4>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                    <div class="modern-card reveal p-6 md:p-7 flex gap-5">
+                        <div class="w-12 h-12 shrink-0 rounded-2xl bg-pastel-blue/40 flex items-center justify-center text-pastel-blue-accent"><i class="fa-solid fa-bolt text-lg" aria-hidden="true"></i></div>
+                        <div>
+                            <h5 class="font-medium text-pastel-heading text-lg">Réactivité sur le terrain</h5>
+                            <p class="mt-1 text-sm font-light leading-relaxed text-pastel-text">Je résous les imprévus en temps réel. Face à un problème, je ne panique pas : je trouve toujours une issue fonctionnelle.</p>
                         </div>
-
-                        <div class="relative pl-8 md:pl-10 group">
-                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-pink-accent rounded-full -left-[9px] top-1 group-hover:scale-125 transition-transform duration-300"></div>
-                            <h5 class="text-lg font-medium text-pastel-heading mb-3">Les fondations exigeantes</h5>
-                            <p class="text-pastel-text font-light leading-relaxed">
-                                Mon premier poste au Pavillon d'Armenonville a été une expérience fondatrice. Travailler en tant que Chef de projet dans un lieu aussi prestigieux et exigeant a forgé ma rigueur logistique, consolidé mon sang-froid et validé définitivement mon choix de carrière.
-                            </p>
+                    </div>
+                    <div class="modern-card reveal delay-100 p-6 md:p-7 flex gap-5">
+                        <div class="w-12 h-12 shrink-0 rounded-2xl bg-pastel-green/50 flex items-center justify-center text-pastel-green-accent"><i class="fa-solid fa-list-check text-lg" aria-hidden="true"></i></div>
+                        <div>
+                            <h5 class="font-medium text-pastel-heading text-lg">Rigueur, de A à Z</h5>
+                            <p class="mt-1 text-sm font-light leading-relaxed text-pastel-text">Budgétisation, chiffrage, rétroplanning, logistique, facturation : je pilote un projet de bout en bout, sans micro-management.</p>
                         </div>
-
-                        <div class="relative pl-8 md:pl-10 group">
-                            <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-green-accent rounded-full -left-[9px] top-1 group-hover:scale-125 transition-transform duration-300"></div>
-                            <h5 class="text-lg font-medium text-pastel-heading mb-3">L'autonomie et l'évolution</h5>
-                            <p class="text-pastel-text font-light leading-relaxed">
-                                Débauché par un client (témoignant de la qualité de mon relationnel et de mon travail) pour rejoindre le Groupe Eden System. J'y ai d'abord géré la marque B2C "Studios Eden" en totale autonomie, acquérant une expertise pointue des codes étudiants. J'ai ensuite évolué en interne pour piloter "Utopia", ciblant l'événementiel d'entreprise B2B. Une preuve de ma polyvalence : je peux piloter un projet de A à Z sans micro-management.
-                            </p>
+                    </div>
+                    <div class="modern-card reveal p-6 md:p-7 flex gap-5">
+                        <div class="w-12 h-12 shrink-0 rounded-2xl bg-pastel-pink/50 flex items-center justify-center text-pastel-pink-accent"><i class="fa-solid fa-handshake text-lg" aria-hidden="true"></i></div>
+                        <div>
+                            <h5 class="font-medium text-pastel-heading text-lg">Relation client durable</h5>
+                            <p class="mt-1 text-sm font-light leading-relaxed text-pastel-text">De la prise de brief à la fidélisation, j'accompagne chaque client et je suis la satisfaction après l'événement.</p>
                         </div>
+                    </div>
+                    <div class="modern-card reveal delay-100 p-6 md:p-7 flex gap-5">
+                        <div class="w-12 h-12 shrink-0 rounded-2xl bg-pastel-blue/40 flex items-center justify-center text-pastel-blue-accent"><i class="fa-solid fa-people-group text-lg" aria-hidden="true"></i></div>
+                        <div>
+                            <h5 class="font-medium text-pastel-heading text-lg">Management d'équipe</h5>
+                            <p class="mt-1 text-sm font-light leading-relaxed text-pastel-text">J'encadre une équipe d'alternants et je coordonne fournisseurs et sous-traitants, avec enthousiasme et écoute.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-wrap gap-3 reveal">
+                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm"><i class="fa-solid fa-fire text-pastel-pink-accent mr-2" aria-hidden="true"></i> Résilient</span>
+                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm"><i class="fa-solid fa-handshake text-pastel-blue-accent mr-2" aria-hidden="true"></i> Fédérateur</span>
+                    <span class="px-5 py-2.5 bg-white rounded-full text-sm font-medium text-pastel-heading border border-gray-100 shadow-sm"><i class="fa-solid fa-lightbulb text-pastel-green-accent mr-2" aria-hidden="true"></i> Proactif</span>
+                </div>
+            </div>
 
+            <!-- Parcours -->
+            <div class="mb-20">
+                <div class="mb-10 reveal">
+                    <h4 class="text-xl font-medium text-pastel-heading pl-4 border-l-4 border-pastel-pink-accent">Un parcours dicté par le pragmatisme</h4>
+                    <p class="mt-3 pl-5 text-sm font-light text-pastel-text">L'expérience concrète en entreprise et la réalité du terrain valent plus pour moi qu'une longue poursuite d'études théoriques.</p>
+                </div>
+                <div class="relative timeline-line ml-3 md:ml-4 space-y-12">
+
+                    <div class="relative pl-8 md:pl-10 reveal">
+                        <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-blue-accent rounded-full -left-[9px] top-1"></div>
+                        <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-blue/30 px-3 py-1 rounded-full uppercase">2018 → 2022</span>
+                        <h5 class="mt-3 text-lg font-medium text-pastel-heading">Le déclic, et le choix de l'action</h5>
+                        <p class="mt-2 text-pastel-text font-light leading-relaxed">
+                            Après un début en école d'ingénieurs, j'ai découvert la vie associative étudiante : une révélation, et un goût viscéral pour l'événementiel, né de l'envie de rassembler les gens et de créer des souvenirs mémorables. J'ai assumé une réorientation vers un BTS Communication en alternance.
+                        </p>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium text-pastel-heading">
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Réorientation assumée</span>
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">BTS en alternance</span>
+                        </div>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10 reveal">
+                        <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-pink-accent rounded-full -left-[9px] top-1"></div>
+                        <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-pink/50 px-3 py-1 rounded-full uppercase">2023 – 2024</span>
+                        <h5 class="mt-3 text-lg font-medium text-pastel-heading">Des fondations exigeantes</h5>
+                        <p class="mt-2 text-pastel-text font-light leading-relaxed">
+                            Mon premier poste de chef de projet, au Pavillon d'Armenonville, a été fondateur. Dans un lieu aussi prestigieux et exigeant, j'ai forgé ma rigueur logistique, consolidé mon sang-froid et validé définitivement mon choix de carrière.
+                        </p>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium text-pastel-heading">
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Événements jusqu'à 2000 pers.</span>
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Plus d'1 M€ de CA</span>
+                        </div>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10 reveal">
+                        <div class="absolute w-4 h-4 bg-white border-[3px] border-pastel-green-accent rounded-full -left-[9px] top-1"></div>
+                        <span class="text-xs font-semibold tracking-widest text-pastel-text bg-pastel-green/50 px-3 py-1 rounded-full uppercase">Depuis avril 2024</span>
+                        <h5 class="mt-3 text-lg font-medium text-pastel-heading">L'autonomie et la responsabilité</h5>
+                        <p class="mt-2 text-pastel-text font-light leading-relaxed">
+                            Au sein du Groupe Eden System, je gère en autonomie une marque du groupe. Je conçois et produis des séminaires, galas et soirées de grande envergure, pour des écoles et des entreprises de secteurs variés, tout en développant le portefeuille clients.
+                        </p>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs font-medium text-pastel-heading">
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Écoles &amp; entreprises</span>
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Autonomie</span>
+                            <span class="px-3 py-1 rounded-full bg-white/80 border border-gray-100">Management d'alternants</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Couteau-suisse numérique -->
+            <div class="reveal delay-100 p-8 md:p-10 mb-20 bg-pastel-heading text-white rounded-[1.25rem] border border-white/20 shadow-lg relative overflow-hidden" id="toolbox">
+                <div class="absolute -right-16 -top-16 w-56 h-56 bg-pastel-blue-accent/20 rounded-full blur-3xl" aria-hidden="true"></div>
+                <div class="absolute -left-16 -bottom-20 w-56 h-56 bg-pastel-pink-accent/15 rounded-full blur-3xl" aria-hidden="true"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+                    <div>
+                        <h4 class="text-xl md:text-2xl font-medium flex items-center">
+                            <i class="fa-solid fa-microchip text-pastel-blue mr-4 text-2xl" aria-hidden="true"></i> Le « Couteau-Suisse Numérique »
+                        </h4>
+                        <p class="mt-4 text-white/80 font-light leading-relaxed max-w-2xl">
+                            Je vis pour le terrain, mais je m'appuie sur le digital pour optimiser mon temps et mes process. Très à l'aise avec n'importe quel outil, j'apprends et je m'adapte extrêmement vite à chaque nouveauté.
+                        </p>
+                    </div>
+                    <p class="text-sm font-light text-white/60 md:text-right shrink-0"><span id="tool-count" class="text-2xl font-medium text-white tabular-nums">11</span> outils</p>
+                </div>
+
+                <div class="relative z-10 flex flex-wrap gap-2 mb-6" role="group" aria-label="Filtrer les outils par catégorie">
+                    <button type="button" class="tool-filter is-active" data-f="all" aria-pressed="true">Tout</button>
+                    <button type="button" class="tool-filter" data-f="gestion" aria-pressed="false">Gestion &amp; vente</button>
+                    <button type="button" class="tool-filter" data-f="creation" aria-pressed="false">Création</button>
+                    <button type="button" class="tool-filter" data-f="ia" aria-pressed="false">IA &amp; automatisation</button>
+                </div>
+
+                <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div class="tool-tile" data-c="gestion">
+                        <div class="tool-ico"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></div>
+                        <div><h5>Sellsy</h5><p>CRM : suivi commercial, gestion client et conversions.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="gestion">
+                        <div class="tool-ico"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></div>
+                        <div><h5>Notion</h5><p>Bases de données et tableaux de bord pour suivre leads et candidatures.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="gestion">
+                        <div class="tool-ico"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></div>
+                        <div><h5>Suite Microsoft Office</h5><p>Excel, Word, PowerPoint : chiffrages, devis et présentations.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="creation">
+                        <div class="tool-ico"><i class="fa-solid fa-image" aria-hidden="true"></i></div>
+                        <div><h5>Photoshop</h5><p>Visuels et supports de communication (PLV).</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="creation">
+                        <div class="tool-ico"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>
+                        <div><h5>InDesign</h5><p>Mise en page et e-catalogues.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="creation">
+                        <div class="tool-ico"><i class="fa-solid fa-film" aria-hidden="true"></i></div>
+                        <div><h5>Premiere Pro</h5><p>Montage vidéo.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="creation">
+                        <div class="tool-ico"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></div>
+                        <div><h5>Réseaux sociaux</h5><p>Animation et communication pour accroître la notoriété d'une marque.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="ia">
+                        <div class="tool-ico"><i class="fa-solid fa-comments" aria-hidden="true"></i></div>
+                        <div><h5>ChatGPT · Claude · Gemini</h5><p>Rédaction, idéation et gains de productivité au quotidien.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="ia">
+                        <div class="tool-ico"><i class="fa-solid fa-palette" aria-hidden="true"></i></div>
+                        <div><h5>Midjourney</h5><p>Images et pistes créatives.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="ia">
+                        <div class="tool-ico"><i class="fa-solid fa-gears" aria-hidden="true"></i></div>
+                        <div><h5>Automatisation</h5><p>Optimisation des tâches répétitives.</p></div>
+                    </div>
+                    <div class="tool-tile" data-c="ia">
+                        <div class="tool-ico"><i class="fa-solid fa-code" aria-hidden="true"></i></div>
+                        <div><h5>Vibecoding</h5><p>Création d'outils et de pages web avec l'IA.</p></div>
                     </div>
                 </div>
             </div>
 
-            <div class="reveal delay-100 p-8 md:p-10 mt-16 bg-pastel-heading text-white rounded-[1.25rem] border border-white/20 shadow-lg hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 ease-out relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" aria-hidden="true"></div>
-
-                <h4 class="text-xl font-medium mb-6 relative z-10 flex items-center">
-                    <i class="fa-solid fa-microchip text-pastel-blue mr-4 text-2xl" aria-hidden="true"></i> Le "Couteau-Suisse Numérique"
-                </h4>
-                <p class="text-white/80 font-light leading-relaxed mb-8 relative z-10">
-                    Si je vis pour le terrain, je m'appuie fortement sur la technologie pour optimiser mon temps et mes process. Doté d'une forte curiosité technique, j'apprends extrêmement vite et j'intègre les bons outils pour décupler mon efficacité.
+            <!-- Ce que je recherche + contact -->
+            <div class="modern-card reveal p-8 md:p-12 text-center border-t-4 border-t-pastel-blue-accent">
+                <h4 class="text-2xl font-medium text-pastel-heading">Ce que je recherche</h4>
+                <p class="mt-4 text-pastel-text font-light leading-relaxed max-w-2xl mx-auto">
+                    Un poste de chef de projet événementiel qui garde du terrain et de l'action : concevoir, produire et coordonner des événements d'envergure, avec de l'autonomie et une équipe à animer.
                 </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
-                    <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-white/40 transition-colors duration-300 group">
-                        <h5 class="font-medium text-pastel-blue mb-2 flex items-center"><i class="fa-solid fa-layer-group w-6 group-hover:scale-110 transition-transform" aria-hidden="true"></i> Structuration & Process</h5>
-                        <p class="text-sm font-light text-white/70">Utilisation avancée de Notion (création de bases de données, tableaux de bord automatisés pour le suivi de leads ou de candidatures).</p>
-                    </div>
-                    <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-white/40 transition-colors duration-300 group">
-                        <h5 class="font-medium text-pastel-green mb-2 flex items-center"><i class="fa-solid fa-chart-line w-6 group-hover:scale-110 transition-transform" aria-hidden="true"></i> CRM & Vente</h5>
-                        <p class="text-sm font-light text-white/70">Maîtrise de Sellsy pour le suivi stratégique commercial, la gestion client et les conversions.</p>
-                    </div>
-                    <div class="bg-white/10 p-5 rounded-xl border border-white/10 hover:border-white/40 transition-colors duration-300 group sm:col-span-2">
-                        <h5 class="font-medium text-pastel-pink mb-2 flex items-center"><i class="fa-solid fa-robot w-6 group-hover:scale-110 transition-transform" aria-hidden="true"></i> Intelligence Artificielle</h5>
-                        <p class="text-sm font-light text-white/70">Utilisation quotidienne de l'IA (ChatGPT, Midjourney, Gemini...) sous toutes ses formes pour la rédaction, l'idéation, et les gains de productivité opérationnels.</p>
-                    </div>
+                <div class="mt-6 flex flex-wrap justify-center gap-2.5 text-sm font-medium text-pastel-heading">
+                    <span class="px-4 py-2 rounded-full bg-pastel-blue/30">Terrain &amp; action</span>
+                    <span class="px-4 py-2 rounded-full bg-pastel-pink/40">Événements d'envergure</span>
+                    <span class="px-4 py-2 rounded-full bg-pastel-green/40">Autonomie</span>
+                    <span class="px-4 py-2 rounded-full bg-pastel-blue/30">Management d'équipe</span>
                 </div>
+                <div class="mt-9 flex flex-col sm:flex-row justify-center gap-3">
+                    <a href="#" data-user="charlesmjb" data-domain="gmail.com" class="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-pastel-heading text-white rounded-full font-medium hover:bg-pastel-text transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1">
+                        <i class="fa-regular fa-envelope" aria-hidden="true"></i> Me contacter
+                    </a>
+                    <a href="CV_Charles_MARTI.pdf" download="CV_Charles_MARTI.pdf" class="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-white border border-pastel-blue text-pastel-heading rounded-full font-medium hover:bg-pastel-blue/20 transition-all duration-300 hover:-translate-y-1">
+                        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Télécharger mon CV
+                    </a>
+                    <a href="#realisations" class="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-white border border-pastel-blue text-pastel-heading rounded-full font-medium hover:bg-pastel-blue/20 transition-all duration-300 hover:-translate-y-1">
+                        <i class="fa-regular fa-image" aria-hidden="true"></i> Voir mes réalisations
+                    </a>
+                </div>
+                <p class="mt-6 text-sm font-light text-pastel-text">
+                    ou sur <a href="https://www.linkedin.com/in/charles-marti-2173971ab/" data-linkedin target="_blank" rel="noopener noreferrer" class="font-medium text-pastel-blue-dark underline underline-offset-4 hover:text-pastel-heading">LinkedIn</a>
+                </p>
             </div>
 
         </div>
@@ -832,8 +983,9 @@
                 <iframe id="modal-video" title="Vidéo de réalisation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             </div>
 
-            <p id="modal-caption" class="text-white/90 font-light text-center text-lg max-w-2xl"></p>
-            <p id="modal-counter" class="text-white/50 text-sm mt-2" aria-live="polite"></p>
+            <div id="modal-meta" data-i18n-skip class="mb-3 flex flex-wrap justify-center gap-2"></div>
+            <p id="modal-caption" data-i18n-skip class="text-white/90 font-light text-center text-lg max-w-2xl"></p>
+            <p id="modal-counter" data-i18n-skip class="text-white/50 text-sm mt-2" aria-live="polite"></p>
         </div>
     </div>
 
@@ -866,6 +1018,7 @@
             '#accueil':      ['page-cv', null],
             '#experience':   ['page-cv', 'experience'],
             '#skills':       ['page-cv', 'skills'],
+            '#contact':      ['page-cv', 'contact'],
             '#realisations': ['page-realisations', null],
             '#parcours':     ['page-apropos', null]
         };
@@ -897,19 +1050,163 @@
         window.addEventListener('hashchange', route);
         route();
 
-        /* ---------- Galerie : filtres ---------- */
+        /* =====================================================================
+           RÉALISATIONS : LISTE DES PROJETS
+           Pour ajouter une réalisation : déposez l'image dans le dossier images/
+           puis ajoutez UNE ligne dans PROJECTS ci-dessous.
+           - Photo :  { src: 'images/mon-image.jpg', cat: 'galas', title: '...', sub: '...', caption: '...' }
+           - Vidéo :  { video: 'ID_YOUTUBE', cat: 'corporate', title: '...', sub: '...', caption: '...' }
+             (la miniature YouTube est utilisée automatiquement ; 'thumb' est facultatif)
+           Une image introuvable est simplement masquée : vous pouvez publier sans avoir tous les supports.
+           Catégories possibles : galas, corporate, lieux (voir CATEGORIES).
+           ===================================================================== */
+        const CATEGORIES = { galas: 'Galas & soirées', corporate: 'Corporate', lieux: 'Lieux & scénographie' };
+        const PROJECTS = [
+            // `en` : traduction anglaise facultative (titre, détail, légende)
+            { src: 'images/CK-SD-PA.jpg', cat: 'galas', title: 'Gala étudiant', sub: 'Cocktail · 1200 participants',
+              caption: 'Gala de grande envergure - Cocktail (1200 participants)',
+              en: { title: 'Student gala', sub: 'Cocktail · 1200 attendees', caption: 'Large-scale gala - Cocktail (1200 attendees)' } },
+            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'corporate', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
+              caption: "Teaser vidéo - Séminaire d'entreprise Corporate",
+              en: { title: 'Corporate seminar', sub: 'Video teaser', caption: 'Video teaser - Corporate company seminar' } },
+            { src: 'images/Diner-500-personnes-PA.jpg', cat: 'lieux', title: "Pavillon d'Armenonville", sub: "Jusqu'à 2000 personnes",
+              caption: "Événement au Pavillon d'Armenonville (2000 personnes) - Scénographie",
+              en: { sub: 'Up to 2000 people', caption: "Event at the Pavillon d'Armenonville (2000 people) - Scenography" } },
+            { src: 'images/soiree-etudiante.jpg', cat: 'galas', title: 'Soirée étudiante', sub: 'Studios Eden',
+              caption: 'Soirée étudiante - Studios Eden',
+              en: { title: 'Student party', caption: 'Student party - Studios Eden' } },
+            { src: 'images/evenement-entreprise.jpg', cat: 'corporate', title: "Événement d'entreprise", sub: 'Utopia · B2B',
+              caption: "Événement d'entreprise - Utopia (B2B)",
+              en: { title: 'Corporate event', caption: 'Corporate event - Utopia (B2B)' } },
+            { src: 'images/scenographie.jpg', cat: 'lieux', title: 'Scénographie', sub: 'Décor & ambiance',
+              caption: 'Scénographie et décoration événementielle',
+              en: { title: 'Scenography', sub: 'Décor & atmosphere', caption: 'Event scenography and decoration' } },
+            { src: 'images/diner-gala.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Lieu prestigieux parisien',
+              caption: 'Dîner de gala dans un lieu prestigieux parisien',
+              en: { title: 'Gala dinner', sub: 'Prestigious Parisian venue', caption: 'Gala dinner in a prestigious Parisian venue' } },
+            { src: 'images/seminaire.jpg', cat: 'corporate', title: "Séminaire d'entreprise", sub: 'Conception & production',
+              caption: "Séminaire d'entreprise - conception et production",
+              en: { title: 'Corporate seminar', sub: 'Design & production', caption: 'Corporate seminar - design and production' } },
+            { src: 'images/lumiere-son.jpg', cat: 'galas', title: 'Lumière & son', sub: 'Événement privé',
+              caption: 'Événement privé - lumière et système son',
+              en: { title: 'Light & sound', sub: 'Private event', caption: 'Private event - lighting and sound system' } }
+        ];
+
+        /* ---------- Galerie : construction (n'affiche que les supports disponibles) ---------- */
         const galleryGrid = document.getElementById('gallery-grid');
-        const galleryItems = [...document.querySelectorAll('.gallery-item')];
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        filterBtns.forEach(btn => btn.addEventListener('click', () => {
-            const f = btn.dataset.filter;
-            filterBtns.forEach(b => {
-                b.classList.toggle('is-active', b === btn);
-                b.setAttribute('aria-pressed', String(b === btn));
+        const galleryFilters = document.getElementById('gallery-filters');
+        const galleryCount = document.getElementById('gallery-count');
+        const galleryEmpty = document.getElementById('gallery-empty');
+        let galleryItems = [];
+
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        // Charge la première URL qui fonctionne (9 s maximum) et renvoie sa taille, sinon null
+        function loadImage(urls) {
+            return new Promise(resolve => {
+                let i = 0;
+                const timer = setTimeout(() => resolve(null), 9000);
+                const next = () => {
+                    if (i >= urls.length) { clearTimeout(timer); return resolve(null); }
+                    const url = urls[i++], im = new Image();
+                    im.onload = () => { clearTimeout(timer); resolve({ url, w: im.naturalWidth, h: im.naturalHeight }); };
+                    im.onerror = next;
+                    im.src = url;
+                };
+                next();
             });
-            galleryGrid.classList.toggle('is-filtered', f !== 'all');
-            galleryItems.forEach(i => i.classList.toggle('hidden', f !== 'all' && i.dataset.cat !== f));
-        }));
+        }
+
+        const isEn = () => document.documentElement.lang === 'en';
+        const loc = p => (isEn() && p.en) ? Object.assign({}, p, p.en) : p;
+        const trLabel = s => (window.SITE ? window.SITE.tr(s) : s);
+
+        // Remplit (ou met à jour) les textes d'une tuile dans la langue courante
+        function fillTile(el) {
+            const p = loc(el._p), isVideo = !!el._p.video;
+            el.dataset.caption = p.caption || p.title || '';
+            el.dataset.title = p.title || '';
+            el.dataset.sub = p.sub || '';
+            el.setAttribute('aria-label', (isVideo ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + (p.title || ''));
+            const im = el.querySelector('img');
+            if (im) im.alt = p.alt || p.caption || p.title || '';
+            el.querySelector('.g-title').textContent = p.title || '';
+            el.querySelector('.g-sub').textContent = p.sub || '';
+        }
+        function countLabel(n) { return isEn() ? n + (n > 1 ? ' projects' : ' project') : n + (n > 1 ? ' réalisations' : ' réalisation'); }
+
+        async function buildGallery() {
+            const usable = PROJECTS.filter(p => p.video ? /^[\w-]{11}$/.test(p.video) : !!p.src);
+            const found = await Promise.all(usable.map(p => loadImage(
+                p.video ? [p.thumb, 'https://img.youtube.com/vi/' + p.video + '/hqdefault.jpg'].filter(Boolean) : [p.src])));
+            const shown = usable.map((p, i) => ({ p, img: found[i] })).filter(x => x.img);
+
+            galleryGrid.textContent = '';
+            galleryGrid.setAttribute('aria-busy', 'false');
+
+            if (!shown.length) {
+                galleryGrid.classList.add('hidden');
+                galleryEmpty.classList.remove('hidden');
+                document.getElementById('gallery-bar').classList.add('hidden');
+                return;
+            }
+
+            shown.forEach(({ p, img }) => {
+                const isVideo = !!p.video;
+                const el = document.createElement('div');
+                el._p = p;
+                el.className = 'gallery-item group relative overflow-hidden rounded-2xl cursor-pointer';
+                el.setAttribute('role', 'button');
+                el.setAttribute('data-i18n-skip', '');
+                el.tabIndex = 0;
+                el.dataset.type = isVideo ? 'youtube' : 'image';
+                el.dataset.cat = p.cat || '';
+                el.dataset.src = isVideo ? p.video : p.src;
+                // format de la photo conservé (entre 3:4 et 16:9), pour une mise en page sans décalage
+                const ratio = isVideo ? 16 / 9 : Math.min(1.78, Math.max(0.75, img.w / img.h));
+                el.style.aspectRatio = String(ratio);
+                el.innerHTML =
+                    '<img src="' + esc(img.url) + '" alt="" decoding="async" ' +
+                    'class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">' +
+                    (isVideo ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>' : '') +
+                    '<span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">' +
+                    '<span class="g-title block font-medium text-sm md:text-base leading-tight"></span>' +
+                    '<span class="g-sub block text-xs md:text-sm text-white/80 font-light mt-0.5 empty:hidden"></span>' +
+                    '</span>' +
+                    '<span class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 text-pastel-heading text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>';
+                fillTile(el);
+                galleryGrid.append(el);
+                galleryItems.push(el);
+                el.addEventListener('click', () => openModal(el));
+                el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(el); } });
+            });
+
+            // Filtres : uniquement les catégories qui ont au moins une réalisation affichée
+            const cats = Object.keys(CATEGORIES).filter(c => shown.some(x => x.p.cat === c));
+            const setCount = () => { galleryCount.textContent = countLabel(galleryItems.filter(i => !i.classList.contains('hidden')).length); };
+            if (cats.length > 1) {
+                const mk = (f, label, on) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'filter-btn' + (on ? ' is-active' : '');
+                    b.dataset.filter = f; b.setAttribute('aria-pressed', String(on)); b.textContent = label;
+                    return b;
+                };
+                [mk('all', 'Tout', true), ...cats.map(c => mk(c, CATEGORIES[c], false))].forEach(b => galleryFilters.append(b));
+                galleryFilters.addEventListener('click', e => {
+                    const btn = e.target.closest('.filter-btn');
+                    if (!btn) return;
+                    const f = btn.dataset.filter;
+                    galleryFilters.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.toggle('is-active', b === btn);
+                        b.setAttribute('aria-pressed', String(b === btn));
+                    });
+                    galleryItems.forEach(i => i.classList.toggle('hidden', f !== 'all' && i.dataset.cat !== f));
+                    setCount();
+                });
+            }
+            setCount();
+            if (window.__staggerGallery) window.__staggerGallery();
+        }
 
         /* ---------- Modale galerie (avec navigation) ---------- */
         const modal = document.getElementById('gallery-modal');
@@ -917,6 +1214,7 @@
         const modalVideoContainer = document.getElementById('modal-video-container');
         const modalVideo = document.getElementById('modal-video');
         const modalCaption = document.getElementById('modal-caption');
+        const modalMeta = document.getElementById('modal-meta');
         const modalCounter = document.getElementById('modal-counter');
         const closeBtn = document.getElementById('close-modal');
         const prevBtn = document.getElementById('modal-prev');
@@ -926,6 +1224,14 @@
         function renderItem(item) {
             modalCaption.textContent = item.dataset.caption;
             modalCounter.textContent = (currentIndex + 1) + ' / ' + currentList.length;
+            // pastilles : catégorie + détails (séparés par « · »)
+            modalMeta.textContent = '';
+            [trLabel(CATEGORIES[item.dataset.cat] || ''), ...(item.dataset.sub || '').split('·').map(s => s.trim())].filter(Boolean).forEach(t => {
+                const s = document.createElement('span');
+                s.className = 'px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-white/85';
+                s.textContent = t;
+                modalMeta.append(s);
+            });
             const multi = currentList.length > 1;
             prevBtn.classList.toggle('hidden', !multi);
             nextBtn.classList.toggle('hidden', !multi);
@@ -934,7 +1240,7 @@
                 modalImg.classList.add('hidden');
                 modalImg.removeAttribute('src');
                 modalVideoContainer.classList.remove('hidden');
-                modalVideo.src = item.dataset.src;
+                modalVideo.src = 'https://www.youtube-nocookie.com/embed/' + item.dataset.src;
             } else {
                 modalVideoContainer.classList.add('hidden');
                 modalVideo.removeAttribute('src');
@@ -972,6 +1278,7 @@
             modal.classList.add('opacity-0');
             modal.setAttribute('aria-hidden', 'true');
             setTimeout(() => {
+                if (!modal.classList.contains('opacity-0')) return; // rouverte entre-temps
                 modal.classList.remove('flex');
                 modal.classList.add('hidden');
                 modalImg.removeAttribute('src');
@@ -980,13 +1287,6 @@
                 if (lastFocus) lastFocus.focus();
             }, 300);
         }
-
-        galleryItems.forEach(item => {
-            item.addEventListener('click', () => openModal(item));
-            item.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(item); }
-            });
-        });
 
         closeBtn.addEventListener('click', closeModal);
         prevBtn.addEventListener('click', () => step(-1));
@@ -1013,6 +1313,15 @@
                 const i = f.indexOf(document.activeElement);
                 f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
             }
+        });
+
+        buildGallery();
+
+        // changement de langue : les tuiles, le compteur et la modale ouverte suivent
+        document.addEventListener('langchange', () => {
+            galleryItems.forEach(fillTile);
+            if (galleryItems.length) galleryCount.textContent = countLabel(galleryItems.filter(i => !i.classList.contains('hidden')).length);
+            if (!modal.classList.contains('hidden') && currentList[currentIndex]) renderItem(currentList[currentIndex]);
         });
 
         /* ---------- Contact : e-mail protégé + LinkedIn ---------- */
@@ -1052,5 +1361,71 @@
         });
         contactDropdown.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setContact(false)));
     </script>
+
+    <!-- Motion design -->
+
+    <script>
+        /* ---------- Couteau-suisse : filtre par catégorie ---------- */
+        (function () {
+            const btns = [...document.querySelectorAll('.tool-filter')];
+            const tiles = [...document.querySelectorAll('.tool-tile')];
+            const count = document.getElementById('tool-count');
+            btns.forEach(b => b.addEventListener('click', () => {
+                const f = b.dataset.f;
+                btns.forEach(x => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+                let n = 0;
+                tiles.forEach(t => {
+                    const show = f === 'all' || t.dataset.c === f;
+                    t.classList.toggle('hidden', !show);
+                    t.classList.remove('tool-in');
+                    if (show) { t.style.setProperty('--i', n++); void t.offsetWidth; t.classList.add('tool-in'); }
+                });
+                if (count) count.textContent = String(n);
+            }));
+        })();
+    </script>
+
+    <script>
+        /* ---------- Fiche contact : objet pré-rempli, copie de l'adresse ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const src = document.querySelector('a[data-user][data-domain]');
+            if (!src) return;
+            const addr = src.dataset.user + '@' + src.dataset.domain;
+            const mail = document.getElementById('fc-mail');
+            const shown = document.getElementById('fc-email');
+            const topics = [...document.querySelectorAll('.fc-topic')];
+            let subject = topics.length ? topics[0].dataset.subject : 'Bonjour';
+            const T = s => (window.SITE ? window.SITE.tr(s) : s);
+
+            const refresh = () => {
+                if (mail) mail.href = 'mailto:' + addr + '?subject=' + encodeURIComponent(T(subject)) + '&body=' + encodeURIComponent(T('Bonjour Charles,') + '\n\n');
+            };
+            if (shown) shown.textContent = addr;
+            refresh();
+
+            topics.forEach(b => b.addEventListener('click', () => {
+                subject = b.dataset.subject;
+                topics.forEach(x => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+                refresh();
+            }));
+
+            document.addEventListener('langchange', refresh);
+            const copyBtn = document.getElementById('fc-copy');
+            const copyLabel = document.getElementById('fc-copy-label');
+            if (copyBtn) copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(addr);
+                } catch (e) {
+                    const t = document.createElement('textarea');
+                    t.value = addr; document.body.append(t); t.select();
+                    try { document.execCommand('copy'); } catch (_) {}
+                    t.remove();
+                }
+                if (copyLabel) { copyLabel.textContent = T('Adresse copiée ✓'); setTimeout(() => { copyLabel.textContent = T("Copier l'adresse"); }, 2200); }
+            });
+        });
+    </script>
+    <script src="i18n.js?v=35" defer></script>
+    <script src="motion.js?v=35" defer></script>
 </body>
 </html>
