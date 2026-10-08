@@ -214,6 +214,7 @@
         'ou sur': 'or on',
         'Contactez-moi': 'Get in touch',
         'Paris (75) • Permis A2 et B': 'Paris (75) • A2 and B driving licences',
+        'Statistiques de visite anonymes, sans cookies.': 'Anonymous visit statistics, no cookies.',
         /* attributs d'accessibilité */
         'Navigation principale': 'Main navigation',
         'Charles Marti, accueil': 'Charles Marti, home',

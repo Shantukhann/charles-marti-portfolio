@@ -64,6 +64,9 @@
     <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
+    <!-- Statistiques de visite anonymes, sans cookies (GoatCounter) -->
+    <script>window.goatcounter = { no_onload: true };</script>
+    <script id="goatcounter-script" data-goatcounter="https://charlesmjb.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -227,7 +230,7 @@
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
 
     <!-- Motion design -->
-    <link rel="stylesheet" href="motion.css?v=38">
+    <link rel="stylesheet" href="motion.css?v=39">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
     <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
@@ -992,6 +995,9 @@
             <p class="text-xs font-light text-pastel-text/70">
                 &copy; <span id="year"></span> Charles Marti.
             </p>
+            <p class="text-xs font-light text-pastel-text/70 mt-1">
+                Statistiques de visite anonymes, sans cookies.
+            </p>
         </div>
     </footer>
 
@@ -1452,7 +1458,42 @@
             });
         });
     </script>
-    <script src="i18n.js?v=38" defer></script>
-    <script src="motion.js?v=38" defer></script>
+    <script>
+        /* ---------- Statistiques (GoatCounter) : vues et clics utiles ---------- */
+        (function () {
+            var queue = [];
+            function gc(o) {
+                if (window.goatcounter && typeof window.goatcounter.count === 'function') { try { window.goatcounter.count(o); } catch (e) {} }
+                else queue.push(o);
+            }
+            var s = document.getElementById('goatcounter-script');
+            if (s) s.addEventListener('load', function () { queue.splice(0).forEach(gc); });
+
+            // chaque « page » du site (CV, parcours, réalisations, contact…) compte comme une vue
+            function view() {
+                var h = (location.hash || '').replace('#', '');
+                gc({ path: (!h || h === 'accueil') ? '/' : '/' + h, title: document.title });
+            }
+            window.addEventListener('hashchange', view);
+            view();
+
+            // clics importants (apparaissent comme « événements » dans le tableau de bord)
+            function ev(path, title) { gc({ event: true, path: path, title: title }); }
+            document.addEventListener('click', function (e) {
+                var t = e.target && e.target.closest ? e.target : null;
+                if (!t) return;
+                if (t.closest('a[href*="CV_Charles_MARTI"]')) return ev('clic-cv', 'Clic : télécharger le CV');
+                if (t.closest('a[data-user]')) return ev('clic-email', 'Clic : écrire un e-mail');
+                if (t.closest('a[data-linkedin]')) return ev('clic-linkedin', 'Clic : LinkedIn');
+                if (t.closest('#fc-copy')) return ev('copie-adresse', "Clic : copier l'adresse e-mail");
+                var g = t.closest('.gallery-item');
+                if (g) return ev('projet-' + (g.dataset.title || 'sans-titre'), 'Projet ouvert : ' + (g.dataset.title || ''));
+                if (t.closest('.lang-toggle')) setTimeout(function () { ev('langue-' + (window.SITE ? window.SITE.lang() : '?'), 'Langue choisie : ' + (window.SITE ? window.SITE.lang() : '?')); }, 0);
+                if (t.closest('.theme-toggle')) setTimeout(function () { ev('theme-' + (document.documentElement.classList.contains('dark') ? 'sombre' : 'clair'), 'Thème choisi'); }, 0);
+            }, true);
+        })();
+    </script>
+    <script src="i18n.js?v=39" defer></script>
+    <script src="motion.js?v=39" defer></script>
 </body>
 </html>
