@@ -1011,3 +1011,115 @@ html.dark .snake-x { color: #e6e8ee; background: rgba(40,45,62,.9); }
 }
 html.dark .snake-help { color: rgba(230,232,238,.8); }
 #home svg.snake-hide { opacity: 0 !important; transition: opacity .35s ease; pointer-events: none; }
+
+/* =====================================================
+   v75 : couleurs « fumée » sur le nom et le logo (variables pilotées par motion.js « smokeColors »)
+   ===================================================== */
+#home h1 .ch {
+    background-image:
+        radial-gradient(ellipse 46% 150% at var(--hx, 50%) var(--hy, 50%), var(--hc, transparent) 0%, transparent 78%),
+        radial-gradient(ellipse 60% 150% at var(--p1, 20%) var(--y1, 30%), var(--c1, #5b7cf0) 0%, transparent 72%),
+        radial-gradient(ellipse 55% 160% at var(--p2, 55%) var(--y2, 70%), var(--c2, #e0759a) 0%, transparent 72%),
+        radial-gradient(ellipse 50% 150% at var(--p3, 85%) 45%, var(--c3, #9b7ad8) 0%, transparent 72%),
+        linear-gradient(115deg, var(--c4, #5b7cf0), var(--c5, #e0759a));
+}
+html.dark #home h1 .ch {
+    background-image:
+        radial-gradient(ellipse 46% 150% at var(--hx, 50%) var(--hy, 50%), var(--hc, transparent) 0%, transparent 78%),
+        radial-gradient(ellipse 60% 150% at var(--p1, 20%) var(--y1, 30%), var(--c1, #8fa8ff) 0%, transparent 72%),
+        radial-gradient(ellipse 55% 160% at var(--p2, 55%) var(--y2, 70%), var(--c2, #f09ab8) 0%, transparent 72%),
+        radial-gradient(ellipse 50% 150% at var(--p3, 85%) 45%, var(--c3, #b79bf0) 0%, transparent 72%),
+        linear-gradient(115deg, var(--c4, #8fa8ff), var(--c5, #f09ab8));
+}
+
+/* =====================================================
+   v78 : titre façon « Vice City » — script rétro, dégradé chromé par lettre, ombre duotone rose / cyan
+   ===================================================== */
+#home h1 {
+    font-family: 'Pacifico', 'Outfit', cursive; font-weight: 400; letter-spacing: .005em; line-height: 1.2;
+    font-size: clamp(2.7rem, 8.4vw, 5.3rem);
+    filter: blur(0px) drop-shadow(3px 3px 0 rgba(0,226,255,.6)) drop-shadow(-1px -1px 0 rgba(255,64,170,.4)) drop-shadow(0 16px 26px rgba(255,64,170,.28));
+}
+#home h1 .ch,
+html.dark #home h1 .ch {
+    background-image: linear-gradient(180deg, var(--lt, #ff4fa8) 0%, var(--lm, #ff8a5c) 47%, var(--lb, #31d8ff) 53%, var(--lc, #8a6cf0) 100%);
+    background-size: 100% 100%; background-position: 0 0; background-repeat: no-repeat;
+    padding: .14em .2em; margin: -.14em -.2em;      /* le dégradé déborde un peu : les boucles du script ne sont pas rognées */
+}
+html.dark #home h1 { filter: blur(0px) drop-shadow(3px 3px 0 rgba(0,226,255,.5)) drop-shadow(-1px -1px 0 rgba(255,64,170,.35)) drop-shadow(0 16px 30px rgba(255,64,170,.3)); }
+
+/* =====================================================
+   v79 : retour à la police moderne (Outfit) — on garde le dégradé qui suit la forme de chaque lettre, en douceur
+   ===================================================== */
+#home h1 {
+    font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; letter-spacing: -.045em; line-height: 1;
+    font-size: clamp(3rem, 9vw, 5.75rem);
+    filter: blur(0px) drop-shadow(0 16px 30px rgba(106,140,240,.22));
+}
+html.dark #home h1 { filter: blur(0px) drop-shadow(0 16px 30px rgba(106,140,240,.28)); }
+#home h1 .ch,
+html.dark #home h1 .ch {
+    background-image: linear-gradient(160deg, var(--lt, #5b7cf0) 0%, var(--lm, #9b7ad8) 48%, var(--lc, #e0759a) 100%);
+    background-size: 100% 100%; background-position: 0 0; background-repeat: no-repeat;
+    padding: .06em .05em; margin: -.06em -.05em;
+}
+@media (max-width: 640px) { #home h1 { line-height: 1; } }
+
+/* =====================================================
+   v80 : vagues de couleur — anneaux qui se propagent dans la forme des lettres (portée limitée), même chose sur le logo
+   ===================================================== */
+#home h1 .ch,
+html.dark #home h1 .ch {
+    background-image:
+        radial-gradient(circle var(--w1-r, 1px) at var(--w1-x, 50%) var(--w1-y, 50%), transparent calc(var(--w1-r, 1px) - var(--w1-b, 80px)), var(--w1-c, transparent) calc(var(--w1-r, 1px) - var(--w1-b, 80px) * .5), transparent var(--w1-r, 1px)),
+        radial-gradient(circle var(--w2-r, 1px) at var(--w2-x, 50%) var(--w2-y, 50%), transparent calc(var(--w2-r, 1px) - var(--w2-b, 80px)), var(--w2-c, transparent) calc(var(--w2-r, 1px) - var(--w2-b, 80px) * .5), transparent var(--w2-r, 1px)),
+        linear-gradient(160deg, var(--lt, #5b7cf0) 0%, var(--lm, #9b7ad8) 48%, var(--lc, #e0759a) 100%);
+}
+.motion #home svg path.logo-wave { opacity: 1; fill: none; }
+
+/* =====================================================
+   v82 : la couleur est « repassée » au pinceau quand la souris passe sur les lettres et sur le logo
+   ===================================================== */
+#home h1 .ch,
+html.dark #home h1 .ch {
+    background-image:
+        radial-gradient(circle var(--br, 60px) at calc(var(--b0-x, 0px) - var(--ox, 0px)) calc(var(--b0-y, 0px) - var(--oy, 0px)), var(--b0-c, transparent) 0%, var(--b0-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b1-x, 0px) - var(--ox, 0px)) calc(var(--b1-y, 0px) - var(--oy, 0px)), var(--b1-c, transparent) 0%, var(--b1-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b2-x, 0px) - var(--ox, 0px)) calc(var(--b2-y, 0px) - var(--oy, 0px)), var(--b2-c, transparent) 0%, var(--b2-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b3-x, 0px) - var(--ox, 0px)) calc(var(--b3-y, 0px) - var(--oy, 0px)), var(--b3-c, transparent) 0%, var(--b3-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b4-x, 0px) - var(--ox, 0px)) calc(var(--b4-y, 0px) - var(--oy, 0px)), var(--b4-c, transparent) 0%, var(--b4-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b5-x, 0px) - var(--ox, 0px)) calc(var(--b5-y, 0px) - var(--oy, 0px)), var(--b5-c, transparent) 0%, var(--b5-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b6-x, 0px) - var(--ox, 0px)) calc(var(--b6-y, 0px) - var(--oy, 0px)), var(--b6-c, transparent) 0%, var(--b6-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b7-x, 0px) - var(--ox, 0px)) calc(var(--b7-y, 0px) - var(--oy, 0px)), var(--b7-c, transparent) 0%, var(--b7-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b8-x, 0px) - var(--ox, 0px)) calc(var(--b8-y, 0px) - var(--oy, 0px)), var(--b8-c, transparent) 0%, var(--b8-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b9-x, 0px) - var(--ox, 0px)) calc(var(--b9-y, 0px) - var(--oy, 0px)), var(--b9-c, transparent) 0%, var(--b9-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b10-x, 0px) - var(--ox, 0px)) calc(var(--b10-y, 0px) - var(--oy, 0px)), var(--b10-c, transparent) 0%, var(--b10-c, transparent) 72%, transparent 100%),
+        radial-gradient(circle var(--br, 60px) at calc(var(--b11-x, 0px) - var(--ox, 0px)) calc(var(--b11-y, 0px) - var(--oy, 0px)), var(--b11-c, transparent) 0%, var(--b11-c, transparent) 72%, transparent 100%),
+        linear-gradient(160deg, var(--lt, #5b7cf0) 0%, var(--lm, #9b7ad8) 48%, var(--lc, #e0759a) 100%);
+}
+.logo-paint { position: absolute; pointer-events: none; z-index: 2; display: none; }
+
+/* =====================================================
+   v88 : deux couleurs complémentaires qui glissent en continu ; chaque passage de la souris en ajoute une nouvelle qui en remplace une
+   ===================================================== */
+#home h1 .ch,
+html.dark #home h1 .ch {
+    background-image: linear-gradient(160deg, var(--lt, #5b7cf0) 0%, var(--lm, #9a8bc0) 48%, var(--lc, #f2a07b) 100%);
+}
+.logo-paint { display: none !important; }
+
+/* =====================================================
+   v89 : la nouvelle couleur naît sous le curseur et se répand dans la forme des lettres et du logo
+   ===================================================== */
+#home h1 .ch { position: relative; }
+#home h1 .ch::before {
+    content: attr(data-ch); position: absolute; left: 0; top: 0; padding: inherit; margin: 0; white-space: nowrap;
+    font: inherit; letter-spacing: inherit; pointer-events: none;
+    -webkit-text-fill-color: transparent; color: transparent;
+    background-image: linear-gradient(160deg, var(--nt, #5b7cf0) 0%, var(--nm, #9a8bc0) 48%, var(--nc, #f2a07b) 100%);
+    background-size: 100% 100%; -webkit-background-clip: text; background-clip: text;
+    opacity: var(--on, 0);
+    -webkit-mask-image: radial-gradient(circle max(var(--er, 1px), 1px) at var(--ex, 0px) var(--ey, 0px), #000 calc(max(var(--er, 1px), 1px) - 70px), transparent max(var(--er, 1px), 1px));
+            mask-image: radial-gradient(circle max(var(--er, 1px), 1px) at var(--ex, 0px) var(--ey, 0px), #000 calc(max(var(--er, 1px), 1px) - 70px), transparent max(var(--er, 1px), 1px));
+}
+.motion #home svg path.logo-new { opacity: 1; fill: none; }

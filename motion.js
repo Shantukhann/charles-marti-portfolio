@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 74;
+    window.MOTION_VERSION = 91;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -73,7 +73,7 @@
             const s = document.createElement('span');
             s.className = 'ch'; s.setAttribute('aria-hidden', 'true');
             s.style.setProperty('--i', i);
-            s.textContent = c === ' ' ? '\u00A0' : c;
+            s.textContent = c === ' ' ? '\u00A0' : c; s.dataset.ch = s.textContent;
             h1.appendChild(s);
         });
         h1.classList.add('split');
@@ -648,6 +648,128 @@
         addEventListener('hashchange', () => { if (state !== 'off' && /^#(realisations|parcours)/.test(location.hash)) close(); });
         document.addEventListener('langchange', () => { if (wrap && state !== 'off') help(); });
         window.__snake = { open, close, get snake() { return snake; }, get state() { return state; }, get cocktail() { return cocktail; }, get beers() { return beers; }, get score() { return score; }, get over() { return over; }, step, set paused(v) { paused = !!v; }, set morphLen(v) { morphLen = v; } };
+    })();
+
+    /* ---------- Couleurs du nom et du logo : un dégradé qui glisse en continu entre DEUX couleurs complémentaires. À chaque passage de la souris, une nouvelle couleur remplace l'une des deux : elle naît sous le curseur (épicentre) et se répand de proche en proche, dans la forme des lettres et du logo ---------- */
+    (function smokeColors() {
+        const h1 = $('#home h1'), grad = document.getElementById('mon-degrade'), logo = $('#home svg');
+        if (!h1 && !grad) return;
+        const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+        const mixc = (a, b, t) => [0, 1, 2].map(i => a[i] + (b[i] - a[i]) * t);
+        const css = c => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+        const SV = 'http://www.w3.org/2000/svg';
+        const START = ['#5b7cf0', '#f2a07b'].map(hex);         // bleu et orange pêche : complémentaires
+        const POOL = ['#e0436f', '#1fb5a3', '#8a4fe0', '#f2b705', '#3fbf6f', '#2f9bf0', '#f06a2d', '#c43fe0'].map(hex);   // couleurs franches, bien visibles sur le fond
+        const lift = c => root.classList.contains('dark') ? mixc(c, [255, 255, 255], .28) : c;      // un peu plus clair en mode sombre
+        const SPEED = 230;                                     // vitesse de propagation (px/s) : assez lent pour qu'on voie le front avancer
+        const slots = START.map(c => c.slice());
+        let replace = 1, poolIdx = 0;
+        const phase = (t, i, k) => .5 + .5 * Math.sin(t * .55 + i * .5 + k);
+
+        /* logo : dégradé de base (4 arrêts) + copie du M peinte par le nouveau dégradé, découpée par un cercle qui s'agrandit */
+        const mkStops = g => [...g.querySelectorAll('stop')];
+        let stops = [], nstops = [], nl = null, clipC = null;
+        const base = logo && logo.querySelector('path:not(.logo-glow):not(.logo-glint)');
+        if (grad) {
+            stops = mkStops(grad);
+            const mk = off => { const s = document.createElementNS(SV, 'stop'); s.setAttribute('offset', off); return s; };
+            if (stops.length === 2) { const a = mk('36%'), b = mk('68%'); grad.insertBefore(a, stops[1]); grad.insertBefore(b, stops[1]); stops = [stops[0], a, b, stops[1]]; }
+            stops.forEach(s => { s.style.animation = 'none'; });
+            if (base) {
+                const g2 = grad.cloneNode(true); g2.setAttribute('id', 'mon-degrade-new'); nstops = mkStops(g2); nstops.forEach(s => { s.style.animation = 'none'; });
+                const cp = document.createElementNS(SV, 'clipPath'); cp.setAttribute('id', 'logo-new-clip'); clipC = document.createElementNS(SV, 'circle'); clipC.setAttribute('r', '0'); cp.appendChild(clipC);
+                const defs = logo.querySelector('defs'); defs.appendChild(g2); defs.appendChild(cp);
+                nl = base.cloneNode(false); nl.removeAttribute('class'); nl.setAttribute('class', 'logo-new'); nl.setAttribute('aria-hidden', 'true');
+                nl.setAttribute('stroke', 'url(#mon-degrade-new)'); nl.setAttribute('clip-path', 'url(#logo-new-clip)');
+                nl.style.display = 'none';
+                logo.appendChild(nl);
+            }
+        }
+        const lg = { a: START[0].slice(), b: START[1].slice(), done: true };       // couleurs du logo
+        const letters = h1 ? [...h1.querySelectorAll('.ch')] : [];
+        const L = letters.map(() => ({ a: START[0].slice(), b: START[1].slice(), done: true }));
+        let ev = null;                                          // propagation en cours : { t0, x, y, na, nb, geo, lgeo }
+        let vis = true;
+        if (h1 && 'IntersectionObserver' in window) new IntersectionObserver(e => { vis = e[0].isIntersecting; }, { threshold: 0 }).observe(h1);
+        const inside = (r, m) => pointer.x > r.left - m && pointer.x < r.right + m && pointer.y > r.top - m && pointer.y < r.bottom + m && (performance.now() - (pointer.t || 0)) < 600;
+        const farthest = (r, x, y) => Math.max(Math.hypot(r.left - x, r.top - y), Math.hypot(r.right - x, r.top - y), Math.hypot(r.left - x, r.bottom - y), Math.hypot(r.right - x, r.bottom - y));
+
+        const commitAll = () => {
+            if (!ev) return;
+            L.forEach((o, i) => { o.a = ev.na.slice(); o.b = ev.nb.slice(); o.done = true; letters[i].style.setProperty('--on', '0'); });
+            lg.a = ev.na.slice(); lg.b = ev.nb.slice(); lg.done = true; if (nl) nl.style.display = 'none';
+        };
+        /* un passage : nouvelle couleur de la réserve (différente des présentes) qui remplace l'une des deux ; épicentre = position du curseur.
+           La géométrie est mesurée une seule fois ici : pendant la propagation on ne touche plus à la mise en page (fluide). */
+        const pass = (t, x, y) => {
+            commitAll();
+            let c, tries = 0;
+            do { c = POOL[poolIdx++ % POOL.length]; tries++; } while (tries < POOL.length && slots.some(s => Math.abs(s[0] - c[0]) + Math.abs(s[1] - c[1]) + Math.abs(s[2] - c[2]) < 90));
+            slots[replace] = c.slice(); replace ^= 1;
+            ev = { t0: t, x, y, na: slots[0].slice(), nb: slots[1].slice() };
+            ev.geo = letters.map((l, i) => {
+                const r = l.getBoundingClientRect();
+                l.style.setProperty('--ex', (x - r.left).toFixed(1) + 'px'); l.style.setProperty('--ey', (y - r.top).toFixed(1) + 'px');
+                l.style.setProperty('--er', '1px'); l.style.setProperty('--on', '1');
+                return farthest(r, x, y) + 70;
+            });
+            if (nl) { const rl = logo.getBoundingClientRect(); ev.lg = { k: 50 / rl.width, cx: (x - rl.left) * 50 / rl.width, cy: (y - rl.top) * 50 / rl.width, far: farthest(rl, x, y) + 70 }; clipC.setAttribute('cx', ev.lg.cx.toFixed(2)); clipC.setAttribute('cy', ev.lg.cy.toFixed(2)); clipC.setAttribute('r', '0'); nl.style.display = ''; }
+            L.forEach(o => { o.done = false; }); lg.done = false;
+        };
+        let wasIn = false, lastPass = -9, last = 0, lastTick = 0;
+        function frame(now) {
+            requestAnimationFrame(frame);
+            if (!vis || document.hidden || now - last < 28) return;
+            last = now;
+            const t = now / 1000, rh = h1 ? h1.getBoundingClientRect() : null, rl = logo ? logo.getBoundingClientRect() : null;
+            const inH = rh && inside(rh, 6), inL = rl && inside(rl, 6), inn = inH || inL;
+            /* un passage = entrer sur le nom ou le logo ; si on reste dessus en bougeant, un nouveau passage toutes les 2 s */
+            if (inn && ((!wasIn) || t - lastPass > 2) && t - lastPass > .8) { pass(t, pointer.x, pointer.y); lastPass = t; }
+            wasIn = inn;
+            const R = ev ? (t - ev.t0) * SPEED + 2 : 0;
+            const tick = now - lastTick > 66;                   // les couleurs (glissement continu) sont mises à jour ~15 fois/s ; le front de propagation à chaque image
+            if (tick) lastTick = now;
+
+            /* nom */
+            letters.forEach((l, i) => {
+                const o = L[i];
+                if (tick) {
+                    const A = lift(o.a), B = lift(o.b);
+                    l.style.setProperty('--lt', css(mixc(A, B, phase(t, i, 0))));
+                    l.style.setProperty('--lm', css(mixc(A, B, phase(t, i, 1.1))));
+                    l.style.setProperty('--lc', css(mixc(A, B, phase(t, i, 2.2))));
+                    if (ev && !o.done) {
+                        const nA = lift(ev.na), nB = lift(ev.nb);
+                        l.style.setProperty('--nt', css(mixc(nA, nB, phase(t, i, 0))));
+                        l.style.setProperty('--nm', css(mixc(nA, nB, phase(t, i, 1.1))));
+                        l.style.setProperty('--nc', css(mixc(nA, nB, phase(t, i, 2.2))));
+                    }
+                }
+                if (ev && !o.done) {
+                    if (R >= ev.geo[i]) { o.a = ev.na.slice(); o.b = ev.nb.slice(); o.done = true; l.style.setProperty('--on', '0'); }
+                    else l.style.setProperty('--er', R.toFixed(0) + 'px');
+                }
+            });
+
+            /* logo */
+            if (stops.length === 4 && tick) {
+                const A = lift(lg.a), B = lift(lg.b), a = .8 + .35 * Math.sin(t * .23), set = (st, A_, B_) => st.forEach((s, i) => s.setAttribute('stop-color', css(mixc(A_, B_, .5 + .5 * Math.sin(t * .55 + i * 1.5)))));
+                set(stops, A, B);
+                const x1 = (.5 - .62 * Math.cos(a)).toFixed(3), y1 = (.5 - .62 * Math.sin(a)).toFixed(3), x2 = (.5 + .62 * Math.cos(a)).toFixed(3), y2 = (.5 + .62 * Math.sin(a)).toFixed(3);
+                grad.setAttribute('x1', x1); grad.setAttribute('y1', y1); grad.setAttribute('x2', x2); grad.setAttribute('y2', y2);
+                if (nl && ev && !lg.done) {
+                    const g2 = nstops[0].parentNode;
+                    set(nstops, lift(ev.na), lift(ev.nb));
+                    g2.setAttribute('x1', x1); g2.setAttribute('y1', y1); g2.setAttribute('x2', x2); g2.setAttribute('y2', y2);
+                }
+            }
+            if (nl && ev && !lg.done) {
+                if (R >= ev.lg.far) { lg.a = ev.na.slice(); lg.b = ev.nb.slice(); lg.done = true; clipC.setAttribute('r', '0'); nl.style.display = 'none'; }
+                else clipC.setAttribute('r', (R * ev.lg.k).toFixed(2));
+            }
+            if (ev && L.every(o => o.done) && lg.done) ev = null;
+        }
+        requestAnimationFrame(frame);
     })();
 
     /* ---------- Logo du hero : tracé animé ---------- */
