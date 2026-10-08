@@ -230,7 +230,7 @@
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
 
     <!-- Motion design -->
-    <link rel="stylesheet" href="motion.css?v=39">
+    <link rel="stylesheet" href="motion.css?v=40">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
     <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
@@ -1478,7 +1478,7 @@
             view();
 
             // clics importants (apparaissent comme « événements » dans le tableau de bord)
-            function ev(path, title) { gc({ event: true, path: path, title: title }); }
+            function ev(path, title) { gc({ event: true, path: path, title: title, no_session: true }); }
             document.addEventListener('click', function (e) {
                 var t = e.target && e.target.closest ? e.target : null;
                 if (!t) return;
@@ -1493,7 +1493,7 @@
             }, true);
         })();
     </script>
-    <script src="i18n.js?v=39" defer></script>
-    <script src="motion.js?v=39" defer></script>
+    <script src="i18n.js?v=40" defer></script>
+    <script src="motion.js?v=40" defer></script>
 </body>
 </html>

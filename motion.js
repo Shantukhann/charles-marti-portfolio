@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 39;
+    window.MOTION_VERSION = 40;
     const root = document.documentElement;
     root.classList.add('motion');
 
