@@ -230,7 +230,7 @@
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
 
     <!-- Motion design -->
-    <link rel="stylesheet" href="motion.css?v=40">
+    <link rel="stylesheet" href="motion.css?v=41">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
     <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
@@ -1482,7 +1482,16 @@
             document.addEventListener('click', function (e) {
                 var t = e.target && e.target.closest ? e.target : null;
                 if (!t) return;
-                if (t.closest('a[href*="CV_Charles_MARTI"]')) return ev('clic-cv', 'Clic : télécharger le CV');
+                // CV : le téléchargement démarre 250 ms après le clic, pour que le comptage ait le temps de partir
+                // (certains navigateurs interrompent les envois en cours quand un téléchargement commence)
+                var cv = t.closest('a[href*="CV_Charles_MARTI"]');
+                if (cv) {
+                    if (cv.__gcPass) return;
+                    e.preventDefault();
+                    ev('clic-cv', 'Clic : télécharger le CV');
+                    setTimeout(function () { cv.__gcPass = true; cv.click(); cv.__gcPass = false; }, 250);
+                    return;
+                }
                 if (t.closest('a[data-user]')) return ev('clic-email', 'Clic : écrire un e-mail');
                 if (t.closest('a[data-linkedin]')) return ev('clic-linkedin', 'Clic : LinkedIn');
                 if (t.closest('#fc-copy')) return ev('copie-adresse', "Clic : copier l'adresse e-mail");
@@ -1491,9 +1500,13 @@
                 if (t.closest('.lang-toggle')) setTimeout(function () { ev('langue-' + (window.SITE ? window.SITE.lang() : '?'), 'Langue choisie : ' + (window.SITE ? window.SITE.lang() : '?')); }, 0);
                 if (t.closest('.theme-toggle')) setTimeout(function () { ev('theme-' + (document.documentElement.classList.contains('dark') ? 'sombre' : 'clair'), 'Thème choisi'); }, 0);
             }, true);
+            document.addEventListener('auxclick', function (e) {
+                var a = e.target && e.target.closest ? e.target.closest('a[href*="CV_Charles_MARTI"]') : null;
+                if (a && e.button === 1) ev('clic-cv', 'Clic : télécharger le CV (nouvel onglet)');
+            }, true);
         })();
     </script>
-    <script src="i18n.js?v=40" defer></script>
-    <script src="motion.js?v=40" defer></script>
+    <script src="i18n.js?v=41" defer></script>
+    <script src="motion.js?v=41" defer></script>
 </body>
 </html>
