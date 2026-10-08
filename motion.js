@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 41;
+    window.MOTION_VERSION = 42;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -173,7 +173,7 @@
 precision highp float;
 uniform vec2 uRes; uniform float uTime; uniform float uP; uniform float uS;
 uniform vec3 uC1; uniform vec3 uC2; uniform vec3 uC3; uniform vec3 uC4; uniform vec3 uBase; uniform float uK;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.02+vec2(5.2,1.3);a*=.5;}return v;}
@@ -440,12 +440,14 @@ void main(){
         const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
         if (!gl) return; // repli : les bulles CSS d'origine restent affichées
 
+        const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+        const PREC = (hp && hp.precision > 0) ? 'precision highp float;' : 'precision mediump float;';
         const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
         const fs = `
-precision mediump float;
+${PREC}
 uniform vec2 uRes; uniform float uTime; uniform vec2 uMouse; uniform float uScroll;
 uniform vec3 uC1; uniform vec3 uC2; uniform vec3 uC3; uniform vec3 uC4; uniform vec3 uBase; uniform float uK;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.02+vec2(5.2,1.3);a*=.5;}return v;}
@@ -459,9 +461,10 @@ void main(){
   vec2 q=vec2(fbm(p+t*.7),fbm(p+vec2(5.2,1.3)-t*.6));
   vec2 s=vec2(fbm(p+2.*q+vec2(1.7,9.2)+t*.5),fbm(p+2.*q+vec2(8.3,2.8)-t*.45));
   float f=fbm(p+2.*s);
+  f=clamp((f-.5)*1.5+.5,0.,1.);                    // contraste : les nappes se distinguent mieux
   vec3 col=mix(uC1,uC2,smoothstep(.3,.7,f));
-  col=mix(col,uC3,smoothstep(.55,1.,length(q))*.8);
-  col=mix(col,uC4,smoothstep(.55,1.,s.x)*.6);
+  col=mix(col,uC3,smoothstep(.45,.95,length(q))*.85);
+  col=mix(col,uC4,smoothstep(.5,.95,s.x)*.7);
   col=mix(uBase,col,uK);
   gl_FragColor=vec4(col,1.);
 }`;
@@ -499,10 +502,10 @@ void main(){
         const cur = (startDark ? palettesDark : palettes)[root.dataset.page] || palettes.cv;
         const current = cur.map(c => c.slice());
         const baseNow = (startDark ? DARK_BASE : LIGHT_BASE).slice();
-        let kNow = startDark ? 0.92 : 0.68;
+        let kNow = startDark ? 1.0 : 0.8;
 
         function resize() {
-            const k = lite ? 0.25 : 0.4; // rendu basse résolution : le flou est naturel, le GPU respire
+            const k = lite ? 0.3 : 0.4; // rendu basse résolution : le flou est naturel, le GPU respire
             canvas.width = Math.max(2, Math.round(innerWidth * k));
             canvas.height = Math.max(2, Math.round(innerHeight * k));
             gl.viewport(0, 0, canvas.width, canvas.height);
@@ -521,7 +524,7 @@ void main(){
             if (lite && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
             const dt = Math.min(0.05, (now - last) / 1000);
             last = now;
-            tAcc += dt * 0.08 * (1 + pulse * 10);
+            tAcc += dt * 0.1 * (1 + pulse * 10);
             pulse *= 0.96;
 
             if (pointer.x > -999) {
@@ -535,7 +538,7 @@ void main(){
             const spd = 0.05;
             current.forEach((c, i) => c.forEach((_, k) => { c[k] += (target[i][k] - c[k]) * spd; }));
             baseNow.forEach((_, k) => { baseNow[k] += (baseT[k] - baseNow[k]) * spd; });
-            kNow += ((dark ? 0.92 : 0.68) - kNow) * spd;
+            kNow += ((dark ? 1.0 : 0.8) - kNow) * spd;
             current.forEach((c, i) => gl.uniform3f(uC[i], c[0], c[1], c[2]));
             gl.uniform3f(uBase, baseNow[0], baseNow[1], baseNow[2]);
             gl.uniform1f(uK, kNow);
