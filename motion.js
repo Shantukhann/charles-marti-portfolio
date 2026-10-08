@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 72;
+    window.MOTION_VERSION = 74;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -111,7 +111,7 @@
         const MARGIN = 56;                                 // lignes mises à jour au-delà de l'écran (haut et bas)
         const REACH = 300;                                 // rayon (px) autour du passage où la brume peut se dissiper de proche en proche, de l'intérieur vers l'extérieur
         const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
-        const SPREAD = 60;                                 // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
+        const SPREAD = 200;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
         const R = 100;                                     // rayon de dissipation autour du pointeur (px)
         const dens = new Uint8Array(COLS * ROWS).fill(255);
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
@@ -189,6 +189,7 @@
         let touchedEver = false;
         let simActive = true, anyVisible = true, lastSY = -1;   // la simulation ne tourne que quand un geste vient d'avoir lieu (économie de batterie)
         const live = new Uint8Array(COLS * ROWS);           // cellules « libérées » : seules celles proches d'un passage se dissipent de proche en proche
+        const rowAct = new Uint8Array(ROWS), rowNext = new Uint8Array(ROWS), procRows = new Int32Array(ROWS);   // lignes à faire avancer
         let hold = performance.now(), lastT = performance.now(), lx = -999, ly = -999, lt = 0;
         /* La brume dégagée sur une page le reste : en revenant sur la page, on retrouve ce qu'on avait déjà découvert */
         const pagesFog = {};
@@ -199,7 +200,7 @@
             curPage = id || curPage;
             const s = pagesFog[curPage];
             if (s) { dens.set(s.d); live.set(s.l); } else { dens.fill(255); live.fill(0); }
-            heat.fill(0); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
+            heat.fill(0); rowAct.fill(1); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
             if (!s && !touchedEver) hint.classList.remove('gone');
         };
         /* Indice discret, tant que l'utilisateur n'a rien gratté */
@@ -216,7 +217,7 @@
             for (let r = Math.max(0, Math.floor(py - rry * hr)); r <= Math.min(ROWS - 1, Math.ceil(py + rry * hr)); r++)
                 for (let c = Math.max(0, Math.floor(px - rr * hr)); c <= Math.min(COLS - 1, Math.ceil(px + rr * hr)); c++) {
                     const dd = Math.hypot((c - px) / rr, (r - py) / rry), i = r * COLS + c;
-                    if (dd < hr) { heat[i] = 255; live[i] = 1; }
+                    if (dd < hr) { heat[i] = 255; live[i] = 1; rowAct[r] = 1; }
                     if (dd >= 1) continue;
                     const k = (1 - dd) * strength * 255;
                     dens[i] = dens[i] > k ? dens[i] - k : 0;
@@ -228,7 +229,7 @@
             lx = x; ly = y; lt = now; lastTouch = now; simActive = true;
             hint.classList.add('gone'); touchedEver = true;
             /* chaque passage libère toute la brume affichée à l'écran : elle se dissipe à partir de l'épicentre, vers l'extérieur */
-            for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) live[i] = 1;
+            for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) { live[i] = 1; rowAct[(i / COLS) | 0] = 1; }
             clearAt(x, y, Math.min(.6, .12 + sp * .3));
         };
         window.__fogPoke = stroke;
@@ -237,7 +238,7 @@
         addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
 
         const t00 = performance.now();
-        window.__fogStuck = () => { let n = 0, p = 0; for (let i = 0; i < dens.length; i++) if (live[i]) { p++; if (dens[i] > 0) n++; } return { liveCells: p, stuck: n }; };   // test : cellules libérées encore voilées
+        window.__fogStuck = () => { let n = 0, p = 0; for (let i = 0; i < dens.length; i++) if (live[i]) { p++; if (dens[i] > 0) n++; } return { liveCells: p, stuck: n, sample: (() => { const rows = {}, vals = []; for (let i = 0; i < dens.length; i++) if (live[i] && dens[i] > 0) { const r = Math.floor(i / COLS); rows[r] = (rows[r] || 0) + 1; if (vals.length < 12) vals.push(dens[i]); } const ks = Object.keys(rows).map(Number); return { minRow: Math.min(...ks), maxRow: Math.max(...ks), vals, r0: Math.floor(scrollY / CELL) }; })() }; };   // test : cellules libérées encore voilées
         window.__fogStat = () => {   // part de la page visible déjà dégagée (pour les tests)
             const r0 = Math.floor(scrollY / CELL), r1 = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL));
             let z = 0, n = 0; for (let i = r0 * COLS; i < r1 * COLS; i++) { n++; if (dens[i] < 60) z++; }
@@ -252,12 +253,16 @@
             /* filet de sécurité : sans aucun geste (clavier, lecteur d'écran…), la brume finit par se lever lentement */
             const idle = now - lastTouch > (coarse ? 7000 : 14000);
             const slow = idle ? dt / DUR * 255 : 0;
+            if (idle) for (let r = r0; r < r1; r++) rowAct[r] = 1;
             if (simActive || idle) {
                 const spr = dt / SPREAD * 255;                 // réaction en chaîne : une zone dégagée entraîne ses voisines
                 const cool = dt / HEAT * 255, tail = dt / 900 * 255;   // « tail » : finit de dégager les derniers résidus dans la zone libérée
-                const u0 = Math.max(0, r0 - MARGIN), u1 = Math.min(ROWS, r1 + MARGIN);   // on avance aussi un peu hors écran : rien ne reste figé à moitié
-                let changed = false; any = false;
-                for (let r = u0; r < u1; r++) {
+                let changedAll = false, nProc = 0;
+                rowNext.fill(0);
+                /* on ne traite que les lignes « actives », où qu'elles soient dans la page : rien ne reste figé à moitié en défilant */
+                for (let r = 0; r < ROWS; r++) {
+                    if (!rowAct[r]) continue;
+                    let changed = false;
                     for (let c = 0, i = r * COLS; c < COLS; c++, i++) {
                         const x = dens[i], hh = heat[i], lv = live[i];
                         if (hh) { heat[i] = hh > cool ? hh - cool : 0; changed = true; }
@@ -267,14 +272,19 @@
                         const ul = r > 0 && c > 0 ? dens[i - COLS - 1] : x, ur = r > 0 && c < COLS - 1 ? dens[i - COLS + 1] : x;
                         const dl = r < ROWS - 1 && c > 0 ? dens[i + COLS - 1] : x, dr = r < ROWS - 1 && c < COLS - 1 ? dens[i + COLS + 1] : x;
                         const gap = x - Math.min(l, rt, u, d, ul + 25, ur + 25, dl + 25, dr + 25);                  // à quel point un voisin est plus dégagé que moi
-                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 150) * (lv ? 1 : hh / 255) * wob[i] * (.8 + rnd[i] / 255 * .4);   // bord irrégulier, comme de la fumée
+                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 230) * (lv ? 1 : hh / 255) * wob[i] * (.8 + rnd[i] / 255 * .4);   // bord irrégulier, comme de la fumée
                         if (y < (lv ? 50 : 0)) y = 0;                 // plus de petits bouts de brume dans la zone libérée
                         if (y !== x) changed = true;
-                        nxt[i] = y; if (y > 0 && r >= r0 && r < r1) any = true;
+                        nxt[i] = y;
                     }
+                    procRows[nProc++] = r;
+                    if (changed) { changedAll = true; rowNext[r] = 1; if (r > 0) rowNext[r - 1] = 1; if (r < ROWS - 1) rowNext[r + 1] = 1; }
                 }
-                dens.set(nxt.subarray(u0 * COLS, u1 * COLS), u0 * COLS);
-                if (!changed && !idle) simActive = false;
+                for (let k = 0; k < nProc; k++) { const r = procRows[k]; dens.set(nxt.subarray(r * COLS, (r + 1) * COLS), r * COLS); }
+                rowAct.set(rowNext);
+                if (!changedAll && !idle) simActive = false;
+                any = false;
+                for (let i = r0 * COLS, e = r1 * COLS; i < e; i++) if (dens[i]) { any = true; break; }
                 anyVisible = any; lastSY = sy;
             } else if (sy !== lastSY) {                         // simple défilement : on regarde seulement s'il reste de la brume à l'écran
                 any = false;
