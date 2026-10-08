@@ -769,3 +769,213 @@ html.dark .cv-logo { filter: drop-shadow(0 8px 26px rgba(130,150,255,.5)); }
     .motion #home > div { animation: hero-out linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
     @keyframes hero-out { to { translate: 0 16vh; opacity: 0; } }
 }
+
+/* =====================================================
+   v46 : titre fixe (plus léger) + apparitions « en fumée »
+   ===================================================== */
+/* L'ombre du grand titre ne se recalcule plus à chaque mouvement de souris (très coûteux sous Firefox) */
+#home h1 { filter: blur(0px) drop-shadow(0 16px 30px rgba(106,140,240,.22)); }
+
+/* Eau qui s'écarte : une ouverture arrondie naît au centre du texte et s'élargit, comme de l'eau repoussée,
+   avec un bord doux, un léger flou et une légère compression qui se relâche.
+   Le masque est retiré (classe .fx-done posée par motion.js) dès que l'animation est finie. */
+@property --wr { syntax: '<percentage>'; inherits: false; initial-value: 150%; }
+
+@keyframes smoke-in {
+    from { --wr: 0%;   filter: blur(7px); scale: .93 1; opacity: 0; }
+    18%  { opacity: 1; }
+    to   { --wr: 150%; filter: blur(0);   scale: 1 1;   opacity: 1; }
+}
+@keyframes title-smoke {
+    from { --wr: 0%;   filter: blur(10px) drop-shadow(0 16px 30px rgba(106,140,240,0)); scale: .9 1; opacity: 0; }
+    15%  { opacity: 1; }
+    to   { --wr: 150%; filter: blur(0) drop-shadow(0 16px 30px rgba(106,140,240,.22)); scale: 1 1; opacity: 1; }
+}
+@keyframes fog-logo {
+    from { --wr: 0%;   filter: blur(8px); opacity: 0; }
+    15%  { opacity: 1; }
+    to   { --wr: 150%; filter: blur(0);   opacity: 1; }
+}
+.motion :is(h2, p).reveal.active,
+.motion .reveal.active :is(h3, h4, h5, p, ul > li, .flex-wrap > span),
+.motion #home h1.reveal.active {
+    -webkit-mask-image: radial-gradient(ellipse 70% 130% at 50% 50%, #000 calc(var(--wr) - 26%), transparent var(--wr));
+            mask-image: radial-gradient(ellipse 70% 130% at 50% 50%, #000 calc(var(--wr) - 26%), transparent var(--wr));
+}
+.motion #home svg.fogin {
+    -webkit-mask-image: radial-gradient(circle 75% at 50% 50%, #000 calc(var(--wr) - 28%), transparent var(--wr));
+            mask-image: radial-gradient(circle 75% at 50% 50%, #000 calc(var(--wr) - 28%), transparent var(--wr));
+    animation: float-gpu 7s ease-in-out infinite, fog-logo 2s cubic-bezier(.3,.6,.25,1) .1s backwards;
+}
+.motion .fx-done { -webkit-mask-image: none !important; mask-image: none !important; }
+/* marge pour que l'ombre du grand titre ne soit pas rognée pendant l'ouverture */
+.motion #home h1.reveal { padding: 30px 40px; margin: -30px -40px; }
+.motion #home h1.reveal.active {
+    animation: title-smoke 1.9s cubic-bezier(.3,.6,.25,1) var(--d, 0s) backwards;
+}
+.motion :is(h2, p).reveal.active {
+    animation: smoke-in 1.5s cubic-bezier(.3,.6,.25,1) var(--d, 0s) backwards;
+}
+.motion .reveal.active :is(h3, h4, h5, p) {
+    animation: smoke-in 1.4s cubic-bezier(.3,.6,.25,1) .15s backwards;
+}
+.motion .reveal.active :is(ul > li, .flex-wrap > span) {
+    animation: smoke-in 1.2s cubic-bezier(.3,.6,.25,1) calc(var(--si, 0) * 90ms + .25s) backwards;
+}
+
+/* =====================================================
+   v49 : vraie chorégraphie — lettres du nom en cascade (ressort), ondes autour du logo, montées souples
+   ===================================================== */
+/* Nom : chaque lettre jaillit de l'eau avec un petit rebond, de gauche à droite */
+.motion #home h1.split { background: none; }
+.motion #home h1.split.reveal.active { animation: none; -webkit-mask-image: none; mask-image: none; }
+#home h1 .ch {
+    display: inline-block;
+    background-image: linear-gradient(115deg, #5b7cf0 0%, #9b7ad8 52%, #e0759a 100%);
+    background-size: var(--w, 100%) 100%; background-position: calc(var(--x, 0px) * -1) 0; background-repeat: no-repeat;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+html.dark #home h1 .ch { background-image: linear-gradient(115deg, #8fa8ff 0%, #b79bf0 52%, #f09ab8 100%); }
+.motion #home h1.split.reveal.active .ch {
+    animation: ch-in 1.15s cubic-bezier(.34,1.56,.5,1) calc(var(--i) * 55ms + .15s) backwards;
+}
+@keyframes ch-in {
+    0%   { opacity: 0; translate: 0 .7em; rotate: 9deg; scale: .6; filter: blur(12px); }
+    45%  { opacity: 1; filter: blur(2px); }
+    100% { opacity: 1; translate: 0 0; rotate: 0deg; scale: 1; filter: blur(0); }
+}
+
+/* Ondes qui s'étendent depuis le logo, comme une goutte dans l'eau */
+#home .logo-rings { position: absolute; inset: 0; pointer-events: none; }
+#home .logo-rings i {
+    position: absolute; left: 50%; top: calc(50% - 10px);
+    width: min(300px, 60vw); aspect-ratio: 1; border-radius: 50%;
+    translate: -50% -50%; scale: .3; opacity: 0;
+    border: 2px solid rgba(106,140,240,.5);
+    box-shadow: 0 0 40px rgba(221,130,159,.25), inset 0 0 30px rgba(106,140,240,.12);
+}
+#home .logo-rings.go i { animation: ring 2.6s cubic-bezier(.2,.6,.3,1) calc(var(--r) * .45s + .2s) backwards; }
+@keyframes ring {
+    0%   { scale: .3; opacity: .85; }
+    100% { scale: 1.9; opacity: 0; }
+}
+
+/* Apparitions des blocs : montée souple avec léger rebond, en plus de l'ouverture « eau » */
+@keyframes smoke-in {
+    from { --wr: 0%;   filter: blur(7px); scale: .93 1; translate: 0 22px; opacity: 0; }
+    18%  { opacity: 1; }
+    to   { --wr: 150%; filter: blur(0);   scale: 1 1;   translate: 0 0;    opacity: 1; }
+}
+.motion :is(h2, p).reveal.active { animation-timing-function: cubic-bezier(.25,1.15,.4,1); }
+.motion .reveal.active :is(h3, h4, h5, p) { animation-timing-function: cubic-bezier(.25,1.15,.4,1); }
+.motion .reveal.active :is(ul > li, .flex-wrap > span) { animation-timing-function: cubic-bezier(.25,1.2,.4,1); }
+@media (prefers-reduced-motion: reduce) { #home .logo-rings { display: none; } }
+
+/* =====================================================
+   v50 : apparitions harmonisées — une seule courbe, une seule montée, un seul rythme
+   Réglages : --ease (courbe), --t-block / --t-text / --t-item (durées), --gap (décalage entre éléments)
+   ===================================================== */
+:root {
+    --ease: cubic-bezier(.25, 1.12, .4, 1);   /* sortie douce avec un très léger rebond */
+    --t-block: 1.1s;                          /* cartes, blocs */
+    --t-text: 1.5s;                           /* titres, paragraphes (ouverture « eau ») */
+    --t-item: 1.1s;                           /* lignes de liste, pastilles, vignettes */
+    --gap: 80ms;                              /* décalage entre éléments voisins */
+}
+/* une même montée pour tout : fondu + élévation + très léger zoom */
+@keyframes rise-soft { from { opacity: 0; translate: 0 26px; scale: .97; } }
+@keyframes smoke-in {
+    from { --wr: 0%;   filter: blur(7px); scale: .94 1; translate: 0 22px; opacity: 0; }
+    18%  { opacity: 1; }
+    to   { --wr: 150%; filter: blur(0);   scale: 1 1;   translate: 0 0;    opacity: 1; }
+}
+/* blocs et cartes */
+.motion .reveal.active { animation: rise-soft var(--t-block) var(--ease) var(--d, 0s) backwards; }
+.motion .page-enter { animation: rise-soft var(--t-block) var(--ease) backwards; }
+/* textes : ouverture « eau » */
+.motion :is(h2, p).reveal.active              { animation: smoke-in var(--t-text) var(--ease) var(--d, 0s) backwards; }
+.motion .reveal.active :is(h3, h4, h5, p)     { animation: smoke-in var(--t-text) var(--ease) calc(var(--d, 0s) + .15s) backwards; }
+.motion #home h1.reveal.active:not(.split)    { animation: title-smoke 1.9s var(--ease) var(--d, 0s) backwards; }
+/* éléments en cascade : même montée, même décalage partout */
+.motion .reveal.active :is(ul > li, .flex-wrap > span) {
+    animation: smoke-in var(--t-item) var(--ease) calc(var(--si, 0) * var(--gap) + .25s) backwards;
+}
+.motion .reveal.active > h3 + div { animation: bar-grow 1s var(--ease) .4s backwards; }
+.g-in      { animation: rise-soft var(--t-item) var(--ease) calc(var(--i, 0) * var(--gap) + 150ms) backwards; }
+.fade-up   { animation: rise-soft var(--t-item) var(--ease) .1s backwards; }
+.motion .contact-panel:not(.hidden) .contact-option { animation: rise-soft .7s var(--ease) backwards; }
+@media (min-width: 0) {
+    .tool-tile.tool-in { animation: rise-soft var(--t-item) var(--ease) calc(var(--i, 0) * 50ms) backwards; }
+}
+/* nom du hero et logo : même courbe, même rythme */
+.motion #home h1.split.reveal.active .ch { animation-duration: 1.2s; animation-delay: calc(var(--i) * 55ms + .2s); }
+.motion #home svg.fogin { animation: float-gpu 7s ease-in-out infinite, fog-logo 1.8s var(--ease) .15s backwards; }
+@media (prefers-reduced-motion: reduce) { .motion .reveal.active, .g-in, .fade-up { animation: none; } }
+
+/* =====================================================
+   v51 : animation du logo (remplace les ondes) — tracé, petit « pop », halo, reflet qui parcourt le M
+   ===================================================== */
+#home .logo-rings { display: none; }
+.motion #home svg.fogin { animation: float-gpu 7s ease-in-out infinite; -webkit-mask-image: none; mask-image: none; }
+.motion #home svg.go {
+    animation: float-gpu 7s ease-in-out infinite, logo-pop 1.1s var(--ease, cubic-bezier(.25,1.12,.4,1)) 2.1s backwards;
+}
+@keyframes logo-pop { 0% { scale: .94; } 55% { scale: 1.045; } 100% { scale: 1; } }
+
+/* halo : copie floue du tracé, qui s'allume à la fin du dessin puis respire */
+.motion #home svg path.logo-glow, .motion #home svg path.logo-glint { opacity: 0; fill: none; }
+.motion #home svg.go path.logo-glow {
+    stroke-width: 5; filter: blur(4px);
+    animation: logo-glow-in 1.2s ease 2s backwards, logo-breathe 5s ease-in-out 3.2s infinite alternate;
+    opacity: .55;
+}
+@keyframes logo-glow-in { from { opacity: 0; } }
+@keyframes logo-breathe { from { opacity: .3; } to { opacity: .75; } }
+
+/* reflet : un éclat clair qui glisse le long du M, puis revient toutes les quelques secondes */
+.motion #home svg.go path.logo-glint {
+    stroke: #fff; stroke-width: 2.2; opacity: .95;
+    stroke-dasharray: 10 300;
+    animation: logo-glint 7s cubic-bezier(.45,.05,.3,1) 2.4s infinite backwards;
+}
+@keyframes logo-glint {
+    0%        { stroke-dashoffset: 10; }
+    24%, 100% { stroke-dashoffset: -102; }
+}
+@media (prefers-reduced-motion: reduce) { #home svg path.logo-glow, #home svg path.logo-glint { display: none; } }
+
+/* =====================================================
+   v52 : le voile se dissipe pour laisser place au texte — piloté par motion.js, accéléré par la souris / le doigt
+   ===================================================== */
+.motion .fogt { animation: none !important; will-change: opacity, filter; }
+.motion .fogt:not(.fogdone) { opacity: 0; }
+.motion .fogt.fogdone { opacity: 1; will-change: auto; }
+
+/* =====================================================
+   v53 : brume de fond qui se dissipe (WebGL, motion.js « fogVeil ») — remplace les apparitions par élément
+   ===================================================== */
+.fog-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; pointer-events: none; }
+.fogv .reveal { opacity: 1; }
+.fogv .reveal.active,
+.fogv .reveal.active :is(h3, h4, h5, p, ul > li, .flex-wrap > span),
+.fogv :is(h2, p).reveal.active { animation: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
+.fogv #home h1.split.reveal.active .ch { animation: none !important; }
+
+/* indice discret tant que la brume n'a pas été grattée */
+.fog-hint {
+    position: fixed; left: 50%; bottom: 1.6rem; translate: -50% 0; z-index: 41; pointer-events: none;
+    padding: .5rem 1rem; border-radius: 999px; font-size: .8rem; font-weight: 500; letter-spacing: .02em;
+    color: #4A4C50; background: rgba(255,255,255,.55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    box-shadow: 0 6px 22px rgba(106,140,240,.18); animation: hint-in 1s ease 1.2s backwards, hint-float 3s ease-in-out 2.2s infinite;
+    transition: opacity .6s ease, translate .6s ease;
+}
+html.dark .fog-hint { color: #e6e8ee; background: rgba(30,34,48,.55); }
+.fog-hint.gone { opacity: 0; translate: -50% 10px; }
+@keyframes hint-in { from { opacity: 0; } }
+@keyframes hint-float { 50% { translate: -50% -4px; } }
+
+/* petits écrans : la marge qui protège l'ombre du grand titre ne doit pas déborder de l'écran */
+@media (max-width: 640px) {
+    .motion #home h1.reveal { padding: 24px 12px; margin: -24px -12px; }
+    .fog-hint { font-size: .75rem; max-width: calc(100vw - 2rem); text-align: center; }
+}

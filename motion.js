@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 45;
+    window.MOTION_VERSION = 67;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -61,13 +61,237 @@
         $$('ul > li, .flex-wrap > span', r).forEach((el, i) => el.style.setProperty('--si', Math.min(i, 14)));
     });
 
+
+    /* ---------- Nom du hero en lettres + ondes autour du logo ---------- */
+    (function splitName() {
+        const h1 = $('#home h1');
+        if (!h1 || h1.classList.contains('split')) return;
+        const txt = h1.textContent.trim();
+        h1.setAttribute('aria-label', txt);
+        h1.textContent = '';
+        [...txt].forEach((c, i) => {
+            const s = document.createElement('span');
+            s.className = 'ch'; s.setAttribute('aria-hidden', 'true');
+            s.style.setProperty('--i', i);
+            s.textContent = c === ' ' ? '\u00A0' : c;
+            h1.appendChild(s);
+        });
+        h1.classList.add('split');
+        const fit = () => {
+            const w = h1.getBoundingClientRect().width, left = h1.getBoundingClientRect().left;
+            h1.querySelectorAll('.ch').forEach(s => {
+                s.style.setProperty('--w', w + 'px');
+                s.style.setProperty('--x', (s.getBoundingClientRect().left - left) + 'px');
+            });
+        };
+        fit(); addEventListener('resize', fit);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    })();
+    /* Logo : halo lumineux + reflet qui parcourt le tracé (copies du tracé ajoutées derrière/devant) */
+    (function logoFx() {
+        const svg = $('#home svg'), base = svg && svg.querySelector('path');
+        if (!base || svg.querySelector('.logo-glow')) return;
+        ['logo-glow', 'logo-glint'].forEach(c => {
+            const p = base.cloneNode(false);
+            p.setAttribute('class', c); p.setAttribute('pathLength', '100'); p.setAttribute('aria-hidden', 'true');
+            svg.appendChild(p);
+        });
+    })();
+
+
+    /* ---------- Brume de fond : un voile aux couleurs du fond recouvre la page, puis se dissipe pour révéler le texte ---------- */
+    (function fogVeil() {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'fog-canvas';
+        const gl = canvas.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power' });
+        if (!gl) return;
+        const COLS = 160, ROWS = 2560, CELL = 8;           // grille de densité en coordonnées de la page (1 cellule = 8 px de haut)
+        const DUR = 6000;                                  // levée de secours sans aucun geste (ms), après 14 s d'inactivité
+        const LIFT = 3500;                                 // une fois commencée, la brume se lève d'elle-même en ce temps (ms), sur tout l'écran
+        const MARGIN = 56;                                 // lignes mises à jour au-delà de l'écran (haut et bas)
+        const REACH = 300;                                 // rayon (px) autour du passage où la brume peut se dissiper de proche en proche, de l'intérieur vers l'extérieur
+        const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
+        const SPREAD = 60;                                 // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
+        const R = 100;                                     // rayon de dissipation autour du pointeur (px)
+        const dens = new Uint8Array(COLS * ROWS).fill(255);
+        const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+        const PREC = hp && hp.precision > 0 ? 'precision highp float;' : 'precision mediump float;';
+        const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+        const fs = PREC + `
+        uniform sampler2D uTex; uniform sampler2D uBg; uniform vec2 uRes; uniform float uSY, uVH, uRows, uTime, uDark;
+        float h(vec2 p){ vec3 q=fract(vec3(p.xyx)*.1031); q+=dot(q,q.yzx+33.33); return fract((q.x+q.y)*q.z); }
+        float vn(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
+            return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y); }
+        float fbm(vec2 p){ float s=0.,a=.5; for(int i=0;i<4;i++){ s+=a*vn(p); p=p*2.03+vec2(7.1,3.7); a*=.5; } return s; }
+        void main(){
+            vec2 uv=gl_FragCoord.xy/uRes; float yt=1.-uv.y;
+            float asp=uRes.x/uRes.y;
+            vec2 pg=vec2(uv.x*asp, (uSY+yt*uVH)/uVH);
+            float d=texture2D(uTex, vec2(uv.x, (uSY/${CELL}.+yt*uRows)/${ROWS}.)).r;
+            float n=fbm(pg*2.4+vec2(uTime*.05,-uTime*.03));
+            float m=d*1.5-(1.-n)*.6*smoothstep(0.,.5,d);                 // alpha = 0 exactement quand la densité tombe à 0 : jamais de résidu
+            float a=smoothstep(0.,.5,m)*.97;
+            vec3 col=texture2D(uBg, vec2(uv.x, yt)).rgb;   // exactement l'image du fond : mêmes couleurs, mêmes mouvements
+            gl_FragColor=vec4(col*a,a);
+        }`;
+        const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
+        const v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, fs);
+        if (!v || !f) return;
+        const prog = gl.createProgram(); gl.attachShader(prog, v); gl.attachShader(prog, f); gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+        gl.useProgram(prog);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        const U = n => gl.getUniformLocation(prog, n);
+        gl.uniform1i(U('uTex'), 0); gl.uniform1i(U('uBg'), 1);
+        const uRes = U('uRes'), uSY = U('uSY'), uVH = U('uVH'), uRows = U('uRows'), uTime = U('uTime'), uDark = U('uDark');
+        const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, COLS, ROWS, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, dens);
+        const bgTex = gl.createTexture(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bgTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        document.body.appendChild(canvas);
+        root.classList.add('fogv');
+
+        const size = () => {
+            const s = Math.max(.4, Math.min(.5, 520 / Math.max(innerWidth, 1)));
+            canvas.width = Math.max(2, Math.round(innerWidth * s)); canvas.height = Math.max(2, Math.round(innerHeight * s));
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        };
+        size(); addEventListener('resize', size);
+
+        const nxt = new Uint8Array(COLS * ROWS), rnd = new Uint8Array(COLS * ROWS);
+        for (let i = 0; i < rnd.length; i++) rnd[i] = Math.random() * 255;
+        const heat = new Uint8Array(COLS * ROWS);          // « chaleur » laissée par le passage : la réaction en chaîne n'agit qu'autour
+        const coarse = matchMedia('(pointer: coarse)').matches;
+        let lastTouch = performance.now();                 // dernier geste de l'utilisateur
+        let touchedEver = false;
+        let simActive = true, anyVisible = true, lastSY = -1;   // la simulation ne tourne que quand un geste vient d'avoir lieu (économie de batterie)
+        const live = new Uint8Array(COLS * ROWS);           // cellules « libérées » : seules celles proches d'un passage se dissipent de proche en proche
+        let hold = performance.now(), lastT = performance.now(), lx = -999, ly = -999, lt = 0;
+        /* La brume dégagée sur une page le reste : en revenant sur la page, on retrouve ce qu'on avait déjà découvert */
+        const pagesFog = {};
+        let curPage = ['page-cv', 'page-realisations', 'page-apropos'].find(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); }) || 'page-cv';
+        window.__fogReset = (id) => {
+            if (id && id === curPage) return;
+            pagesFog[curPage] = { d: dens.slice(), l: live.slice() };
+            curPage = id || curPage;
+            const s = pagesFog[curPage];
+            if (s) { dens.set(s.d); live.set(s.l); } else { dens.fill(255); live.fill(0); }
+            heat.fill(0); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
+            if (!s && !touchedEver) hint.classList.remove('gone');
+        };
+        /* Indice discret, tant que l'utilisateur n'a rien gratté */
+        const hint = document.createElement('div');
+        hint.className = 'fog-hint';
+        hint.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(hint);
+        const setHint = () => { hint.textContent = (root.lang || 'fr').startsWith('en') ? (coarse ? 'Swipe to clear the mist' : 'Move your mouse to clear the mist') : (coarse ? 'Glissez le doigt pour dissiper la brume' : 'Passez la souris pour dissiper la brume'); };
+        setHint(); document.addEventListener('langchange', setHint);
+        /* le pointeur (souris ou doigt) gratte la brume : elle se déchire autour de lui, puis le trou s'étend un peu de lui-même */
+        const clearAt = (cx, cy, strength, rad = R) => {
+            const px = (cx / innerWidth) * COLS, rr = rad / innerWidth * COLS, rry = rad / CELL;
+            const py = (cy + scrollY) / CELL, hr = REACH / rad;       // zone d'influence autour du passage : la dissipation ne peut se propager que là
+            for (let r = Math.max(0, Math.floor(py - rry * hr)); r <= Math.min(ROWS - 1, Math.ceil(py + rry * hr)); r++)
+                for (let c = Math.max(0, Math.floor(px - rr * hr)); c <= Math.min(COLS - 1, Math.ceil(px + rr * hr)); c++) {
+                    const dd = Math.hypot((c - px) / rr, (r - py) / rry), i = r * COLS + c;
+                    if (dd < hr) { heat[i] = 255; live[i] = 1; }
+                    if (dd >= 1) continue;
+                    const k = (1 - dd) * strength * 255;
+                    dens[i] = dens[i] > k ? dens[i] - k : 0;
+                }
+        };
+        const stroke = (x, y) => {
+            const now = performance.now();
+            const sp = lx > -900 ? Math.hypot(x - lx, y - ly) / Math.max(1, now - lt) : 0;
+            lx = x; ly = y; lt = now; lastTouch = now; simActive = true;
+            hint.classList.add('gone'); touchedEver = true;
+            /* chaque passage libère toute la brume affichée à l'écran : elle se dissipe à partir de l'épicentre, vers l'extérieur */
+            for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) live[i] = 1;
+            clearAt(x, y, Math.min(.6, .12 + sp * .3));
+        };
+        addEventListener('pointermove', e => stroke(e.clientX, e.clientY), { passive: true });
+        addEventListener('touchmove', e => { const t = e.touches[0]; if (t) stroke(t.clientX, t.clientY); }, { passive: true });
+        addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
+
+        const t00 = performance.now();
+        window.__fogStuck = () => { let n = 0, p = 0; for (let i = 0; i < dens.length; i++) if (live[i]) { p++; if (dens[i] > 0) n++; } return { liveCells: p, stuck: n }; };   // test : cellules libérées encore voilées
+        window.__fogStat = () => {   // part de la page visible déjà dégagée (pour les tests)
+            const r0 = Math.floor(scrollY / CELL), r1 = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL));
+            let z = 0, n = 0; for (let i = r0 * COLS; i < r1 * COLS; i++) { n++; if (dens[i] < 60) z++; }
+            return +(z / n).toFixed(3);
+        };
+        /* appelée par le fond juste après qu'il a dessiné son image : la brume en reprend les pixels */
+        window.__fogDraw = function (src, now) {
+            const dt = Math.min(64, now - lastT); lastT = now;
+            const sy = Math.max(0, scrollY), vh = innerHeight;
+            const r0 = Math.max(0, Math.floor(sy / CELL)), r1 = Math.min(ROWS, Math.ceil((sy + vh) / CELL) + 1);
+            let any = anyVisible;
+            /* filet de sécurité : sans aucun geste (clavier, lecteur d'écran…), la brume finit par se lever lentement */
+            const idle = now - lastTouch > (coarse ? 7000 : 14000);
+            const slow = idle ? dt / DUR * 255 : 0;
+            if (simActive || idle) {
+                const spr = dt / SPREAD * 255;                 // réaction en chaîne : une zone dégagée entraîne ses voisines
+                const cool = dt / HEAT * 255, tail = dt / 900 * 255;   // « tail » : finit de dégager les derniers résidus dans la zone libérée
+                const u0 = Math.max(0, r0 - MARGIN), u1 = Math.min(ROWS, r1 + MARGIN);   // on avance aussi un peu hors écran : rien ne reste figé à moitié
+                let changed = false; any = false;
+                for (let r = u0; r < u1; r++) {
+                    for (let c = 0, i = r * COLS; c < COLS; c++, i++) {
+                        const x = dens[i], hh = heat[i], lv = live[i];
+                        if (hh) { heat[i] = hh > cool ? hh - cool : 0; changed = true; }
+                        if (!x) { nxt[i] = 0; continue; }
+                        const l = c > 0 ? dens[i - 1] : x, rt = c < COLS - 1 ? dens[i + 1] : x;
+                        const u = r > 0 ? dens[i - COLS] : x, d = r < ROWS - 1 ? dens[i + COLS] : x;
+                        const gap = x - Math.min(l, rt, u, d);                   // à quel point un voisin est plus dégagé que moi
+                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 150) * (lv ? 1 : hh / 255) * (.55 + rnd[i] / 255 * .9);   // bord irrégulier, comme de la fumée
+                        if (y < (lv ? 50 : 0)) y = 0;                 // plus de petits bouts de brume dans la zone libérée
+                        if (y !== x) changed = true;
+                        nxt[i] = y; if (y > 0 && r >= r0 && r < r1) any = true;
+                    }
+                }
+                dens.set(nxt.subarray(u0 * COLS, u1 * COLS), u0 * COLS);
+                if (!changed && !idle) simActive = false;
+                anyVisible = any; lastSY = sy;
+            } else if (sy !== lastSY) {                         // simple défilement : on regarde seulement s'il reste de la brume à l'écran
+                any = false;
+                for (let i = r0 * COLS, e = r1 * COLS; i < e; i++) if (dens[i]) { any = true; break; }
+                anyVisible = any; lastSY = sy;
+            }
+            if (any) {
+                canvas.style.display = '';
+                gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bgTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+                gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, r0, COLS, r1 - r0, gl.LUMINANCE, gl.UNSIGNED_BYTE, dens.subarray(r0 * COLS, r1 * COLS));
+                gl.uniform2f(uRes, canvas.width, canvas.height);
+                gl.uniform1f(uSY, sy); gl.uniform1f(uVH, vh); gl.uniform1f(uRows, vh / CELL);
+                gl.uniform1f(uTime, (now - t00) / 1000);
+                gl.uniform1f(uDark, root.classList.contains('dark') ? 1 : 0);
+                gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            } else canvas.style.display = 'none';
+        };
+    })();
+
     /* ---------- Logo du hero : tracé animé ---------- */
     function drawLogo() {
         const path = $('#home svg path');
         if (!path || !path.getTotalLength) return;
         path.style.setProperty('--len', Math.ceil(path.getTotalLength()));
         restart(path, 'draw');
+        const svg = $('#home svg');
+        if (svg) { svg.style.setProperty('--len', Math.ceil(path.getTotalLength())); svg.classList.remove('fx-done'); restart(svg, 'go'); }
     }
+    /* l'animation d'eau est finie : on retire le masque (plus de coût, rien n'est rogné) */
+    document.addEventListener('animationend', e => {
+        if (/^(smoke-in|title-smoke|fog-logo)$/.test(e.animationName)) e.target.classList.add('fx-done');
+    });
     const startDraw = () => requestAnimationFrame(() => requestAnimationFrame(drawLogo));
     if (document.readyState === 'complete') startDraw(); else addEventListener('load', startDraw, { once: true });
 
@@ -386,6 +610,7 @@ void main(){
                 else root.dataset.page = newTint;
                 burst();
                 window.scrollTo({ top: 0, behavior: 'instant' });
+                if (window.__fogReset) window.__fogReset(page.id);
                 if (page.id === 'page-cv') drawLogo();
                 if (page.id === 'page-realisations') staggerGallery();
                 if (curtained) {
@@ -446,6 +671,7 @@ void main(){
 
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
         const highp = !!(hp && hp.precision > 0);
+        let low = lite; // rendu allégé : d'office sur mobile, et automatiquement si l'appareil n'atteint pas ~40 images/s
         const PREC = highp ? 'precision highp float;' : 'precision mediump float;';
         const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
 
@@ -561,7 +787,7 @@ void main(){
         function buildSim() {
             if (!progSim) return;
             [0, 1].forEach(i => { if (tex[i]) gl.deleteTexture(tex[i]); if (fbo[i]) gl.deleteFramebuffer(fbo[i]); });
-            SW = lite ? 112 : 160;
+            SW = low ? 112 : 160;
             SH = Math.max(2, Math.round(SW * innerHeight / innerWidth));
             const zero = new Uint8Array(SW * SH * 4);
             for (let i = 0; i < zero.length; i += 4) { zero[i] = 128; zero[i + 2] = 128; } // déplacement nul
@@ -602,7 +828,7 @@ void main(){
         let kNow = startDark ? 1.0 : 0.8;
 
         function resize() {
-            const k = lite ? 0.3 : 0.4; // rendu basse résolution : le flou est naturel, le GPU respire
+            const k = low ? 0.3 : 0.4; // rendu basse résolution : le flou est naturel, le GPU respire
             canvas.width = Math.max(2, Math.round(innerWidth * k));
             canvas.height = Math.max(2, Math.round(innerHeight * k));
             gl.viewport(0, 0, canvas.width, canvas.height);
@@ -616,12 +842,17 @@ void main(){
         let tAcc = 0, last = performance.now(), pulse = 0, mx = 0.5, my = 0.5;
         burst = () => { pulse = 1; };
 
-        let skip = false;
+        let skip = false, warm = 0, fpsAcc = 0, fpsN = 0;
         function frame(now) {
-            if (lite && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
-            const dt = Math.min(0.05, (now - last) / 1000);
+            if (low && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
+            const raw = now - last;
+            const dt = Math.min(0.05, raw / 1000);
             last = now;
-            tAcc += dt * (lite ? 0.15 : 0.1) * (1 + pulse * 10);
+            if (!low && raw < 200 && ++warm > 40) { // mesure après la mise en route, hors onglet en veille
+                fpsAcc += raw;
+                if (++fpsN >= 90) { if (fpsAcc / fpsN > 26) { low = true; resize(); } fpsAcc = 0; fpsN = 0; }
+            }
+            tAcc += dt * (low ? 0.15 : 0.1) * (1 + pulse * 10);
             pulse *= 0.96;
 
             // pointeur actif (souris ou doigt récent) : le fluide le suit ; sinon, un parcours doux et continu
@@ -647,7 +878,7 @@ void main(){
                 gl.uniform2f(sPtr, mx, my);
                 gl.uniform2f(sVel, vx, vy);
                 gl.uniform1f(sAsp, innerWidth / innerHeight);
-                gl.uniform1f(sDecay, lite ? 0.987 : 0.994);
+                gl.uniform1f(sDecay, low ? 0.987 : 0.994);
                 gl.uniform1f(sRad, touched ? 0.1 : 0.14);
                 gl.uniform1f(sAdv, 0.06);
                 gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -681,6 +912,7 @@ void main(){
                 gl.uniform2f(dSimSize, SW, SH);
             }
             gl.drawArrays(gl.TRIANGLES, 0, 3);
+            if (window.__fogDraw) window.__fogDraw(canvas, now);
             requestAnimationFrame(frame);
         }
         requestAnimationFrame(frame);
