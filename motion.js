@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 67;
+    window.MOTION_VERSION = 72;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -127,9 +127,10 @@
             vec2 uv=gl_FragCoord.xy/uRes; float yt=1.-uv.y;
             float asp=uRes.x/uRes.y;
             vec2 pg=vec2(uv.x*asp, (uSY+yt*uVH)/uVH);
-            float d=texture2D(uTex, vec2(uv.x, (uSY/${CELL}.+yt*uRows)/${ROWS}.)).r;
+            vec2 w=(vec2(fbm(pg*3.+vec2(uTime*.12,0.)),fbm(pg*3.+vec2(7.,uTime*.1)))-.5);   // le bord ondule : jamais de ligne droite
+            float d=texture2D(uTex, vec2(uv.x+w.x*.03, (uSY/${CELL}.+yt*uRows+w.y*34.)/${ROWS}.)).r;
             float n=fbm(pg*2.4+vec2(uTime*.05,-uTime*.03));
-            float m=d*1.5-(1.-n)*.6*smoothstep(0.,.5,d);                 // alpha = 0 exactement quand la densité tombe à 0 : jamais de résidu
+            float m=d*1.5-(1.-n)*.95*smoothstep(0.,.55,d);                 // alpha = 0 exactement quand la densité tombe à 0 : jamais de résidu
             float a=smoothstep(0.,.5,m)*.97;
             vec3 col=texture2D(uBg, vec2(uv.x, yt)).rgb;   // exactement l'image du fond : mêmes couleurs, mêmes mouvements
             gl_FragColor=vec4(col*a,a);
@@ -168,6 +169,20 @@
 
         const nxt = new Uint8Array(COLS * ROWS), rnd = new Uint8Array(COLS * ROWS);
         for (let i = 0; i < rnd.length; i++) rnd[i] = Math.random() * 255;
+        /* champ de « turbulence » lisse : la vague avance par doigts et par poches, jamais en ligne droite */
+        const wob = new Float32Array(COLS * ROWS);
+        (function () {
+            const mk = (step, amp) => { const gw = Math.ceil(COLS / step) + 2, gh = Math.ceil(ROWS / step) + 2, g = new Float32Array(gw * gh).map(() => Math.random()); return { step, amp, gw, g }; };
+            const layers = [mk(5, .55), mk(11, .75), mk(24, .6)];
+            for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+                let v = 0;
+                for (const L of layers) {
+                    const gx = c / L.step, gy = r / L.step, x0 = gx | 0, y0 = gy | 0, fx = gx - x0, fy = gy - y0, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), i0 = y0 * L.gw + x0;
+                    v += L.amp * ((L.g[i0] * (1 - sx) + L.g[i0 + 1] * sx) * (1 - sy) + (L.g[i0 + L.gw] * (1 - sx) + L.g[i0 + L.gw + 1] * sx) * sy);
+                }
+                wob[r * COLS + c] = .15 + v * .9;
+            }
+        })();
         const heat = new Uint8Array(COLS * ROWS);          // « chaleur » laissée par le passage : la réaction en chaîne n'agit qu'autour
         const coarse = matchMedia('(pointer: coarse)').matches;
         let lastTouch = performance.now();                 // dernier geste de l'utilisateur
@@ -216,6 +231,7 @@
             for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) live[i] = 1;
             clearAt(x, y, Math.min(.6, .12 + sp * .3));
         };
+        window.__fogPoke = stroke;
         addEventListener('pointermove', e => stroke(e.clientX, e.clientY), { passive: true });
         addEventListener('touchmove', e => { const t = e.touches[0]; if (t) stroke(t.clientX, t.clientY); }, { passive: true });
         addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
@@ -248,8 +264,10 @@
                         if (!x) { nxt[i] = 0; continue; }
                         const l = c > 0 ? dens[i - 1] : x, rt = c < COLS - 1 ? dens[i + 1] : x;
                         const u = r > 0 ? dens[i - COLS] : x, d = r < ROWS - 1 ? dens[i + COLS] : x;
-                        const gap = x - Math.min(l, rt, u, d);                   // à quel point un voisin est plus dégagé que moi
-                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 150) * (lv ? 1 : hh / 255) * (.55 + rnd[i] / 255 * .9);   // bord irrégulier, comme de la fumée
+                        const ul = r > 0 && c > 0 ? dens[i - COLS - 1] : x, ur = r > 0 && c < COLS - 1 ? dens[i - COLS + 1] : x;
+                        const dl = r < ROWS - 1 && c > 0 ? dens[i + COLS - 1] : x, dr = r < ROWS - 1 && c < COLS - 1 ? dens[i + COLS + 1] : x;
+                        const gap = x - Math.min(l, rt, u, d, ul + 25, ur + 25, dl + 25, dr + 25);                  // à quel point un voisin est plus dégagé que moi
+                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 150) * (lv ? 1 : hh / 255) * wob[i] * (.8 + rnd[i] / 255 * .4);   // bord irrégulier, comme de la fumée
                         if (y < (lv ? 50 : 0)) y = 0;                 // plus de petits bouts de brume dans la zone libérée
                         if (y !== x) changed = true;
                         nxt[i] = y; if (y > 0 && r >= r0 && r < r1) any = true;
@@ -277,6 +295,349 @@
                 gl.drawArrays(gl.TRIANGLES, 0, 3);
             } else canvas.style.display = 'none';
         };
+    })();
+
+    /* ---------- Easter egg : 4 clics rapides sur le logo de l'accueil → les lignes du M prennent vie et serpentent, puis on joue à Snake ---------- */
+    (function snakeEgg() {
+        const svg = $('#home svg'), host = svg && svg.parentElement, logoPath = svg && svg.querySelector('path');
+        if (!svg || !host || !logoPath) return;
+        const N = 18;                                          // grille N × N
+        const L = (fr, en) => (window.SITE && SITE.lang && SITE.lang() === 'en') ? en : fr;
+        let back = null, wrap = null, cv = null, ctx = null, S = 520, cell = 0;
+        let snake, dir, nextDir, cocktail, beers, score, best, state = 'off', morphT = 0, t0 = 0, lastStep = 0, speed, over = false, raf = 0, eaten = 0, fx = [], toast = null, paused = false, morphLen = 1250, prevPts = null;
+        try { best = +localStorage.getItem('snake-best') || 0; } catch (e) { best = 0; }
+
+        /* points échantillonnés le long du M du logo */
+        const pts = [];
+        (function () {
+            const len = logoPath.getTotalLength(), n = 46;
+            for (let i = 0; i < n; i++) { const p = logoPath.getPointAtLength(len * i / (n - 1)); pts.push({ x: p.x / 50, y: p.y / 50 }); }
+        })();
+
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        const col = t => { const a = [106, 140, 240], b = [221, 130, 159]; return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], t))).join(',')})`; };
+        const dark = () => root.classList.contains('dark');
+
+        function build() {
+            back = document.createElement('div'); back.className = 'snake-back';
+            wrap = document.createElement('div'); wrap.className = 'snake-wrap';
+            wrap.innerHTML = '<canvas class="snake-cv" tabindex="0" aria-label="Snake"></canvas><button type="button" class="snake-x" aria-label="Fermer">✕</button><div class="snake-help"></div>';
+            document.body.appendChild(back); document.body.appendChild(wrap);
+            cv = wrap.querySelector('canvas'); ctx = cv.getContext('2d');
+            wrap.querySelector('.snake-x').addEventListener('click', close);
+            back.addEventListener('click', close);
+            addEventListener('resize', fit);
+            /* balayage du doigt */
+            let tx = 0, ty = 0;
+            cv.addEventListener('touchstart', e => { const t = e.touches[0]; tx = t.clientX; ty = t.clientY; e.preventDefault(); }, { passive: false });
+            cv.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+            cv.addEventListener('touchend', e => {
+                const t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
+                if (Math.hypot(dx, dy) < 18) { if (over) restart(); else if (state === 'ready') startPlay(); return; }
+                steer(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? [1, 0] : [-1, 0]) : (dy > 0 ? [0, 1] : [0, -1]));
+                e.preventDefault();
+            }, { passive: false });
+            cv.addEventListener('click', () => { if (over) restart(); else if (state === 'ready') startPlay(); });
+        }
+        function fit() {
+            if (!cv) return;
+            S = Math.max(240, Math.round(Math.min(620, innerWidth - 24, innerHeight - 120)));
+            const dpr = Math.min(2, devicePixelRatio || 1);
+            wrap.style.width = wrap.style.height = S + 'px';
+            wrap.style.marginLeft = wrap.style.marginTop = (-S / 2 - 12) + 'px';
+            cv.style.width = cv.style.height = S + 'px';
+            cv.width = cv.height = Math.round(S * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            cell = S / N;
+        }
+        const help = () => {
+            const h = wrap.querySelector('.snake-help');
+            h.textContent = over ? L('Perdu · ' + score + ' pts — touchez / Entrée pour rejouer', 'Game over · ' + score + ' pts — tap / Enter to retry')
+                : L('Mangez les cocktails 🍸 — évitez les bières 🍺 · flèches, ZQSD ou glisser · Échap', 'Eat the cocktails 🍸 — avoid the beers 🍺 · arrows, WASD or swipe · Esc');
+        };
+
+        function reset() {
+            const m = Math.floor(N / 2);
+            snake = [{ x: m + 1, y: m }, { x: m, y: m }, { x: m - 1, y: m }, { x: m - 2, y: m }];
+            prevPts = null; dir = nextDir = [1, 0]; score = 0; over = false; speed = 140; eaten = 0; beers = []; fx = []; toast = null;
+            cocktail = null; placeCocktail(); help();
+        }
+        const free = (x, y) => !snake.some(s => s.x === x && s.y === y) && !(cocktail && cocktail.x === x && cocktail.y === y) && !beers.some(b => b.x === x && b.y === y);
+        function randFree(minDist) {
+            const cells = [];
+            for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if (free(x, y) && Math.abs(x - snake[0].x) + Math.abs(y - snake[0].y) >= (minDist || 0)) cells.push({ x, y });
+            return cells[Math.floor(Math.random() * cells.length)] || null;
+        }
+        function placeCocktail() { cocktail = null; cocktail = randFree(2); }
+        function steer(d) {
+            if (state === 'ready') { if (d[0] === -dir[0] && d[1] === -dir[1]) return; nextDir = d; startPlay(); return; }
+            if (state !== 'play') return;
+            if (d[0] === -dir[0] && d[1] === -dir[1]) return;      // pas de demi-tour
+            nextDir = d;
+        }
+        function startPlay() { state = 'play'; lastStep = performance.now() - speed * .6; }
+        function restart() { reset(); state = 'ready'; }
+
+        function pee(now) {
+            /* le serpent fait pipi : un jet jaune sur le côté de la tête */
+            const h = snake[0], hx = (h.x + .5) * cell, hy = (h.y + .5) * cell, side = Math.random() < .5 ? 1 : -1, px = -dir[1] * side, py = dir[0] * side;
+            for (let i = 0; i < 26; i++) {
+                const a = (Math.random() - .5) * .35, sp = (2.2 + Math.random() * 2.2) * cell / 12;
+                fx.push({ x: hx + px * cell * .4, y: hy + py * cell * .4, vx: (px * Math.cos(a) - py * Math.sin(a)) * sp, vy: (px * Math.sin(a) + py * Math.cos(a)) * sp - cell * .12, born: now + i * 18, life: 650 + Math.random() * 300 });
+            }
+            toast = { text: L('Pssssss…', 'Pssssss…'), x: hx, y: hy - cell * .9, born: now };
+        }
+
+        function step(now) {
+            dir = nextDir;
+            const h = { x: snake[0].x + dir[0], y: snake[0].y + dir[1] };
+            const eatC = cocktail && h.x === cocktail.x && h.y === cocktail.y;
+            const bi = beers.findIndex(b => b.x === h.x && b.y === h.y);
+            const body = eatC ? snake : snake.slice(0, -1);
+            if (h.x < 0 || h.y < 0 || h.x >= N || h.y >= N || body.some(s => s.x === h.x && s.y === h.y)) {
+                over = true;
+                if (score > best) { best = score; try { localStorage.setItem('snake-best', best); } catch (e) { } }
+                help(); return;
+            }
+            const old = snake.map(s => ({ x: s.x, y: s.y }));
+            snake.unshift(h); prevPts = old;
+            if (eatC) {
+                score++; eaten++; speed = Math.max(78, speed - 3); placeCocktail();
+                /* de temps en temps, une bière apparaît : à ne pas boire ! */
+                if (beers.length < 2 && Math.random() < .5) { const c = randFree(3); if (c) beers.push({ x: c.x, y: c.y, born: now, life: 9000 }); }
+            } else snake.pop();
+            if (bi >= 0) {
+                beers.splice(bi, 1);
+                const cut = Math.min(3, snake.length - 2);
+                for (let i = 0; i < cut; i++) snake.pop();
+                prevPts = null;
+                score = Math.max(0, score - 1); pee(now);
+            }
+        }
+
+        /* ---- dessins ---- */
+        function drawCocktail(cx, cy, size, now) {
+            const u = size, p = 1 + Math.sin(now / 220) * .05;
+            ctx.save(); ctx.translate(cx, cy); ctx.scale(p, p); ctx.rotate(Math.sin(now / 500) * .06);
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, u * .9); g.addColorStop(0, 'rgba(255,170,200,.45)'); g.addColorStop(1, 'rgba(255,170,200,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, u * .9, 0, 7); ctx.fill();
+            // verre à cocktail
+            ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            const lq = ctx.createLinearGradient(0, -u * .34, 0, u * .06); lq.addColorStop(0, '#ff8fb3'); lq.addColorStop(1, '#ffb15f');
+            ctx.fillStyle = lq; ctx.beginPath(); ctx.moveTo(-u * .36, -u * .3); ctx.lineTo(u * .36, -u * .3); ctx.lineTo(0, u * .08); ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = dark() ? 'rgba(255,255,255,.85)' : 'rgba(80,90,120,.75)'; ctx.lineWidth = Math.max(1.6, u * .06);
+            ctx.beginPath(); ctx.moveTo(-u * .36, -u * .3); ctx.lineTo(u * .36, -u * .3); ctx.lineTo(0, u * .08); ctx.closePath(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, u * .08); ctx.lineTo(0, u * .36); ctx.moveTo(-u * .2, u * .38); ctx.lineTo(u * .2, u * .38); ctx.stroke();
+            // cerise + pique + petit parasol
+            ctx.strokeStyle = '#7a5a3a'; ctx.lineWidth = Math.max(1.2, u * .035);
+            ctx.beginPath(); ctx.moveTo(u * .05, -u * .12); ctx.lineTo(u * .3, -u * .5); ctx.stroke();
+            ctx.fillStyle = '#e0334f'; ctx.beginPath(); ctx.arc(u * .05, -u * .14, u * .09, 0, 7); ctx.fill();
+            ctx.fillStyle = '#6A8CF0'; ctx.beginPath(); ctx.moveTo(u * .3, -u * .62); ctx.lineTo(u * .1, -u * .46); ctx.lineTo(u * .5, -u * .46); ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+        function drawBeer(cx, cy, size, now, alpha) {
+            const u = size;
+            ctx.save(); ctx.globalAlpha = alpha; ctx.translate(cx, cy); ctx.rotate(Math.sin(now / 260) * .07);
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, u * .85); g.addColorStop(0, 'rgba(255,200,70,.4)'); g.addColorStop(1, 'rgba(255,200,70,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, u * .85, 0, 7); ctx.fill();
+            // chope
+            ctx.strokeStyle = dark() ? 'rgba(255,255,255,.85)' : 'rgba(110,80,20,.85)'; ctx.lineWidth = Math.max(1.8, u * .07); ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.arc(u * .3, u * .02, u * .17, -1.1, 1.1); ctx.stroke();
+            const b = ctx.createLinearGradient(0, -u * .3, 0, u * .4); b.addColorStop(0, '#ffd466'); b.addColorStop(1, '#e8961b');
+            ctx.fillStyle = b; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-u * .27, -u * .3, u * .54, u * .7, u * .07) : ctx.rect(-u * .27, -u * .3, u * .54, u * .7); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(-u * .17, -u * .2, u * .07, u * .5);
+            ctx.fillStyle = '#fffaf0';                                    // mousse
+            [[-.2, -.34, .15], [0, -.4, .18], [.2, -.34, .15], [-.08, -.3, .13], [.1, -.3, .13]].forEach(a => { ctx.beginPath(); ctx.arc(u * a[0], u * a[1], u * a[2], 0, 7); ctx.fill(); });
+            ctx.restore();
+        }
+        /* Le serpent est un seul corps continu : un trait épais et lisse qui épouse les virages et glisse d'une case à l'autre */
+        function snakeBody(now) {
+            const p = (state === 'play' && !over && !paused && prevPts) ? Math.min(1, Math.max(0, (now - lastStep) / speed)) : 1;
+            const pos = snake.map((s, i) => {
+                const o = prevPts ? prevPts[Math.min(i, prevPts.length - 1)] : s;
+                return { x: (lerp(o.x, s.x, p) + .5) * cell, y: (lerp(o.y, s.y, p) + .5) * cell };
+            });
+            // chemin lissé : courbes quadratiques passant par les milieux des segments (virages arrondis)
+            const path = [], n = pos.length;
+            const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+            const quad = (a, c, b, k) => { for (let s = 1; s <= k; s++) { const t = s / k, u = 1 - t; path.push({ x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y }); } };
+            path.push(pos[0]);
+            if (n === 1) path.push(pos[0]);
+            else {
+                let a = pos[0];
+                for (let i = 1; i < n - 1; i++) { const m = mid(pos[i], pos[i + 1]); quad(a, pos[i], m, 6); a = m; }
+                quad(a, pos[n - 1], pos[n - 1], 3);
+            }
+            // longueur cumulée pour le dégradé et l'effilement
+            const cum = [0]; for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
+            const total = cum[cum.length - 1] || 1;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            for (let i = path.length - 1; i > 0; i--) {
+                const t = cum[i] / total;
+                ctx.strokeStyle = col(t); ctx.lineWidth = cell * (.8 - t * .26);
+                ctx.beginPath(); ctx.moveTo(path[i].x, path[i].y); ctx.lineTo(path[i - 1].x, path[i - 1].y); ctx.stroke();
+            }
+            // tête : un peu plus ronde, orientée dans le sens de la marche
+            const hd = pos[0], nk = pos[1] || pos[0];
+            let ex = hd.x - nk.x, ey = hd.y - nk.y; const el = Math.hypot(ex, ey) || 1; ex /= el; ey /= el;
+            if (el < .01) { ex = dir[0]; ey = dir[1]; }
+            ctx.fillStyle = col(0); ctx.beginPath(); ctx.arc(hd.x, hd.y, cell * .46, 0, 7); ctx.fill();
+            const px = -ey, py = ex;
+            ctx.fillStyle = '#fff';
+            [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(hd.x + ex * cell * .12 + px * sd * cell * .2, hd.y + ey * cell * .12 + py * sd * cell * .2, cell * .12, 0, 7); ctx.fill(); });
+            ctx.fillStyle = '#2d3035';
+            [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(hd.x + ex * cell * .18 + px * sd * cell * .2, hd.y + ey * cell * .18 + py * sd * cell * .2, cell * .06, 0, 7); ctx.fill(); });
+            // langue qui sort parfois
+            if (Math.sin(now / 420) > .75) {
+                ctx.strokeStyle = '#e0334f'; ctx.lineWidth = Math.max(1.5, cell * .06); ctx.lineCap = 'round';
+                const sx = hd.x + ex * cell * .45, sy = hd.y + ey * cell * .45, tx = sx + ex * cell * .32, ty = sy + ey * cell * .32;
+                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty);
+                ctx.moveTo(tx, ty); ctx.lineTo(tx + ex * cell * .13 + px * cell * .1, ty + ey * cell * .13 + py * cell * .1);
+                ctx.moveTo(tx, ty); ctx.lineTo(tx + ex * cell * .13 - px * cell * .1, ty + ey * cell * .13 - py * cell * .1);
+                ctx.stroke();
+            }
+        }
+        function plate(alpha) {
+            ctx.save(); ctx.globalAlpha = alpha;
+            ctx.fillStyle = dark() ? 'rgba(25,29,42,.82)' : 'rgba(255,255,255,.78)';
+            ctx.strokeStyle = dark() ? 'rgba(143,168,255,.35)' : 'rgba(106,140,240,.28)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect ? ctx.roundRect(1, 1, S - 2, S - 2, 26) : ctx.rect(1, 1, S - 2, S - 2); ctx.fill(); ctx.stroke();
+            // damier très léger
+            ctx.fillStyle = dark() ? 'rgba(255,255,255,.025)' : 'rgba(106,140,240,.045)';
+            for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) if ((x + y) % 2) ctx.fillRect(x * cell, y * cell, cell, cell);
+            ctx.restore();
+        }
+
+        /* La transformation : les lignes du logo prennent vie, ondulent comme un serpent et glissent jusqu'à leur place sur la grille */
+        function morph(now) {
+            const el = now - t0, T = morphLen;
+            morphT = Math.min(1, el / T);
+            plate(Math.min(1, el / 300));
+            const n = pts.length, t = ease(Math.max(0, (morphT - .15) / .85));          // 0 → 1 : du M vers le serpent aligné
+            const amp = Math.sin(Math.PI * Math.min(1, morphT * 1.05)) * S * .045 * (.4 + .6 * Math.min(1, morphT * 3));
+            const P = [];
+            for (let j = 0; j < n; j++) {
+                const k = (n - 1 - j) / (n - 1) * (snake.length - 1);                   // la tête = bout du tracé du M
+                const bx = (snake[0].x - k + .5) * cell, by = (snake[0].y + .5) * cell;
+                const x0 = pts[j].x * S, y0 = pts[j].y * S;
+                const nx = lerp(x0, bx, t), ny = lerp(y0, by, t);
+                // ondulation qui parcourt le corps de la queue vers la tête
+                const w = Math.sin(j * .55 - el / 140) * amp * (1 - t * .85);
+                const dx = j < n - 1 ? pts[j + 1].x - pts[j].x : pts[j].x - pts[j - 1].x, dy = j < n - 1 ? pts[j + 1].y - pts[j].y : pts[j].y - pts[j - 1].y, d = Math.hypot(dx, dy) || 1;
+                const nvx = lerp(-dy / d, 0, t), nvy = lerp(dx / d, 1, t);
+                P.push({ x: nx + nvx * w, y: ny + nvy * w });
+            }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            const lw = lerp(S * .05, cell * .8, t);
+            for (let j = 0; j < n - 1; j++) {
+                ctx.strokeStyle = col(1 - j / (n - 1)); ctx.lineWidth = lw;
+                ctx.beginPath(); ctx.moveTo(P[j].x, P[j].y); ctx.lineTo(P[j + 1].x, P[j + 1].y); ctx.stroke();
+            }
+            // la tête s'éveille : yeux qui apparaissent en fondu
+            const hd = P[n - 1], a = Math.max(0, (morphT - .4) / .4), pd = { x: P[n - 1].x - P[n - 2].x, y: P[n - 1].y - P[n - 2].y }, dl = Math.hypot(pd.x, pd.y) || 1, ex = pd.x / dl, ey = pd.y / dl;
+            ctx.globalAlpha = Math.min(1, a);
+            ctx.fillStyle = '#fff';
+            [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(hd.x + ex * lw * .12 - ey * sd * lw * .22, hd.y + ey * lw * .12 + ex * sd * lw * .22, lw * .17, 0, 7); ctx.fill(); });
+            ctx.fillStyle = '#2d3035';
+            [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(hd.x + ex * lw * .2 - ey * sd * lw * .22, hd.y + ey * lw * .2 + ex * sd * lw * .22, lw * .08, 0, 7); ctx.fill(); });
+            ctx.globalAlpha = 1;
+            if (morphT >= 1) { state = 'ready'; lastStep = now; prevPts = null; }
+        }
+
+        let lastFrame = 0;
+        function draw() {
+            raf = requestAnimationFrame(draw);
+            try { drawFrame(performance.now()); } catch (e) { console.error(e); const h = wrap && wrap.querySelector('.snake-help'); if (h) h.textContent = 'Erreur : ' + e.message; }
+        }
+        function drawFrame(now) {
+            if (now - lastFrame > 400) lastStep = now;      // retour d'un onglet en veille : pas de rattrapage brutal
+            lastFrame = now;
+            if (state === 'off') return;
+            ctx.clearRect(0, 0, S, S);
+            if (state === 'morph') { morph(now); return; }
+            if (state === 'play' && !over && !paused && now - lastStep >= speed) { lastStep = now; step(now); }
+            plate(1);
+            if (cocktail) drawCocktail((cocktail.x + .5) * cell, (cocktail.y + .5) * cell, cell * 1.05, now);
+            beers = beers.filter(b => now - b.born < b.life);
+            beers.forEach(b => { const left = b.life - (now - b.born); drawBeer((b.x + .5) * cell, (b.y + .5) * cell, cell * 1.05, now, left < 2200 ? .45 + .55 * Math.abs(Math.sin(now / 130)) : 1); });
+            snakeBody(now);
+            // jet de pipi
+            fx = fx.filter(f => now - f.born < f.life);
+            fx.forEach(f => {
+                const a = now - f.born; if (a < 0) return;
+                const tt = a / 16, x = f.x + f.vx * tt, y = f.y + f.vy * tt + .09 * cell * .1 * tt * tt;
+                ctx.fillStyle = `rgba(255,${200 + Math.round(30 * Math.sin(a / 60))},60,${1 - a / f.life})`;
+                ctx.beginPath(); ctx.arc(x, y, cell * .08 * (1 - a / f.life * .4), 0, 7); ctx.fill();
+            });
+            if (toast && now - toast.born < 1100) {
+                const a = (now - toast.born) / 1100;
+                ctx.globalAlpha = 1 - a; ctx.fillStyle = '#d99a00'; ctx.font = `700 ${Math.round(cell * .62)}px Outfit, system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(toast.text, Math.min(S - 60, Math.max(60, toast.x)), toast.y - a * cell); ctx.globalAlpha = 1;
+            }
+            // score
+            ctx.font = '600 14px Outfit, system-ui, sans-serif'; ctx.textBaseline = 'top';
+            ctx.fillStyle = dark() ? 'rgba(230,232,238,.85)' : 'rgba(45,48,53,.7)';
+            ctx.textAlign = 'left'; ctx.fillText('🍸 ' + score, 14, 12);
+            ctx.textAlign = 'right'; ctx.fillText(L('Record ', 'Best ') + best, S - 44, 12);
+            if (state === 'ready') {
+                ctx.fillStyle = dark() ? 'rgba(20,23,33,.55)' : 'rgba(255,255,255,.65)';
+                ctx.fillRect(0, S - 74, S, 46);
+                ctx.fillStyle = dark() ? '#e6e8ee' : '#2d3035'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.globalAlpha = .65 + .35 * Math.sin(now / 260);
+                ctx.font = '600 16px Outfit, system-ui, sans-serif';
+                ctx.fillText(L('Appuyez sur une flèche pour démarrer', 'Press an arrow key to start'), S / 2, S - 51);
+                ctx.globalAlpha = 1;
+            }
+            if (over) {
+                ctx.fillStyle = dark() ? 'rgba(20,23,33,.65)' : 'rgba(255,255,255,.7)';
+                ctx.fillRect(0, S / 2 - 44, S, 88);
+                ctx.fillStyle = dark() ? '#e6e8ee' : '#2d3035'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = '600 28px Outfit, system-ui, sans-serif'; ctx.fillText(L('Perdu !', 'Game over'), S / 2, S / 2 - 12);
+                ctx.font = '500 14px Outfit, system-ui, sans-serif'; ctx.fillText(L('Touchez ou Entrée pour rejouer', 'Tap or Enter to retry'), S / 2, S / 2 + 18);
+            }
+        }
+
+        function open() {
+            if (state !== 'off') return;
+            if (!wrap) build();
+            fit(); reset(); state = 'morph'; t0 = performance.now(); morphT = 0;
+            back.classList.add('on'); wrap.classList.add('on'); svg.classList.add('snake-hide');
+            // le plateau s'agrandit depuis le logo
+            const r = svg.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+            const dx = r.left + r.width / 2 - (w.left + w.width / 2), dy = r.top + r.height / 2 - (w.top + w.height / 2), sc = r.width / w.width;
+            wrap.animate([{ transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: .0 }, { transform: 'none', opacity: 1 }], { duration: 650, easing: 'cubic-bezier(.25,1.12,.4,1)' });
+            try { cv.focus({ preventScroll: true }); } catch (e) { }
+            if (window.__fogPoke) window.__fogPoke(r.left + r.width / 2, r.top + r.height / 2);
+            if (!raf) raf = requestAnimationFrame(draw);
+        }
+        function close() {
+            if (state === 'off') return;
+            state = 'off';
+            back.classList.remove('on'); wrap.classList.remove('on'); svg.classList.remove('snake-hide');
+            cancelAnimationFrame(raf); raf = 0;
+        }
+
+        /* 4 clics rapides sur le logo */
+        let clicks = 0, lastClick = 0;
+        svg.addEventListener('click', () => {
+            const now = performance.now();
+            clicks = now - lastClick < 1200 ? clicks + 1 : 1; lastClick = now;
+            if (clicks >= 4) { clicks = 0; open(); }
+        });
+        document.addEventListener('keydown', e => {
+            if (state === 'off') return;
+            const k = e.key.toLowerCase(), map = { arrowup: [0, -1], w: [0, -1], z: [0, -1], arrowdown: [0, 1], s: [0, 1], arrowleft: [-1, 0], a: [-1, 0], q: [-1, 0], arrowright: [1, 0], d: [1, 0] };
+            if (k === 'escape') { close(); return; }
+            if (k === 'p' && state === 'play') { paused = !paused; lastStep = performance.now(); return; }
+            if ((k === 'enter' || k === ' ') && over) { restart(); e.preventDefault(); return; }
+            if ((k === 'enter' || k === ' ') && state === 'ready') { startPlay(); e.preventDefault(); return; }
+            if (map[k]) { steer(map[k]); e.preventDefault(); }
+        });
+        /* pause quand l'onglet est caché */
+        addEventListener('hashchange', () => { if (state !== 'off' && /^#(realisations|parcours)/.test(location.hash)) close(); });
+        document.addEventListener('langchange', () => { if (wrap && state !== 'off') help(); });
+        window.__snake = { open, close, get snake() { return snake; }, get state() { return state; }, get cocktail() { return cocktail; }, get beers() { return beers; }, get score() { return score; }, get over() { return over; }, step, set paused(v) { paused = !!v; }, set morphLen(v) { morphLen = v; } };
     })();
 
     /* ---------- Logo du hero : tracé animé ---------- */

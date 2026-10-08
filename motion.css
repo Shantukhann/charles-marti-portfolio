@@ -979,3 +979,35 @@ html.dark .fog-hint { color: #e6e8ee; background: rgba(30,34,48,.55); }
     .motion #home h1.reveal { padding: 24px 12px; margin: -24px -12px; }
     .fog-hint { font-size: .75rem; max-width: calc(100vw - 2rem); text-align: center; }
 }
+
+/* =====================================================
+   v70 : easter egg Snake (4 clics rapides sur le logo de l'accueil) — grande fenêtre centrée
+   ===================================================== */
+.snake-back {
+    position: fixed; inset: 0; z-index: 90; opacity: 0; pointer-events: none; transition: opacity .5s ease;
+    background: rgba(240,244,255,.45); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+html.dark .snake-back { background: rgba(8,10,16,.55); }
+.snake-back.on { opacity: 1; pointer-events: auto; }
+.snake-wrap {
+    position: fixed; left: 50%; top: 50%; z-index: 91; width: 520px; height: 520px;
+    opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s;
+}
+.snake-wrap.on { opacity: 1; pointer-events: auto; visibility: visible; transition: opacity .35s ease; }
+.snake-cv {
+    display: block; border-radius: 26px; outline: none; touch-action: none; cursor: default;
+    box-shadow: 0 30px 80px rgba(106,140,240,.3);
+}
+.snake-x {
+    position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer;
+    font-size: 13px; line-height: 1; color: #4A4C50; background: rgba(255,255,255,.8);
+    transition: transform .2s ease, background .2s ease;
+}
+.snake-x:hover { transform: scale(1.12); background: #fff; }
+html.dark .snake-x { color: #e6e8ee; background: rgba(40,45,62,.9); }
+.snake-help {
+    position: absolute; left: 0; right: 0; top: calc(100% + 12px); text-align: center; font-size: .8rem; letter-spacing: .02em;
+    color: #4A4C50;
+}
+html.dark .snake-help { color: rgba(230,232,238,.8); }
+#home svg.snake-hide { opacity: 0 !important; transition: opacity .35s ease; pointer-events: none; }
