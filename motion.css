@@ -754,3 +754,18 @@ html.dark .cv-logo { filter: drop-shadow(0 8px 26px rgba(130,150,255,.5)); }
 .curtain.is-in .cv-logo   { transform: scale(1); opacity: 1; transition: transform 1s cubic-bezier(.2,.8,.2,1) .4s, opacity .4s ease .4s; }
 .curtain.is-hold .cv-logo { transform: scale(1); opacity: 1; transition: none; }
 .curtain.is-out .cv-logo  { transform: scale(1.1); opacity: 0; transition: transform .5s ease, opacity .35s ease; }
+
+/* =====================================================
+   v45 : logo et hero plus fluides
+   ===================================================== */
+/* Le logo flotte sur le processeur graphique (aucun recalcul à chaque image) */
+.motion #home svg { animation: float-gpu 7s ease-in-out infinite; will-change: transform; backface-visibility: hidden; }
+@keyframes float-gpu { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -10px, 0); } }
+/* Invisible jusqu'au début du tracé (il démarre une fois la page prête) */
+.motion #home svg path:not(.draw) { opacity: 0; }
+
+/* Le hero s'éloigne et s'efface au défilement via l'animation native du navigateur : suit le doigt sans saccade */
+@supports (animation-timeline: scroll()) {
+    .motion #home > div { animation: hero-out linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
+    @keyframes hero-out { to { translate: 0 16vh; opacity: 0; } }
+}

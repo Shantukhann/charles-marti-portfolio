@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 42;
+    window.MOTION_VERSION = 45;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -51,7 +51,10 @@
 
     /* ---------- Position du pointeur (partagée) ---------- */
     const pointer = { x: -9999, y: -9999 };
-    addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
+    addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; pointer.t = performance.now(); }, { passive: true });
+    const touchPos = e => { const t = e.touches && e.touches[0]; if (t) { pointer.x = t.clientX; pointer.y = t.clientY; pointer.t = performance.now(); } };
+    addEventListener('touchstart', touchPos, { passive: true });
+    addEventListener('touchmove', touchPos, { passive: true });
 
     /* ---------- Indices de cascade (listes + pastilles) ---------- */
     $$('.reveal').forEach(r => {
@@ -65,7 +68,8 @@
         path.style.setProperty('--len', Math.ceil(path.getTotalLength()));
         restart(path, 'draw');
     }
-    drawLogo();
+    const startDraw = () => requestAnimationFrame(() => requestAnimationFrame(drawLogo));
+    if (document.readyState === 'complete') startDraw(); else addEventListener('load', startDraw, { once: true });
 
     /* ---------- Timelines qui se remplissent ---------- */
     const timelines = $$('.timeline-line').map(el => {
@@ -89,6 +93,7 @@
     /* ---------- Parallax (fond fluide + hero) ---------- */
     const shapes = $$('.fluid-shape');
     const heroInner = $('#home > div');
+    const cssHero = !!(window.CSS && CSS.supports && CSS.supports('animation-timeline', 'scroll()'));
     const shapeScroll = [0.05, -0.04, 0.07, -0.06];
     const shapeMouse = [24, -32, 16, -26];
     let mouseX = 0, mouseY = 0;
@@ -117,8 +122,7 @@
         }
 
         if (heroInner && y < innerHeight * 1.2) {
-            heroInner.style.translate = `0 ${y * 0.18}px`;
-            heroInner.style.opacity = String(clamp(1 - y / (innerHeight * 0.9), 0, 1));
+            if (!cssHero) heroInner.style.opacity = String(clamp(1 - y / (innerHeight * 0.9), 0, 1)); // sinon : CSS (voir motion.css)
             if (scrollCue) scrollCue.style.opacity = String(clamp(1 - y / 200, 0, 1));
         }
 
@@ -431,7 +435,7 @@ void main(){
         }).observe(menuBtn, { attributes: true, attributeFilter: ['aria-expanded'] });
     }
 
-    /* ---------- Fond fluide WebGL : couleurs qui se mélangent ---------- */
+    /* ---------- Fond fluide WebGL : couleurs qui se mélangent, avec mémoire du passage ---------- */
     (function initFluid() {
         const host = $('.fluid-container');
         if (!host) return;
@@ -441,12 +445,39 @@ void main(){
         if (!gl) return; // repli : les bulles CSS d'origine restent affichées
 
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
-        const PREC = (hp && hp.precision > 0) ? 'precision highp float;' : 'precision mediump float;';
+        const highp = !!(hp && hp.precision > 0);
+        const PREC = highp ? 'precision highp float;' : 'precision mediump float;';
         const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
-        const fs = `
+
+        /* Le déplacement laissé par le curseur est stocké sur 16 bits (2 canaux par axe), lu avec une interpolation manuelle :
+           c'est précis et ça marche sur tous les appareils, sans textures flottantes. */
+        const LIB = `
+const float MAXD=.35;
+vec2 decodeTex(vec4 c){
+  float qx=floor(c.r*255.+.5)*256.+floor(c.g*255.+.5);
+  float qy=floor(c.b*255.+.5)*256.+floor(c.a*255.+.5);
+  return ((vec2(qx,qy)/65535.)-.5)*2.*MAXD;
+}
+vec4 encodeTex(vec2 v){
+  vec2 q=floor(clamp(v/MAXD*.5+.5,0.,1.)*65535.+.5);
+  vec2 hi=floor(q/256.); vec2 lo=q-hi*256.;
+  return vec4(hi.x,lo.x,hi.y,lo.y)/255.;
+}
+vec2 sampleD(sampler2D tex,vec2 uv,vec2 size){
+  vec2 p=uv*size-.5; vec2 i=floor(p); vec2 f=p-i;
+  vec2 a=decodeTex(texture2D(tex,(i+.5)/size));
+  vec2 b=decodeTex(texture2D(tex,(i+vec2(1.5,.5))/size));
+  vec2 c=decodeTex(texture2D(tex,(i+vec2(.5,1.5))/size));
+  vec2 d=decodeTex(texture2D(tex,(i+1.5)/size));
+  return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
+}`;
+
+        const fsDisplay = `
 ${PREC}
-uniform vec2 uRes; uniform float uTime; uniform vec2 uMouse; uniform float uScroll;
+uniform vec2 uRes; uniform float uTime; uniform float uScroll;
 uniform vec3 uC1; uniform vec3 uC2; uniform vec3 uC3; uniform vec3 uC4; uniform vec3 uBase; uniform float uK;
+uniform sampler2D uSim; uniform vec2 uSimSize; uniform float uSimOn;
+${LIB}
 float hash(vec2 p){vec3 p3=fract(vec3(p.xyx)*.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
   return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);}
@@ -454,9 +485,10 @@ float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.02+ve
 void main(){
   vec2 uv=gl_FragCoord.xy/uRes; float asp=uRes.x/uRes.y;
   vec2 p=(uv-.5)*vec2(asp,1.)*1.5; p.y+=uScroll;
-  vec2 m=(uMouse-.5)*vec2(asp,1.)*1.5; m.y+=uScroll;
-  vec2 d=p-m; float r=length(d);
-  p+=vec2(-d.y,d.x)*exp(-r*r*3.5)*.55;           // le curseur remue le fluide
+  if(uSimOn>.5){
+    vec2 off=sampleD(uSim,uv,uSimSize);            // trace laissée par le curseur / le doigt
+    p-=off*vec2(asp,1.)*1.5*4.2;                    // les couleurs sont entraînées puis se mélangent
+  }
   float t=uTime;
   vec2 q=vec2(fbm(p+t*.7),fbm(p+vec2(5.2,1.3)-t*.6));
   vec2 s=vec2(fbm(p+2.*q+vec2(1.7,9.2)+t*.5),fbm(p+2.*q+vec2(8.3,2.8)-t*.45));
@@ -468,23 +500,88 @@ void main(){
   col=mix(uBase,col,uK);
   gl_FragColor=vec4(col,1.);
 }`;
-        const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
-        const prog = gl.createProgram();
-        gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
-        gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
-        gl.linkProgram(prog);
-        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-        gl.useProgram(prog);
+
+        /* Simulation : à chaque image, le déplacement est entraîné par lui-même (advection), légèrement diffusé,
+           atténué, puis augmenté là où passe le curseur. */
+        const fsSim = `
+precision highp float;
+uniform sampler2D uPrev; uniform vec2 uSimSize; uniform vec2 uPtr; uniform vec2 uVel;
+uniform float uAsp; uniform float uDecay; uniform float uRad; uniform float uAdv;
+${LIB}
+void main(){
+  vec2 uv=gl_FragCoord.xy/uSimSize;
+  vec2 d=sampleD(uPrev,uv,uSimSize);
+  vec2 src=uv-d*uAdv;
+  vec2 e=1./uSimSize;
+  vec2 c0=sampleD(uPrev,src,uSimSize);
+  vec2 n=(sampleD(uPrev,src+vec2(e.x,0.),uSimSize)+sampleD(uPrev,src-vec2(e.x,0.),uSimSize)
+         +sampleD(uPrev,src+vec2(0.,e.y),uSimSize)+sampleD(uPrev,src-vec2(0.,e.y),uSimSize))*.25;
+  vec2 v=mix(c0,n,.25)*uDecay;                      // diffusion + atténuation lente
+  vec2 dp=(uv-uPtr)*vec2(uAsp,1.);
+  v+=uVel*exp(-dot(dp,dp)/(uRad*uRad));            // le curseur pousse le fluide
+  gl_FragColor=encodeTex(clamp(v,-vec2(MAXD),vec2(MAXD)));
+}`;
+
+        const compile = (type, src) => {
+            const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+            return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+        };
+        const link = (fsSrc) => {
+            const v = compile(gl.VERTEX_SHADER, vs), f = compile(gl.FRAGMENT_SHADER, fsSrc);
+            if (!v || !f) return null;
+            const p = gl.createProgram();
+            gl.attachShader(p, v); gl.attachShader(p, f); gl.linkProgram(p);
+            return gl.getProgramParameter(p, gl.LINK_STATUS) ? p : null;
+        };
+        const progDisp = link(fsDisplay);
+        if (!progDisp) return;
+        const progSim = highp ? link(fsSim) : null;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-        const loc = gl.getAttribLocation(prog, 'a');
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        [progDisp, progSim].forEach(p => {
+            if (!p) return;
+            gl.useProgram(p);
+            const l = gl.getAttribLocation(p, 'a');
+            gl.enableVertexAttribArray(l);
+            gl.vertexAttribPointer(l, 2, gl.FLOAT, false, 0, 0);
+        });
 
-        const U = n => gl.getUniformLocation(prog, n);
-        const uRes = U('uRes'), uTime = U('uTime'), uMouse = U('uMouse'), uScroll = U('uScroll');
-        const uC = [U('uC1'), U('uC2'), U('uC3'), U('uC4')], uBase = U('uBase'), uK = U('uK');
+        const UD = n => gl.getUniformLocation(progDisp, n);
+        const dRes = UD('uRes'), dTime = UD('uTime'), dScroll = UD('uScroll'), dBase = UD('uBase'), dK = UD('uK');
+        const dC = [UD('uC1'), UD('uC2'), UD('uC3'), UD('uC4')];
+        const dSim = UD('uSim'), dSimSize = UD('uSimSize'), dSimOn = UD('uSimOn');
+        const US = n => gl.getUniformLocation(progSim, n);
+        const sPrev = progSim && US('uPrev'), sSize = progSim && US('uSimSize'), sPtr = progSim && US('uPtr'), sVel = progSim && US('uVel');
+        const sAsp = progSim && US('uAsp'), sDecay = progSim && US('uDecay'), sRad = progSim && US('uRad'), sAdv = progSim && US('uAdv');
+
+        // textures de simulation (ping-pong)
+        let SW = 0, SH = 0, simOK = false, rd = 0;
+        const tex = [null, null], fbo = [null, null];
+        function buildSim() {
+            if (!progSim) return;
+            [0, 1].forEach(i => { if (tex[i]) gl.deleteTexture(tex[i]); if (fbo[i]) gl.deleteFramebuffer(fbo[i]); });
+            SW = lite ? 112 : 160;
+            SH = Math.max(2, Math.round(SW * innerHeight / innerWidth));
+            const zero = new Uint8Array(SW * SH * 4);
+            for (let i = 0; i < zero.length; i += 4) { zero[i] = 128; zero[i + 2] = 128; } // déplacement nul
+            simOK = true;
+            for (let i = 0; i < 2; i++) {
+                tex[i] = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, tex[i]);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, SW, SH, 0, gl.RGBA, gl.UNSIGNED_BYTE, zero);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                fbo[i] = gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo[i]);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex[i], 0);
+                if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) simOK = false;
+            }
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            rd = 0;
+        }
 
         const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
         const palettes = {
@@ -509,7 +606,7 @@ void main(){
             canvas.width = Math.max(2, Math.round(innerWidth * k));
             canvas.height = Math.max(2, Math.round(innerHeight * k));
             gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.uniform2f(uRes, canvas.width, canvas.height);
+            buildSim();
         }
         resize();
         addEventListener('resize', resize);
@@ -524,13 +621,42 @@ void main(){
             if (lite && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
             const dt = Math.min(0.05, (now - last) / 1000);
             last = now;
-            tAcc += dt * 0.1 * (1 + pulse * 10);
+            tAcc += dt * (lite ? 0.15 : 0.1) * (1 + pulse * 10);
             pulse *= 0.96;
 
-            if (pointer.x > -999) {
-                mx += (pointer.x / innerWidth - mx) * 0.06;
-                my += ((1 - pointer.y / innerHeight) - my) * 0.06;
+            // pointeur actif (souris ou doigt récent) : le fluide le suit ; sinon, un parcours doux et continu
+            const touched = pointer.x > -999 && (now - (pointer.t || 0)) < 2500;
+            const tx = touched ? pointer.x / innerWidth : 0.5 + 0.3 * Math.sin(tAcc * 1.6);
+            const ty = touched ? 1 - pointer.y / innerHeight : 0.5 + 0.25 * Math.cos(tAcc * 1.2 + 1);
+            const pmx = mx, pmy = my, follow = touched ? 0.3 : 0.04;
+            mx += (tx - mx) * follow;
+            my += (ty - my) * follow;
+
+            // 1) simulation : la trace du passage est entraînée, diffusée et s'estompe lentement
+            if (simOK) {
+                const gain = touched ? 1.1 : 0.5, lim = 0.09;
+                const vx = Math.max(-lim, Math.min(lim, (mx - pmx) * gain));
+                const vy = Math.max(-lim, Math.min(lim, (my - pmy) * gain));
+                gl.useProgram(progSim);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo[1 - rd]);
+                gl.viewport(0, 0, SW, SH);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, tex[rd]);
+                gl.uniform1i(sPrev, 0);
+                gl.uniform2f(sSize, SW, SH);
+                gl.uniform2f(sPtr, mx, my);
+                gl.uniform2f(sVel, vx, vy);
+                gl.uniform1f(sAsp, innerWidth / innerHeight);
+                gl.uniform1f(sDecay, lite ? 0.987 : 0.994);
+                gl.uniform1f(sRad, touched ? 0.1 : 0.14);
+                gl.uniform1f(sAdv, 0.06);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+                rd = 1 - rd;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                gl.viewport(0, 0, canvas.width, canvas.height);
             }
+
+            // 2) affichage : les couleurs du fond, déformées par cette trace
             const dark = root.classList.contains('dark');
             const set = dark ? palettesDark : palettes;
             const target = set[root.dataset.page] || set.cv;
@@ -539,13 +665,21 @@ void main(){
             current.forEach((c, i) => c.forEach((_, k) => { c[k] += (target[i][k] - c[k]) * spd; }));
             baseNow.forEach((_, k) => { baseNow[k] += (baseT[k] - baseNow[k]) * spd; });
             kNow += ((dark ? 1.0 : 0.8) - kNow) * spd;
-            current.forEach((c, i) => gl.uniform3f(uC[i], c[0], c[1], c[2]));
-            gl.uniform3f(uBase, baseNow[0], baseNow[1], baseNow[2]);
-            gl.uniform1f(uK, kNow);
 
-            gl.uniform1f(uTime, tAcc);
-            gl.uniform2f(uMouse, mx, my);
-            gl.uniform1f(uScroll, scrollY * 0.0004);
+            gl.useProgram(progDisp);
+            current.forEach((c, i) => gl.uniform3f(dC[i], c[0], c[1], c[2]));
+            gl.uniform3f(dBase, baseNow[0], baseNow[1], baseNow[2]);
+            gl.uniform1f(dK, kNow);
+            gl.uniform2f(dRes, canvas.width, canvas.height);
+            gl.uniform1f(dTime, tAcc);
+            gl.uniform1f(dScroll, scrollY * 0.0004);
+            gl.uniform1f(dSimOn, simOK ? 1 : 0);
+            if (simOK) {
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, tex[rd]);
+                gl.uniform1i(dSim, 0);
+                gl.uniform2f(dSimSize, SW, SH);
+            }
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             requestAnimationFrame(frame);
         }
