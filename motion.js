@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 109;
+    window.MOTION_VERSION = 110;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -189,7 +189,7 @@
             curPage = id || curPage;
             const s = pagesFog[curPage];
             if (s) { dens.set(s.d); live.set(s.l); } else { dens.fill(255); live.fill(0); }
-            heat.fill(0); rowAct.fill(1); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
+            lx = -999; heat.fill(0); rowAct.fill(1); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
             if (!s && !touchedEver) hint.classList.remove('gone');
             if (!s) window.__fogArm && window.__fogArm();
         };
@@ -234,7 +234,15 @@
         window.__fogArm = armAuto; armAuto();
         /* clavier : un élément qui prend le focus (Tab…) est révélé là où il se trouve */
         document.addEventListener('focusin', e => { const r = e.target.getBoundingClientRect(); if (r.width && r.height && r.bottom > 0 && r.top < innerHeight) stroke(r.left + r.width / 2, r.top + r.height / 2); });
-        addEventListener('pointermove', e => stroke(e.clientX, e.clientY), { passive: true });
+        /* Les navigateurs envoient parfois un « faux » mouvement de souris à l'ouverture de la page ou après un changement d'affichage (la souris n'a pas bougé) : on l'ignore.
+           Le premier événement sert de point de départ, et il faut un vrai déplacement (≥ 4 px) pour peindre. */
+        addEventListener('pointermove', e => {
+            if (e.pointerType === 'mouse') {
+                if (lx < -900) { lx = e.clientX; ly = e.clientY; lt = performance.now(); return; }
+                if (Math.hypot(e.clientX - lx, e.clientY - ly) < 4) return;
+            }
+            stroke(e.clientX, e.clientY);
+        }, { passive: true });
         addEventListener('touchmove', e => { const t = e.touches[0]; if (t) stroke(t.clientX, t.clientY); }, { passive: true });
         addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
 
