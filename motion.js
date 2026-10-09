@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 108;
+    window.MOTION_VERSION = 109;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -230,7 +230,7 @@
         window.__fogPoke = stroke;
         /* premier écran : si personne ne bouge, il se dégage seul après 2,5 s (le contenu d'accueil doit toujours être lisible) ; le reste attend le geste */
         let autoTimer = 0;
-        const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 2300) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 2500); };
+        const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 3600) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 3800); };
         window.__fogArm = armAuto; armAuto();
         /* clavier : un élément qui prend le focus (Tab…) est révélé là où il se trouve */
         document.addEventListener('focusin', e => { const r = e.target.getBoundingClientRect(); if (r.width && r.height && r.bottom > 0 && r.top < innerHeight) stroke(r.left + r.width / 2, r.top + r.height / 2); });
