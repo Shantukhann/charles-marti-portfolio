@@ -3,7 +3,7 @@
     'use strict';
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    window.MOTION_VERSION = 100;
+    window.MOTION_VERSION = 108;
     const root = document.documentElement;
     root.classList.add('motion');
 
@@ -100,7 +100,7 @@
         const DUR = 6000;                                  // levée de secours sans aucun geste (ms), après 14 s d'inactivité
         const REACH = 300;                                 // rayon (px) autour du passage où la brume peut se dissiper de proche en proche, de l'intérieur vers l'extérieur
         const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
-        const SPREAD = 200;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
+        const SPREAD = 42;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
         const R = 100;                                     // rayon de dissipation autour du pointeur (px)
         const dens = new Uint8Array(COLS * ROWS).fill(255);
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
@@ -175,7 +175,7 @@
         const heat = new Uint8Array(COLS * ROWS);          // « chaleur » laissée par le passage : la réaction en chaîne n'agit qu'autour
         const coarse = matchMedia('(pointer: coarse)').matches;
         let lastTouch = performance.now();                 // dernier geste de l'utilisateur
-        let touchedEver = false;
+        let touchedEver = false, lastUser = -1e9;           // lastUser : dernier vrai geste de l'utilisateur (l'ouverture automatique ne compte pas)
         let simActive = true, anyVisible = true, lastSY = -1;   // la simulation ne tourne que quand un geste vient d'avoir lieu (économie de batterie)
         const live = new Uint8Array(COLS * ROWS);           // cellules « libérées » : seules celles proches d'un passage se dissipent de proche en proche
         const rowAct = new Uint8Array(ROWS), rowNext = new Uint8Array(ROWS), procRows = new Int32Array(ROWS);   // lignes à faire avancer
@@ -191,13 +191,19 @@
             if (s) { dens.set(s.d); live.set(s.l); } else { dens.fill(255); live.fill(0); }
             heat.fill(0); rowAct.fill(1); lastTouch = performance.now(); canvas.style.display = ''; simActive = true; anyVisible = true; lastSY = -1;
             if (!s && !touchedEver) hint.classList.remove('gone');
+            if (!s) window.__fogArm && window.__fogArm();
         };
         /* Indice discret, tant que l'utilisateur n'a rien gratté */
         const hint = document.createElement('div');
         hint.className = 'fog-hint';
         hint.setAttribute('aria-hidden', 'true');
         document.body.appendChild(hint);
-        const setHint = () => { hint.textContent = (root.lang || 'fr').startsWith('en') ? (coarse ? 'Swipe to clear the mist' : 'Move your mouse to clear the mist') : (coarse ? 'Glissez le doigt pour dissiper la brume' : 'Passez la souris pour dissiper la brume'); };
+        const setHint = () => {
+            const en = (root.lang || 'fr').startsWith('en');
+            const txt = en ? (coarse ? 'Swipe to clear the mist' : 'Move your mouse to clear the mist') : (coarse ? 'Glissez le doigt pour dissiper la brume' : 'Passez la souris pour dissiper la brume');
+            hint.innerHTML = '<i class="fa-solid fa-hand-pointer fog-hint-icon" aria-hidden="true"></i><span></span>';
+            hint.lastChild.textContent = txt;
+        };
         setHint(); document.addEventListener('langchange', setHint);
         /* le pointeur (souris ou doigt) gratte la brume : elle se déchire autour de lui, puis le trou s'étend un peu de lui-même */
         const clearAt = (cx, cy, strength, rad = R) => {
@@ -212,16 +218,22 @@
                     dens[i] = dens[i] > k ? dens[i] - k : 0;
                 }
         };
-        const stroke = (x, y) => {
+        const stroke = (x, y, auto) => {
             const now = performance.now();
             const sp = lx > -900 ? Math.hypot(x - lx, y - ly) / Math.max(1, now - lt) : 0;
             lx = x; ly = y; lt = now; lastTouch = now; simActive = true;
-            hint.classList.add('gone'); touchedEver = true;
+            if (!auto) { hint.classList.add('gone'); touchedEver = true; lastUser = performance.now(); }   // l'ouverture automatique ne compte pas comme un geste : l'indice reste visible tant que la brume est là
             /* chaque passage libère toute la brume affichée à l'écran : elle se dissipe à partir de l'épicentre, vers l'extérieur */
             for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) { live[i] = 1; rowAct[(i / COLS) | 0] = 1; }
             clearAt(x, y, Math.min(.6, .12 + sp * .3));
         };
         window.__fogPoke = stroke;
+        /* premier écran : si personne ne bouge, il se dégage seul après 2,5 s (le contenu d'accueil doit toujours être lisible) ; le reste attend le geste */
+        let autoTimer = 0;
+        const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 2300) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 2500); };
+        window.__fogArm = armAuto; armAuto();
+        /* clavier : un élément qui prend le focus (Tab…) est révélé là où il se trouve */
+        document.addEventListener('focusin', e => { const r = e.target.getBoundingClientRect(); if (r.width && r.height && r.bottom > 0 && r.top < innerHeight) stroke(r.left + r.width / 2, r.top + r.height / 2); });
         addEventListener('pointermove', e => stroke(e.clientX, e.clientY), { passive: true });
         addEventListener('touchmove', e => { const t = e.touches[0]; if (t) stroke(t.clientX, t.clientY); }, { passive: true });
         addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
@@ -234,12 +246,12 @@
             const r0 = Math.max(0, Math.floor(sy / CELL)), r1 = Math.min(ROWS, Math.ceil((sy + vh) / CELL) + 1);
             let any = anyVisible;
             /* filet de sécurité : sans aucun geste (clavier, lecteur d'écran…), la brume finit par se lever lentement */
-            const idle = now - lastTouch > (coarse ? 7000 : 14000);
+            const idle = now - lastTouch > (coarse ? 5000 : 8000);
             const slow = idle ? dt / DUR * 255 : 0;
             if (idle) for (let r = r0; r < r1; r++) rowAct[r] = 1;
             if (simActive || idle) {
                 const spr = dt / SPREAD * 255;                 // réaction en chaîne : une zone dégagée entraîne ses voisines
-                const cool = dt / HEAT * 255, tail = dt / 900 * 255;   // « tail » : finit de dégager les derniers résidus dans la zone libérée
+                const cool = dt / HEAT * 255, tail = dt / 450 * 255;   // « tail » : finit de dégager les derniers résidus dans la zone libérée
                 let changedAll = false, nProc = 0;
                 rowNext.fill(0);
                 /* on ne traite que les lignes « actives », où qu'elles soient dans la page : rien ne reste figé à moitié en défilant */
@@ -255,7 +267,7 @@
                         const ul = r > 0 && c > 0 ? dens[i - COLS - 1] : x, ur = r > 0 && c < COLS - 1 ? dens[i - COLS + 1] : x;
                         const dl = r < ROWS - 1 && c > 0 ? dens[i + COLS - 1] : x, dr = r < ROWS - 1 && c < COLS - 1 ? dens[i + COLS + 1] : x;
                         const gap = x - Math.min(l, rt, u, d, ul + 25, ur + 25, dl + 25, dr + 25);                  // à quel point un voisin est plus dégagé que moi
-                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 230) * (lv ? 1 : hh / 255) * wob[i] * (.8 + rnd[i] / 255 * .4);   // bord irrégulier, comme de la fumée
+                        let y = x - slow - (lv && x < 110 ? tail : 0) - spr * Math.min(1, gap / 115) * (lv ? 1 : hh / 255) * wob[i] * (.8 + rnd[i] / 255 * .4);   // bord irrégulier, comme de la fumée
                         if (y < (lv ? 50 : 0)) y = 0;                 // plus de petits bouts de brume dans la zone libérée
                         if (y !== x) changed = true;
                         nxt[i] = y;
@@ -274,6 +286,7 @@
                 for (let i = r0 * COLS, e = r1 * COLS; i < e; i++) if (dens[i]) { any = true; break; }
                 anyVisible = any; lastSY = sy;
             }
+            hint.classList.toggle('gone', !any || performance.now() - lastUser < 2500);   // l'indice s'affiche dès qu'il reste de la brume à l'écran et que rien ne bouge depuis 2,5 s (y compris sur les sections découvertes en défilant)
             if (any) {
                 canvas.style.display = '';
                 gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bgTex);
@@ -703,7 +716,7 @@
         }
 
         if (heroInner && y < innerHeight * 1.2) {
-            if (!cssHero) heroInner.style.opacity = String(clamp(1 - y / (innerHeight * 0.9), 0, 1)); // sinon : CSS (voir motion.css)
+            if (!cssHero) heroInner.style.opacity = String(clamp(1 - (y - innerHeight * 0.4) / (innerHeight * 0.6), 0, 1)); // sinon : CSS (voir motion.css)
             if (scrollCue) scrollCue.style.opacity = String(clamp(1 - y / 200, 0, 1));
         }
 

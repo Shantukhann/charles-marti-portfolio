@@ -16,6 +16,7 @@
     const EN = {
         /* navigation */
         'Aller aux expériences': 'Skip to experience',
+        'Retour en haut': 'Back to top',
         'Mon Parcours': 'My Journey',
         'Expériences': 'Experience',
         'Compétences': 'Skills',

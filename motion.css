@@ -766,8 +766,8 @@ html.dark .cv-logo { filter: drop-shadow(0 8px 26px rgba(130,150,255,.5)); }
 
 /* Le hero s'éloigne et s'efface au défilement via l'animation native du navigateur : suit le doigt sans saccade */
 @supports (animation-timeline: scroll()) {
-    .motion #home > div { animation: hero-out linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
-    @keyframes hero-out { to { translate: 0 16vh; opacity: 0; } }
+    .motion #home > div { animation: hero-out linear both; animation-timeline: scroll(root); animation-range: 0 100vh; }
+    @keyframes hero-out { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }   /* plus de glissement vers le bas : les boutons ne passent plus sous le bandeau */
 }
 
 /* =====================================================
@@ -1035,3 +1035,58 @@ html.dark #home h1 .ch { background-image: linear-gradient(#e6e8ee, #e6e8ee); }
 html.dark #mon-degrade .s1, html.dark #mon-degrade .s4 { stop-color: #8fa8ff; }
 html.dark #mon-degrade .s2 { stop-color: #b79bf0; }
 html.dark #mon-degrade .s3 { stop-color: #f09ab8; }
+
+/* =====================================================
+   Confort : retour en haut, lien de menu actif, impression
+   ===================================================== */
+.to-top {
+    position: fixed; right: 1.1rem; bottom: 1.1rem; z-index: 45; width: 46px; height: 46px; border: 0; border-radius: 50%; cursor: pointer;
+    display: grid; place-items: center; font-size: 1rem; color: #2d3035;
+    background: rgba(255,255,255,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 0 8px 26px rgba(106,140,240,.25), inset 0 0 0 1px rgba(255,255,255,.7);
+    opacity: 0; transform: translateY(14px) scale(.9); pointer-events: none; visibility: hidden;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.25,1.2,.4,1), visibility 0s linear .35s;
+}
+.to-top.show { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .35s ease, transform .35s cubic-bezier(.25,1.2,.4,1); }
+.to-top:hover { transform: translateY(-3px) scale(1.06); }
+html.dark .to-top { color: #e6e8ee; background: rgba(30,34,48,.82); box-shadow: 0 8px 26px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.08); }
+@media (max-width: 640px) { .to-top { right: .8rem; bottom: .9rem; width: 42px; height: 42px; } }
+
+#navbar a.is-current { color: #2d3035; }
+#navbar a.is-current::after { transform: scaleX(1); transform-origin: left; }
+html.dark #navbar a.is-current { color: #fff; }
+
+@media print {
+    .fog-canvas, .fog-hint, .snake-back, .snake-wrap, .to-top, .fluid-container, .curtain, #navbar { display: none !important; }
+    .reveal, .reveal.active, .fogt { opacity: 1 !important; animation: none !important; filter: none !important; transform: none !important; }
+    body { background: #fff !important; }
+}
+
+/* =====================================================
+   Indice « dissiper la brume » : apparition rapide, plus visible, intégré au style du site (verre dépoli, icône animée, halo qui pulse)
+   ===================================================== */
+.fog-hint {
+    bottom: 1.8rem; display: flex; align-items: center; gap: .65rem; padding: .72rem 1.35rem .72rem 1.05rem;
+    font-size: .95rem; font-weight: 500; letter-spacing: .01em; white-space: nowrap; color: #2d3035;
+    background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,255,255,.76));
+    border: 1px solid rgba(255,255,255,.95);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 12px 38px rgba(106,140,240,.34), 0 0 0 1px rgba(155,122,216,.2);
+    animation: hint-pop .55s cubic-bezier(.25,1.25,.4,1) .3s backwards, hint-float 3.2s ease-in-out .9s infinite;
+}
+.fog-hint::after {                                   /* halo qui pulse autour de la pastille */
+    content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 0 rgba(106,140,240,.45); animation: hint-ring 2.4s ease-out 1s infinite;
+}
+.fog-hint-icon {
+    font-size: 1.05rem; background-image: linear-gradient(135deg, #5b7cf0, #9b7ad8 55%, #e0759a);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    transform-origin: 30% 80%; animation: hint-wave 1.7s ease-in-out .9s infinite;
+}
+@keyframes hint-pop { from { opacity: 0; scale: .88; } }
+@keyframes hint-ring { 0% { box-shadow: 0 0 0 0 rgba(106,140,240,.45); } 70%, 100% { box-shadow: 0 0 0 16px rgba(106,140,240,0); } }
+@keyframes hint-wave { 0%, 100% { transform: translateX(-3px) rotate(-10deg); } 50% { transform: translateX(5px) rotate(12deg); } }
+html.dark .fog-hint { color: #f1f3f8; background: linear-gradient(135deg, rgba(34,38,54,.9), rgba(24,27,40,.78)); border-color: rgba(255,255,255,.1); box-shadow: 0 12px 38px rgba(0,0,0,.5), 0 0 0 1px rgba(143,168,255,.28); }
+html.dark .fog-hint-icon { background-image: linear-gradient(135deg, #8fa8ff, #b79bf0 55%, #f09ab8); }
+@media (max-width: 640px) { .fog-hint { bottom: 1.3rem; font-size: .85rem; padding: .6rem 1.1rem .6rem .9rem; } }
+@media (prefers-reduced-motion: reduce) { .fog-hint, .fog-hint::after, .fog-hint-icon { animation: none; } }
