@@ -152,10 +152,9 @@
         "Je prépare mes photos et vidéos d'événements. En attendant, retrouvez mon parcours et mes chiffres clés.": "I'm preparing my event photos and videos. In the meantime, discover my background and key figures.",
         'Mes expériences': 'My experience',
         'Me contacter': 'Contact me',
-        'Galas & dîners assis': 'Galas & seated dinners',
-        'Cocktails & buffets': 'Cocktails & buffets',
-        'Cérémonies & plénières': 'Ceremonies & plenaries',
-        'Soirées & réceptions': 'Parties & receptions',
+        'Galas & dîners': 'Galas & dinners',
+        'Cocktails & soirées': 'Cocktails & parties',
+        'Séminaires & cérémonies': 'Seminars & ceremonies',
         /* mon parcours */
         "Chef de projet événementiel, je conçois, produis et coordonne des séminaires, galas et soirées jusqu'à 2000 participants. Voici ce qui me définit, d'où je viens, et ce que je recherche.": "As an event project manager, I design, produce and coordinate seminars, galas and parties for up to 2000 attendees. Here is what defines me, where I come from, and what I'm looking for.",
         'participants': 'attendees',

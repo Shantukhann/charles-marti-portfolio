@@ -1099,51 +1099,51 @@
            Pour ajouter une réalisation : déposez l'image dans le dossier images/
            puis ajoutez UNE ligne dans PROJECTS ci-dessous.
            - Photo :  { src: 'images/mon-image.jpg', cat: 'galas', title: '...', sub: '...', caption: '...' }
-           - Vidéo :  { video: 'ID_YOUTUBE', cat: 'ceremonies', title: '...', sub: '...', caption: '...' }
+           - Vidéo :  { video: 'ID_YOUTUBE', cat: 'seminaires', title: '...', sub: '...', caption: '...' }
              (la miniature YouTube est utilisée automatiquement ; 'thumb' est facultatif)
            Une image introuvable est simplement masquée : vous pouvez publier sans avoir tous les supports.
-           Catégories possibles : galas, cocktails, ceremonies, soirees (voir CATEGORIES).
+           Catégories possibles : galas, cocktails, seminaires (voir CATEGORIES).
            Convention de nom des fichiers : <categorie>-<description>.jpg (ex. gala-diner-eclairage-bleu.jpg).
            ===================================================================== */
-        const CATEGORIES = { galas: 'Galas & dîners assis', cocktails: 'Cocktails & buffets', ceremonies: 'Cérémonies & plénières', soirees: 'Soirées & réceptions' };
+        const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies' };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
-            { src: 'images/gala-diner-pavillon-armenonville.jpg', cat: 'galas', title: "Pavillon d'Armenonville", sub: "Jusqu'à 2000 personnes",
-              caption: "Événement au Pavillon d'Armenonville (2000 personnes) - Scénographie",
-              en: { sub: 'Up to 2000 people', caption: "Event at the Pavillon d'Armenonville (2000 people) - Scenography" } },
-            { src: 'images/gala-diner-eclairage-bleu.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
+            { src: 'images/diner-de-gala.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
               caption: 'Dîner de gala - salle plongée dans un éclairage scénique bleu',
               en: { title: 'Gala dinner', sub: 'Blue stage lighting', caption: 'Gala dinner - room bathed in blue stage lighting' } },
-            { src: 'images/gala-dressage-assiettes.jpg', cat: 'galas', title: 'Dressage des assiettes', sub: 'Brigade de cuisine',
-              caption: 'Dressage des assiettes en salle - brigade de cuisine à l\'œuvre',
-              en: { title: 'Plating', sub: 'Kitchen brigade', caption: 'Plating on site - the kitchen brigade at work' } },
-            { src: 'images/cocktail-gala-etudiant-1200.jpg', cat: 'cocktails', title: 'Gala étudiant', sub: 'Cocktail · 1200 participants',
-              caption: 'Gala de grande envergure - Cocktail (1200 participants)',
-              en: { title: 'Student gala', sub: 'Cocktail · 1200 attendees', caption: 'Large-scale gala - Cocktail (1200 attendees)' } },
-            { src: 'images/cocktail-boule-a-facettes.jpg', cat: 'cocktails', title: 'Cocktail', sub: 'Boule à facettes & pyramides de verres',
-              caption: 'Espace cocktail - boule à facettes et pyramides de verres',
-              en: { title: 'Cocktail', sub: 'Mirror ball & champagne towers', caption: 'Cocktail area - mirror ball and glass pyramids' } },
-            { src: 'images/cocktail-buffet-vue-dessus.jpg', cat: 'cocktails', title: 'Buffet', sub: 'Mise en scène culinaire',
-              caption: 'Buffet - présentation et mise en scène culinaire',
-              en: { title: 'Buffet', sub: 'Culinary staging', caption: 'Buffet - presentation and culinary staging' } },
-            { src: 'images/cocktail-buffet-salle-des-fetes.jpg', cat: 'cocktails', title: 'Buffet de réception', sub: 'Salle des fêtes',
-              caption: 'Buffet de réception en salle des fêtes',
-              en: { title: 'Reception buffet', sub: 'Village hall', caption: 'Reception buffet in a village hall' } },
-            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'ceremonies', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
+            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', title: 'Dîner remise de prix', sub: 'Pavillon d\'Armenonville · jusqu\'à 2000 personnes',
+              caption: 'Dîner remise de prix au Pavillon d\'Armenonville (2000 personnes)',
+              en: { title: 'Awards dinner', sub: 'Pavillon d\'Armenonville · up to 2000 people', caption: 'Awards dinner at the Pavillon d\'Armenonville (2000 people)' } },
+            { src: 'images/diner-spectacle.jpg', cat: 'galas', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
+              caption: 'Dîner-spectacle - scène, écrans et éclairage',
+              en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
+            { src: 'images/dressage-diner-assis.jpg', cat: 'galas', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
+              caption: 'Dressage des assiettes d\'un dîner assis - brigade de cuisine à l\'œuvre',
+              en: { title: 'Seated dinner plating', sub: 'Kitchen brigade', caption: 'Plating for a seated dinner - the kitchen brigade at work' } },
+            { src: 'images/cocktail-gala-etudiant.jpg', cat: 'cocktails', title: 'Cocktail gala étudiant', sub: 'Décor floral & éclairage rose',
+              caption: 'Cocktail gala étudiant - arbres en fleurs, buffets et éclairage rose',
+              en: { title: 'Student gala cocktail', sub: 'Floral decor & pink lighting', caption: 'Student gala cocktail - blossom trees, buffets and pink lighting' } },
+            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
+              caption: 'Soirée dansante - cocktail (1200 participants)',
+              en: { title: 'Dance party', sub: 'Cocktail · 1200 attendees', caption: 'Dance party - cocktail (1200 attendees)' } },
+            { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
+              caption: 'Cocktail et soirée dansante - boule à facettes et pyramides de verres',
+              en: { title: 'Cocktail and dance party', sub: 'Mirror ball & champagne towers', caption: 'Cocktail and dance party - mirror ball and glass pyramids' } },
+            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'seminaires', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
               caption: "Teaser vidéo - Séminaire d'entreprise Corporate",
               en: { title: 'Corporate seminar', sub: 'Video teaser', caption: 'Video teaser - Corporate company seminar' } },
-            { src: 'images/ceremonie-remise-diplomes.jpg', cat: 'ceremonies', title: 'Remise de diplômes', sub: 'Cérémonie en plénière',
+            { src: 'images/diner-seminaire.jpg', cat: 'seminaires', title: 'Dîner séminaire', sub: 'Tables rondes & vue sur le lac',
+              caption: 'Dîner séminaire - salle avec vue panoramique, tables rondes dressées',
+              en: { title: 'Seminar dinner', sub: 'Round tables & lake view', caption: 'Seminar dinner - room with panoramic view, round tables set' } },
+            { src: 'images/buffet-seminaire.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Salle des fêtes',
+              caption: 'Buffet de séminaire en salle des fêtes',
+              en: { title: 'Seminar buffet', sub: 'Village hall', caption: 'Seminar buffet in a village hall' } },
+            { src: 'images/buffet-seminaire-2.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Mise en scène culinaire',
+              caption: 'Buffet de séminaire - présentation et mise en scène culinaire',
+              en: { title: 'Seminar buffet', sub: 'Culinary staging', caption: 'Seminar buffet - presentation and culinary staging' } },
+            { src: 'images/ceremonie-de-remise-de-diplomes.jpg', cat: 'seminaires', title: 'Cérémonie de remise de diplômes', sub: 'Plénière',
               caption: 'Cérémonie de remise de diplômes - plénière, scène et mise en lumière',
-              en: { title: 'Graduation ceremony', sub: 'Plenary session', caption: 'Graduation ceremony - plenary session, stage and lighting' } },
-            { src: 'images/ceremonie-diner-scene-ecrans.jpg', cat: 'ceremonies', title: 'Dîner de gala & scène', sub: 'Scène, écrans & éclairage',
-              caption: 'Dîner de gala - scène, écrans et éclairage',
-              en: { title: 'Gala dinner & stage', sub: 'Stage, screens & lighting', caption: 'Gala dinner - stage, screens and lighting' } },
-            { src: 'images/soiree-salle-de-bal-rose.jpg', cat: 'soirees', title: 'Salle de réception', sub: 'Décor floral & éclairage rose',
-              caption: 'Grande salle de réception - arbres en fleurs, buffets et éclairage rose',
-              en: { title: 'Reception hall', sub: 'Floral decor & pink lighting', caption: 'Large reception hall - blossom trees, buffets and pink lighting' } },
-            { src: 'images/soiree-salle-vue-lac.jpg', cat: 'soirees', title: 'Salle avec vue', sub: 'Tables rondes & vue sur le lac',
-              caption: 'Salle de réception avec vue panoramique - tables rondes dressées',
-              en: { title: 'Room with a view', sub: 'Round tables & lake view', caption: 'Reception room with panoramic view - round tables set' } }
+              en: { title: 'Graduation ceremony', sub: 'Plenary session', caption: 'Graduation ceremony - plenary session, stage and lighting' } }
         ];
 
         /* ---------- Galerie : construction (n'affiche que les supports disponibles) ---------- */
