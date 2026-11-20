@@ -147,7 +147,7 @@
         'Bonjour Charles,': 'Hello Charles,',
         /* réalisations */
         'Retour au CV': 'Back to CV',
-        "Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Cliquez sur une vignette pour parcourir les photos et vidéos de l'événement.": 'Galas, parties, seminars: a selection of events I designed, produced and coordinated. Click a card to browse the photos and videos of the event.',
+        "Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Choisissez une catégorie pour découvrir les photos et vidéos en détail.": 'Galas, parties, seminars: a selection of events I designed, produced and coordinated. Pick a category to explore the photos and videos in detail.',
         'Ma sélection arrive bientôt': 'My selection is coming soon',
         "Je prépare mes photos et vidéos d'événements. En attendant, retrouvez mon parcours et mes chiffres clés.": "I'm preparing my event photos and videos. In the meantime, discover my background and key figures.",
         'Mes expériences': 'My experience',

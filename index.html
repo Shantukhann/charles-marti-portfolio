@@ -141,19 +141,52 @@
             color: #2D3035; box-shadow: 0 6px 20px -6px rgba(0,0,0,.15);
         }
 
-        /* Réalisations : grille de cartes (remplace la maçonnerie) */
-        #gallery-grid.gallery-masonry { display: grid; columns: auto; grid-template-columns: 1fr; gap: 1.25rem; }
-        @media (min-width: 640px)  { #gallery-grid.gallery-masonry { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
-        @media (min-width: 1024px) { #gallery-grid.gallery-masonry { grid-template-columns: repeat(3, 1fr); gap: 1.75rem; } }
-        #gallery-grid.gallery-masonry > .gallery-item { margin: 0; break-inside: auto; display: block; aspect-ratio: 4 / 3; border-radius: 1.5rem; }
-        @media (min-width: 640px) { #gallery-grid.gallery-masonry > .gallery-item { aspect-ratio: 5 / 4; } }
-        /* le filtre masque réellement les cartes (la règle « display:block » ci-dessus l'emportait sur .hidden) */
-        #gallery-grid > .gallery-item.hidden { display: none; }
-        .gallery-item .g-shade { background: linear-gradient(to top, rgba(20,22,30,.78) 0%, rgba(20,22,30,.38) 38%, rgba(20,22,30,0) 68%); }
-        .gallery-item .g-title { font-size: 1.2rem; font-weight: 500; letter-spacing: -.01em; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
-        .gallery-item .g-cta { transition: transform .35s ease, background-color .35s ease, color .35s ease; }
-        .gallery-item:hover .g-cta { transform: translateX(3px); background: #fff; color: #2D3035; }
-        .g-badge { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        /* Réalisations : mosaïque d'accueil */
+        .mosaic { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+        .m-tile { position: relative; display: block; width: 100%; min-height: 15rem; overflow: hidden; border-radius: 1.75rem; text-align: left; color: #fff; cursor: pointer; isolation: isolate;
+            box-shadow: 0 14px 34px -12px rgba(30,32,45,.35); transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; animation: rise .8s ease-out calc(var(--i, 0) * .09s) backwards; }
+        .m-tile:hover { transform: translateY(-4px); box-shadow: 0 26px 48px -14px rgba(30,32,45,.45); }
+        .m-collage { position: absolute; inset: 0; display: grid; gap: 3px; background: #fff; }
+        .m-collage.c2 { grid-template-columns: 3fr 2fr; }
+        .m-collage.c3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+        .m-collage.c3 .m-cell:first-child { grid-row: 1 / 3; }
+        .m-collage.c4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr 1fr; }
+        .m-cell { position: relative; overflow: hidden; min-height: 0; }
+        .m-cell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.8,.2,1); }
+        .m-tile:hover .m-cell img { transform: scale(1.06); }
+        .m-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,20,30,.82) 0%, rgba(18,20,30,.45) 34%, rgba(18,20,30,0) 66%); }
+        .m-body { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
+        .m-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .8rem; margin-bottom: .55rem; border-radius: 9999px; background: rgba(255,255,255,.82); color: #2D3035; font-size: .75rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .m-title { font-size: 1.5rem; font-weight: 500; letter-spacing: -.015em; line-height: 1.15; text-shadow: 0 2px 16px rgba(0,0,0,.35); }
+        .m-sub { font-size: .875rem; font-weight: 300; color: rgba(255,255,255,.88); }
+        .m-cta { margin-top: .75rem; display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.45); font-size: .8rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background-color .35s ease, color .35s ease, gap .35s ease; }
+        .m-tile:hover .m-cta { background: #fff; color: #2D3035; gap: .8rem; }
+        .m-tile:focus-visible { outline: 3px solid #6A8CF0; outline-offset: 3px; }
+        @media (min-width: 768px) {
+            .mosaic { grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(2, 15rem) 13.5rem; gap: 1.5rem; }
+            .m-tile { min-height: 0; }
+            .m-tile.m-galas { grid-column: 1 / 5; grid-row: 1 / 3; }
+            .m-tile.m-cocktails { grid-column: 5 / 7; grid-row: 1; }
+            .m-tile.m-seminaires { grid-column: 5 / 7; grid-row: 2; }
+            .m-tile.m-videos { grid-column: 1 / 7; grid-row: 3; }
+            .m-collage.c4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; }
+            .m-tile.m-galas .m-title { font-size: 2.1rem; }
+            .m-tile.m-galas .m-body, .m-tile.m-videos .m-body { padding: 2rem; }
+        }
+        .m-play { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 4rem; height: 4rem; border-radius: 9999px; background: rgba(255,255,255,.85); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding-left: .2rem; box-shadow: 0 10px 30px rgba(0,0,0,.3); transition: transform .4s ease; }
+        .m-tile:hover .m-play { transform: translate(-50%, -50%) scale(1.1); }
+        .m-skel { border-radius: 1.75rem; }
+        /* Vue détaillée */
+        .g-justify { display: flex; flex-wrap: wrap; gap: 1.1rem; }
+        .g-justify > .gallery-item { flex: 1 1 100%; aspect-ratio: var(--r); border-radius: 1.25rem; }
+        @media (min-width: 640px) {
+            .g-justify { gap: 1.5rem; }
+            .g-justify > .gallery-item { height: var(--h); aspect-ratio: auto; flex: var(--r) 1 calc(var(--h) * var(--r)); max-width: calc(var(--h) * var(--r) * 1.45); }
+        }
+        .gallery-item .g-shade { background: linear-gradient(to top, rgba(20,22,30,.7) 0%, rgba(20,22,30,.25) 34%, rgba(20,22,30,0) 60%); }
+        .gallery-item .g-title { font-size: 1.05rem; font-weight: 500; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+        .g-back { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; font-size: .875rem; font-weight: 500; color: #2D3035; background: transparent; border: 1px solid rgba(45,48,53,.25); transition: background-color .3s ease, transform .3s ease; }
+        .g-back:hover { background: #fff; transform: translateX(-2px); }
         .filter-btn { display: inline-flex; align-items: center; gap: .55rem; }
         .filter-btn .f-count { font-size: .72rem; min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(45,48,53,.08); color: #4A4C50; font-weight: 500; }
         .filter-btn.is-active .f-count { background: rgba(255,255,255,.75); color: #2D3035; }
@@ -744,23 +777,27 @@
                     <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
                 <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
                 <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
-                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Cliquez sur une vignette pour parcourir les photos et vidéos de l'événement.
+                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Choisissez une catégorie pour découvrir les photos et vidéos en détail.
                 </p>
             </div>
 
-            <div id="gallery-bar" class="mb-10 reveal flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div id="gallery-filters" class="flex flex-wrap justify-center md:justify-start gap-3" role="group" aria-label="Filtrer les réalisations"></div>
-                <p id="gallery-count" data-i18n-skip class="text-sm font-light text-pastel-text text-center sm:text-right" aria-live="polite"></p>
+            <!-- Mosaïque d'accueil (construite par le script, section « Réalisations ») -->
+            <div id="realisations-top"></div>
+            <div id="gallery-home" class="mosaic" aria-busy="true">
+                <div class="g-skel m-skel" style="height: 240px"></div>
+                <div class="g-skel m-skel" style="height: 240px"></div>
+                <div class="g-skel m-skel" style="height: 240px"></div>
+                <div class="g-skel m-skel" style="height: 240px"></div>
             </div>
 
-            <!-- La galerie se construit depuis la liste PROJECTS (voir le script, section « Réalisations ») -->
-            <div id="gallery-grid" class="gallery-masonry" aria-busy="true">
-                <div class="g-skel" style="height: 230px"></div>
-                <div class="g-skel" style="height: 320px"></div>
-                <div class="g-skel" style="height: 260px"></div>
-                <div class="g-skel" style="height: 300px"></div>
-                <div class="g-skel" style="height: 240px"></div>
-                <div class="g-skel" style="height: 280px"></div>
+            <!-- Vue détaillée d'une catégorie -->
+            <div id="gallery-detail" class="hidden">
+                <div id="gallery-bar" class="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div id="gallery-filters" class="flex flex-wrap items-center gap-3" role="group" aria-label="Choisir une catégorie"></div>
+                    <p id="gallery-count" data-i18n-skip class="text-sm font-light text-pastel-text" aria-live="polite"></p>
+                </div>
+                <div id="gallery-cat-head" data-i18n-skip class="mb-8"></div>
+                <div id="gallery-grid" class="g-justify"></div>
             </div>
 
             <!-- Affiché tant qu'aucun support n'est disponible -->
@@ -1122,93 +1159,89 @@
         route();
 
         /* =====================================================================
-           RÉALISATIONS : LISTE DES PROJETS
-           Pour ajouter une réalisation : déposez l'image dans le dossier images/
-           puis ajoutez UNE ligne dans PROJECTS ci-dessous.
+           RÉALISATIONS : LISTE DES SUPPORTS
+           Pour ajouter un support : déposez le fichier dans images/ (photo) ou videos/ (vidéo)
+           puis ajoutez UNE entrée dans PROJECTS ci-dessous.
            - Photo :  { src: 'images/mon-image.jpg', cat: 'galas', title: '...', sub: '...', caption: '...' }
-           - Vidéo hébergée :  { file: 'videos/mon-montage.mp4', poster: 'videos/mon-montage.jpg', cat: 'galas', title: '...', sub: '...', caption: '...' }
-             (déposez le .mp4 et l'image d'aperçu dans le dossier videos/ ; la vidéo ne se charge qu'au clic)
-           - Vidéo YouTube :  { video: 'ID_YOUTUBE', cat: 'seminaires', title: '...', sub: '...', caption: '...' }
-             (la miniature YouTube est utilisée automatiquement ; 'thumb' est facultatif)
-           Pour regrouper des supports proches sous une seule vignette : ajoutez group: 'cle' à chaque entrée et définissez la clé dans GROUPS.
-           Une image introuvable est simplement masquée : vous pouvez publier sans avoir tous les supports.
-           Catégories possibles : galas, cocktails, seminaires (voir CATEGORIES).
-           Convention de nom des fichiers : <categorie>-<description>.jpg (ex. gala-diner-eclairage-bleu.jpg).
+           - Vidéo hébergée :  { file: 'videos/mon-montage.mp4', poster: 'videos/mon-montage.jpg', cat: 'videos', title: '...', sub: '...', caption: '...' }
+             (la vidéo ne se charge qu'au clic ; l'image d'aperçu 'poster' est obligatoire)
+           - Vidéo YouTube :  { video: 'ID_YOUTUBE', cat: 'videos', title: '...', sub: '...', caption: '...' }
+           Catégories : galas, cocktails, seminaires (photos) et videos (voir CATEGORIES / CAT_INFO).
+           Convention de nom : <categorie>-<description>.jpg. Une image introuvable est simplement masquée.
            ===================================================================== */
-        const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies' };
-        /* Regroupement : les entrées qui partagent le même `group` s'affichent sous UNE vignette (on les parcourt dans la fenêtre d'aperçu). Une entrée sans `group` reste seule. */
-        const GROUPS = {
-            'gala-etudiant': { cat: 'galas', title: 'Gala étudiant', sub: 'Cocktail & soirée', en: { title: 'Student gala', sub: 'Cocktail & party' } },
-            'remise-de-prix': { cat: 'galas', title: 'Remise de prix', sub: 'Pavillon d\'Armenonville', en: { title: 'Awards ceremony', sub: 'Pavillon d\'Armenonville' } },
-            'gala-spectacle': { cat: 'galas', title: 'Gala & spectacle', sub: 'Dîner & spectacle', en: { title: 'Gala & show', sub: 'Dinner & show' } },
-            'diner-de-gala': { cat: 'galas', title: 'Dîner de gala', sub: 'Dîner assis & dressage', en: { title: 'Gala dinner', sub: 'Seated dinner & plating' } },
-            'soiree-dansante': { cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail & soirée dansante', en: { title: 'Dance party', sub: 'Cocktail & dance party' } },
-            'soiree-etudiante': { cat: 'cocktails', title: 'Soirée étudiante', sub: 'Montage vidéo', en: { title: 'Student party', sub: 'Video montage' } },
-            'soiree-cocktail': { cat: 'cocktails', title: 'Soirée cocktail', sub: 'Montage vidéo', en: { title: 'Cocktail party', sub: 'Video montage' } },
-            'seminaire': { cat: 'seminaires', title: 'Séminaire', sub: 'Dîner & buffets', en: { title: 'Seminar', sub: 'Dinner & buffets' } },
-            'remise-diplomes': { cat: 'seminaires', title: 'Remise de diplômes', sub: 'Cérémonie & soirée', en: { title: 'Graduation', sub: 'Ceremony & party' } }
+        const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies', videos: 'Vidéos' };
+        const CAT_INFO = {
+            galas:      { sub: 'Dîners de gala, spectacles & mise en place', en: { title: 'Galas & dinners', sub: 'Gala dinners, shows & table setting' } },
+            cocktails:  { sub: 'Cocktails, buffets & soirées dansantes', en: { title: 'Cocktails & parties', sub: 'Cocktails, buffets & dance parties' } },
+            seminaires: { sub: 'Séminaires, buffets & cérémonies', en: { title: 'Seminars & ceremonies', sub: 'Seminars, buffets & ceremonies' } },
+            videos:     { sub: 'Les montages vidéo de mes événements', en: { title: 'Videos', sub: 'Video montages of my events' } }
         };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
-            { src: 'images/cocktail-gala-etudiant.jpg', cat: 'galas', group: 'gala-etudiant', title: 'Cocktail gala étudiant', sub: 'Décor floral & éclairage rose',
-              caption: 'Cocktail gala étudiant - arbres en fleurs, buffets et éclairage rose',
-              en: { title: 'Student gala cocktail', sub: 'Floral decor & pink lighting', caption: 'Student gala cocktail - blossom trees, buffets and pink lighting' } },
-            { file: 'videos/gala-etudiant.mp4', poster: 'videos/gala-etudiant.jpg', cat: 'galas', group: 'gala-etudiant', title: 'Gala étudiant', sub: 'Montage vidéo',
-              caption: 'Gala étudiant - montage vidéo',
-              en: { title: 'Student gala', sub: 'Video montage', caption: 'Student gala - video montage' } },
-            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', group: 'remise-de-prix', title: 'Dîner remise de prix', sub: 'Pavillon d\'Armenonville · jusqu\'à 2000 personnes',
-              caption: 'Dîner remise de prix au Pavillon d\'Armenonville (2000 personnes)',
-              en: { title: 'Awards dinner', sub: 'Pavillon d\'Armenonville · up to 2000 people', caption: 'Awards dinner at the Pavillon d\'Armenonville (2000 people)' } },
-            { file: 'videos/gala-remise-de-prix.mp4', poster: 'videos/gala-remise-de-prix.jpg', cat: 'galas', group: 'remise-de-prix', title: 'Gala & remise de prix', sub: 'Montage vidéo',
-              caption: 'Gala et remise de prix - montage vidéo',
-              en: { title: 'Gala & awards ceremony', sub: 'Video montage', caption: 'Gala and awards ceremony - video montage' } },
-            { src: 'images/diner-spectacle.jpg', cat: 'galas', group: 'gala-spectacle', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
-              caption: 'Dîner-spectacle - scène, écrans et éclairage',
-              en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
-            { file: 'videos/gala-spectacle.mp4', poster: 'videos/gala-spectacle.jpg', cat: 'galas', group: 'gala-spectacle', title: 'Gala & spectacle', sub: 'Montage vidéo',
-              caption: 'Gala et spectacle - montage vidéo',
-              en: { title: 'Gala & show', sub: 'Video montage', caption: 'Gala and show - video montage' } },
-            { src: 'images/diner-de-gala.jpg', cat: 'galas', group: 'diner-de-gala', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
+            { src: 'images/diner-de-gala.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
               caption: 'Dîner de gala - salle plongée dans un éclairage scénique bleu',
               en: { title: 'Gala dinner', sub: 'Blue stage lighting', caption: 'Gala dinner - room bathed in blue stage lighting' } },
-            { src: 'images/dressage-diner-assis.jpg', cat: 'galas', group: 'diner-de-gala', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
-              caption: 'Dressage des assiettes d\'un dîner assis - brigade de cuisine à l\'œuvre',
+            { src: 'images/diner-spectacle.jpg', cat: 'galas', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
+              caption: 'Dîner-spectacle - scène, écrans et éclairage',
+              en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
+            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', title: 'Dîner remise de prix', sub: "Jusqu'à 2000 personnes",
+              caption: 'Dîner remise de prix (2000 personnes)',
+              en: { title: 'Awards dinner', sub: 'Up to 2000 people', caption: 'Awards dinner (2000 people)' } },
+            { src: 'images/dressage-diner-assis.jpg', cat: 'galas', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
+              caption: "Dressage des assiettes d'un dîner assis - brigade de cuisine à l'œuvre",
               en: { title: 'Seated dinner plating', sub: 'Kitchen brigade', caption: 'Plating for a seated dinner - the kitchen brigade at work' } },
-            { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', group: 'soiree-dansante', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
+            { src: 'images/cocktail-gala-etudiant.jpg', cat: 'cocktails', title: 'Cocktail gala étudiant', sub: 'Décor floral & éclairage rose',
+              caption: 'Cocktail gala étudiant - arbres en fleurs, buffets et éclairage rose',
+              en: { title: 'Student gala cocktail', sub: 'Floral decor & pink lighting', caption: 'Student gala cocktail - blossom trees, buffets and pink lighting' } },
+            { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
               caption: 'Cocktail et soirée dansante - boule à facettes et pyramides de verres',
               en: { title: 'Cocktail and dance party', sub: 'Mirror ball & champagne towers', caption: 'Cocktail and dance party - mirror ball and glass pyramids' } },
-            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', group: 'soiree-dansante', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
+            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
               caption: 'Soirée dansante - cocktail (1200 participants)',
               en: { title: 'Dance party', sub: 'Cocktail · 1200 attendees', caption: 'Dance party - cocktail (1200 attendees)' } },
-            { file: 'videos/soiree-etudiante.mp4', poster: 'videos/soiree-etudiante.jpg', cat: 'cocktails', group: 'soiree-etudiante', title: 'Soirée étudiante', sub: 'Montage vidéo',
-              caption: 'Soirée étudiante - montage vidéo',
-              en: { title: 'Student party', sub: 'Video montage', caption: 'Student party - video montage' } },
-            { file: 'videos/cocktail-voutes.mp4', poster: 'videos/cocktail-voutes.jpg', cat: 'cocktails', group: 'soiree-cocktail', title: 'Soirée cocktail', sub: 'Montage vidéo',
-              caption: 'Soirée cocktail - montage vidéo',
-              en: { title: 'Cocktail party', sub: 'Video montage', caption: 'Cocktail party - video montage' } },
-            { src: 'images/diner-seminaire.jpg', cat: 'seminaires', group: 'seminaire', title: 'Dîner séminaire', sub: 'Tables rondes & vue sur le lac',
+            { src: 'images/diner-seminaire.jpg', cat: 'seminaires', title: 'Dîner séminaire', sub: 'Tables rondes & vue panoramique',
               caption: 'Dîner séminaire - salle avec vue panoramique, tables rondes dressées',
-              en: { title: 'Seminar dinner', sub: 'Round tables & lake view', caption: 'Seminar dinner - room with panoramic view, round tables set' } },
-            { src: 'images/buffet-seminaire.jpg', cat: 'seminaires', group: 'seminaire', title: 'Buffet séminaire', sub: 'Salle des fêtes',
-              caption: 'Buffet de séminaire en salle des fêtes',
-              en: { title: 'Seminar buffet', sub: 'Village hall', caption: 'Seminar buffet in a village hall' } },
-            { src: 'images/buffet-seminaire-2.jpg', cat: 'seminaires', group: 'seminaire', title: 'Buffet séminaire', sub: 'Mise en scène culinaire',
+              en: { title: 'Seminar dinner', sub: 'Round tables & panoramic view', caption: 'Seminar dinner - room with panoramic view, round tables set' } },
+            { src: 'images/buffet-seminaire.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Mise en place du buffet',
+              caption: 'Buffet de séminaire - mise en place',
+              en: { title: 'Seminar buffet', sub: 'Buffet set-up', caption: 'Seminar buffet - set-up' } },
+            { src: 'images/buffet-seminaire-2.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Mise en scène culinaire',
               caption: 'Buffet de séminaire - présentation et mise en scène culinaire',
               en: { title: 'Seminar buffet', sub: 'Culinary staging', caption: 'Seminar buffet - presentation and culinary staging' } },
-            { src: 'images/ceremonie-de-remise-de-diplomes.jpg', cat: 'seminaires', group: 'remise-diplomes', title: 'Cérémonie de remise de diplômes', sub: 'Plénière',
+            { src: 'images/ceremonie-de-remise-de-diplomes.jpg', cat: 'seminaires', title: 'Cérémonie de remise de diplômes', sub: 'Plénière',
               caption: 'Cérémonie de remise de diplômes - plénière, scène et mise en lumière',
               en: { title: 'Graduation ceremony', sub: 'Plenary session', caption: 'Graduation ceremony - plenary session, stage and lighting' } },
-            { file: 'videos/remise-diplomes-soiree.mp4', poster: 'videos/remise-diplomes-soiree.jpg', cat: 'seminaires', group: 'remise-diplomes', title: 'Remise de diplôme & soirée', sub: 'Montage vidéo',
+            { file: 'videos/gala-remise-de-prix.mp4', poster: 'videos/gala-remise-de-prix.jpg', cat: 'videos', title: 'Gala & remise de prix', sub: 'Montage vidéo',
+              caption: 'Gala et remise de prix - montage vidéo',
+              en: { title: 'Gala & awards ceremony', sub: 'Video montage', caption: 'Gala and awards ceremony - video montage' } },
+            { file: 'videos/gala-spectacle.mp4', poster: 'videos/gala-spectacle.jpg', cat: 'videos', title: 'Gala & spectacle', sub: 'Montage vidéo',
+              caption: 'Gala et spectacle - montage vidéo',
+              en: { title: 'Gala & show', sub: 'Video montage', caption: 'Gala and show - video montage' } },
+            { file: 'videos/gala-etudiant.mp4', poster: 'videos/gala-etudiant.jpg', cat: 'videos', title: 'Gala étudiant', sub: 'Montage vidéo',
+              caption: 'Gala étudiant - montage vidéo',
+              en: { title: 'Student gala', sub: 'Video montage', caption: 'Student gala - video montage' } },
+            { file: 'videos/soiree-etudiante.mp4', poster: 'videos/soiree-etudiante.jpg', cat: 'videos', title: 'Soirée étudiante', sub: 'Montage vidéo',
+              caption: 'Soirée étudiante - montage vidéo',
+              en: { title: 'Student party', sub: 'Video montage', caption: 'Student party - video montage' } },
+            { file: 'videos/cocktail-voutes.mp4', poster: 'videos/cocktail-voutes.jpg', cat: 'videos', title: 'Soirée cocktail', sub: 'Montage vidéo',
+              caption: 'Soirée cocktail - montage vidéo',
+              en: { title: 'Cocktail party', sub: 'Video montage', caption: 'Cocktail party - video montage' } },
+            { file: 'videos/remise-diplomes-soiree.mp4', poster: 'videos/remise-diplomes-soiree.jpg', cat: 'videos', title: 'Remise de diplôme & soirée', sub: 'Montage vidéo',
               caption: 'Remise de diplôme et soirée - montage vidéo',
               en: { title: 'Graduation & party', sub: 'Video montage', caption: 'Graduation ceremony and party - video montage' } }
         ];
 
-        /* ---------- Galerie : construction (n'affiche que les supports disponibles) ---------- */
+        /* ---------- Galerie : mosaïque d'accueil + vue détaillée par catégorie ---------- */
+        const galleryHome = document.getElementById('gallery-home');
+        const galleryDetail = document.getElementById('gallery-detail');
         const galleryGrid = document.getElementById('gallery-grid');
         const galleryFilters = document.getElementById('gallery-filters');
         const galleryCount = document.getElementById('gallery-count');
         const galleryEmpty = document.getElementById('gallery-empty');
-        let galleryItems = [];
+        const galleryHead = document.getElementById('gallery-cat-head');
+        let galleryItems = [];   // cartes de la vue détaillée (catégorie ouverte)
+        let allMedia = [];       // tous les supports disponibles : { p, img, thumb, dataset }
+        let currentCat = null;
 
         const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -1230,10 +1263,15 @@
 
         const isEn = () => document.documentElement.lang === 'en';
         const loc = p => (isEn() && p.en) ? Object.assign({}, p, p.en) : p;
-        const trLabel = s => (window.SITE ? window.SITE.tr(s) : s);
-
         const isVid = p => !!(p.video || p.file);
-        // Remplit (ou met à jour) les textes d'une tuile dans la langue courante
+        const catTitle = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.title : (CATEGORIES[c] || '');
+        const catSub = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.sub : (CAT_INFO[c] ? CAT_INFO[c].sub : '');
+        const plural = (n, fr, en) => isEn() ? n + ' ' + en + (n > 1 ? 's' : '') : n + ' ' + fr + (n > 1 ? 's' : '');
+        const mediaLabel = c => {
+            const list = allMedia.filter(m => m.p.cat === c);
+            const nv = list.filter(m => isVid(m.p)).length, np = list.length - nv;
+            return [np && plural(np, 'photo', 'photo'), nv && plural(nv, 'vidéo', 'video')].filter(Boolean).join(' · ');
+        };
         function fillMember(m) {
             const p = loc(m.p);
             m.dataset = {
@@ -1242,105 +1280,117 @@
                 caption: p.caption || p.title || '', title: p.title || '', sub: p.sub || ''
             };
         }
-        function fillTile(el) {
-            const first = el._members[0], n = el._members.length, g = el._g ? loc(el._g) : loc(first.p);
-            el._members.forEach(m => { fillMember(m); m.gtitle = g.title || ''; });
-            const nv = el._members.filter(m => isVid(m.p)).length, np = n - nv;
-            const label = isEn()
-                ? [np && np + (np > 1 ? ' photos' : ' photo'), nv && nv + (nv > 1 ? ' videos' : ' video')]
-                : [np && np + (np > 1 ? ' photos' : ' photo'), nv && nv + (nv > 1 ? ' vidéos' : ' vidéo')];
-            el.dataset.title = g.title || '';
-            el.dataset.sub = g.sub || '';
-            el.setAttribute('aria-label', (n > 1 ? (isEn() ? 'Open the group: ' : 'Ouvrir le groupe : ') : isVid(first.p) ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + (g.title || '') + (n > 1 ? ' (' + label.filter(Boolean).join(', ') + ')' : ''));
-            const im = el.querySelector('img');
-            if (im) im.alt = first.dataset.caption || g.title || '';
-            el.querySelector('.g-title').textContent = g.title || '';
-            el.querySelector('.g-sub').textContent = g.sub || '';
-            const bd = el.querySelector('.g-badge');
-            if (bd) bd.querySelector('span').textContent = label.filter(Boolean).join(' · ');
+
+        /* --- Mosaïque d'accueil : une grande tuile illustrée par catégorie --- */
+        function renderHome() {
+            galleryHome.textContent = '';
+            galleryHome.setAttribute('aria-busy', 'false');
+            const cats = Object.keys(CATEGORIES).filter(c => allMedia.some(m => m.p.cat === c));
+            cats.forEach((c, k) => {
+                const list = allMedia.filter(m => m.p.cat === c);
+                const nCells = c === 'videos' ? Math.min(4, list.length) : c === 'galas' ? Math.min(3, list.length) : 1;
+                const el = document.createElement('button');
+                el.type = 'button';
+                el.className = 'm-tile m-' + c;
+                el.style.setProperty('--i', k);
+                el.setAttribute('data-i18n-skip', '');
+                el.setAttribute('aria-label', (isEn() ? 'See: ' : 'Voir : ') + catTitle(c) + ' (' + mediaLabel(c) + ')');
+                el.innerHTML =
+                    '<span class="m-collage c' + nCells + '">' +
+                    list.slice(0, nCells).map(m => '<span class="m-cell"><img src="' + esc(m.thumb) + '" alt="" decoding="async" style="object-position:' + (m.p.file ? 'center 38%' : 'center') + '"></span>').join('') +
+                    '</span><span class="m-shade"></span>' +
+                    (c === 'videos' ? '<span class="m-play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>' : '') +
+                    '<span class="m-body">' +
+                    '<span class="m-chip">' + (c === 'videos' ? '<i class="fa-solid fa-play" aria-hidden="true"></i>' : '<i class="fa-solid fa-images" aria-hidden="true"></i>') + esc(mediaLabel(c)) + '</span>' +
+                    '<span class="m-title">' + esc(catTitle(c)) + '</span>' +
+                    '<span class="m-sub">' + esc(catSub(c)) + '</span>' +
+                    '<span class="m-cta">' + (isEn() ? 'Explore' : 'Découvrir') + ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>' +
+                    '</span>';
+                el.addEventListener('click', () => showCategory(c));
+                galleryHome.append(el);
+            });
         }
-        function countLabel(n) { return isEn() ? n + (n > 1 ? ' events' : ' event') : n + (n > 1 ? ' événements' : ' événement'); }
+
+        /* --- Vue détaillée : photos ou vidéos d'une catégorie --- */
+        function renderDetail() {
+            const cats = Object.keys(CATEGORIES).filter(c => allMedia.some(m => m.p.cat === c));
+            galleryFilters.textContent = '';
+            const back = document.createElement('button');
+            back.type = 'button'; back.className = 'g-back';
+            back.innerHTML = '<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> ' + (isEn() ? 'Overview' : "Vue d'ensemble");
+            back.addEventListener('click', showHome);
+            galleryFilters.append(back);
+            cats.forEach(c => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'filter-btn' + (c === currentCat ? ' is-active' : '');
+                b.setAttribute('aria-pressed', String(c === currentCat));
+                b.dataset.filter = c;
+                b.append(document.createTextNode(catTitle(c)));
+                const n = document.createElement('span'); n.className = 'f-count'; n.textContent = String(allMedia.filter(m => m.p.cat === c).length); b.append(n);
+                b.addEventListener('click', () => showCategory(c));
+                galleryFilters.append(b);
+            });
+            galleryHead.innerHTML = '<h4 class="text-2xl md:text-3xl font-medium text-pastel-heading tracking-tight">' + esc(catTitle(currentCat)) + '</h4>' +
+                '<p class="mt-1 text-pastel-text font-light">' + esc(catSub(currentCat)) + '</p>';
+            const list = allMedia.filter(m => m.p.cat === currentCat);
+            galleryCount.textContent = mediaLabel(currentCat);
+            galleryGrid.textContent = '';
+            galleryItems = list.map(m => {
+                fillMember(m);
+                const p = m.p, isVideo = isVid(p), img = m.img;
+                const el = document.createElement('div');
+                el.className = 'gallery-item g-card group relative overflow-hidden rounded-2xl cursor-pointer';
+                el.setAttribute('role', 'button'); el.setAttribute('data-i18n-skip', ''); el.tabIndex = 0;
+                el.dataset.cat = p.cat;
+                el.setAttribute('aria-label', (isVideo ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + m.dataset.title);
+                el.style.setProperty('--r', String(isVideo ? Math.min(1.78, Math.max(0.5625, img.w / img.h)) : Math.min(1.78, Math.max(0.7, img.w / img.h))));
+                el.style.setProperty('--h', isVideo ? '25rem' : '17.5rem');
+                el.innerHTML =
+                    '<img src="' + esc(m.thumb) + '" alt="' + esc(m.dataset.caption) + '" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">' +
+                    (isVideo
+                        ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>'
+                        : '<span class="g-shade absolute inset-0"></span>' +
+                          '<span class="absolute inset-x-0 bottom-0 p-4 md:p-5 text-white">' +
+                          '<span class="g-title block leading-tight">' + esc(m.dataset.title) + '</span>' +
+                          '<span class="block text-xs md:text-sm text-white/85 font-light mt-0.5 empty:hidden">' + esc(m.dataset.sub) + '</span></span>');
+                const open = () => openModal(m, list);
+                el.addEventListener('click', open);
+                el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+                galleryGrid.append(el);
+                return el;
+            });
+            if (window.__staggerGallery) window.__staggerGallery();
+        }
+
+        function showCategory(c) {
+            currentCat = c;
+            galleryHome.classList.add('hidden');
+            galleryDetail.classList.remove('hidden');
+            renderDetail();
+            const top = document.getElementById('realisations-top');
+            if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+        }
+        function showHome() {
+            currentCat = null;
+            galleryDetail.classList.add('hidden');
+            galleryHome.classList.remove('hidden');
+            renderHome();
+            const top = document.getElementById('realisations-top');
+            if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+        }
 
         async function buildGallery() {
             const usable = PROJECTS.filter(p => p.file ? !!p.poster : p.video ? /^[\w-]{11}$/.test(p.video) : !!p.src);
             const found = await Promise.all(usable.map(p => loadImage(
                 p.file ? [p.poster] : p.video ? [p.thumb, 'https://img.youtube.com/vi/' + p.video + '/hqdefault.jpg'].filter(Boolean) : [p.src])));
-            const shown = usable.map((p, i) => ({ p, img: found[i] })).filter(x => x.img);
-
-            galleryGrid.textContent = '';
-            galleryGrid.setAttribute('aria-busy', 'false');
-
-            if (!shown.length) {
-                galleryGrid.classList.add('hidden');
+            allMedia = usable.map((p, i) => ({ p, img: found[i], thumb: found[i] && found[i].url })).filter(m => m.img);
+            allMedia.forEach(fillMember);
+            if (!allMedia.length) {
+                galleryHome.classList.add('hidden');
                 galleryEmpty.classList.remove('hidden');
-                document.getElementById('gallery-bar').classList.add('hidden');
                 return;
             }
-
-            // une vignette par groupe (ou par entrée isolée), dans l'ordre d'apparition
-            const tiles = new Map();
-            shown.forEach(({ p, img }, idx) => {
-                const key = p.group || ('__' + idx);
-                if (!tiles.has(key)) tiles.set(key, []);
-                tiles.get(key).push({ p, img, thumb: img.url });
-            });
-            tiles.forEach(members => {
-                const first = members[0], p = first.p, img = first.img, n = members.length;
-                const isVideo = isVid(p);
-                const el = document.createElement('div');
-                el._members = members;
-                el._g = p.group ? GROUPS[p.group] : null;
-                el.className = 'gallery-item group relative overflow-hidden rounded-2xl cursor-pointer';
-                el.setAttribute('role', 'button');
-                el.setAttribute('data-i18n-skip', '');
-                el.tabIndex = 0;
-                el.dataset.cat = (el._g && el._g.cat) || p.cat || '';
-                const pos = p.file ? 'center 22%' : 'center';
-                el.innerHTML =
-                    '<img src="' + esc(img.url) + '" alt="" decoding="async" style="object-position:' + pos + '" ' +
-                    'class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">' +
-                    '<span class="g-shade absolute inset-0"></span>' +
-                    (isVideo && n === 1 ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>' : '') +
-                    '<span class="g-badge absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/80 text-pastel-heading text-xs font-medium flex items-center gap-1.5 shadow-sm"><i class="fa-solid ' + (n > 1 ? 'fa-images' : isVideo ? 'fa-video' : 'fa-image') + '" aria-hidden="true"></i><span></span></span>' +
-                    '<span class="absolute inset-x-0 bottom-0 p-5 md:p-6 flex items-end justify-between gap-4 text-white">' +
-                    '<span class="min-w-0"><span class="g-title block leading-tight"></span>' +
-                    '<span class="g-sub block text-xs md:text-sm text-white/85 font-light mt-1 empty:hidden"></span></span>' +
-                    '<span class="g-cta shrink-0 w-10 h-10 rounded-full bg-white/25 backdrop-blur text-white flex items-center justify-center" aria-hidden="true"><i class="fa-solid fa-arrow-right text-sm"></i></span>' +
-                    '</span>';
-                fillTile(el);
-                galleryGrid.append(el);
-                galleryItems.push(el);
-                el.addEventListener('click', () => openModal(el));
-                el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(el); } });
-            });
-
-            // Filtres : uniquement les catégories qui ont au moins une réalisation affichée
-            const cats = Object.keys(CATEGORIES).filter(c => galleryItems.some(x => x.dataset.cat === c));
-            const setCount = () => { galleryCount.textContent = countLabel(galleryItems.filter(i => !i.classList.contains('hidden')).length); };
-            if (cats.length > 1) {
-                const mk = (f, label, on) => {
-                    const b = document.createElement('button');
-                    b.type = 'button'; b.className = 'filter-btn' + (on ? ' is-active' : '');
-                    b.dataset.filter = f; b.setAttribute('aria-pressed', String(on));
-                    const n = f === 'all' ? galleryItems.length : galleryItems.filter(i => i.dataset.cat === f).length;
-                    b.append(document.createTextNode(label));
-                    const c = document.createElement('span'); c.className = 'f-count'; c.textContent = String(n); b.append(c);
-                    return b;
-                };
-                [mk('all', 'Tout', true), ...cats.map(c => mk(c, CATEGORIES[c], false))].forEach(b => galleryFilters.append(b));
-                galleryFilters.addEventListener('click', e => {
-                    const btn = e.target.closest('.filter-btn');
-                    if (!btn) return;
-                    const f = btn.dataset.filter;
-                    galleryFilters.querySelectorAll('.filter-btn').forEach(b => {
-                        b.classList.toggle('is-active', b === btn);
-                        b.setAttribute('aria-pressed', String(b === btn));
-                    });
-                    galleryItems.forEach(i => i.classList.toggle('hidden', f !== 'all' && i.dataset.cat !== f));
-                    setCount();
-                });
-            }
-            setCount();
+            renderHome();
             if (window.__staggerGallery) window.__staggerGallery();
         }
 
@@ -1364,7 +1414,7 @@
         function renderItem(item) {
             modalCaption.textContent = item.dataset.caption;
             modalCounter.textContent = (currentIndex + 1) + ' / ' + currentList.length;
-            modalTitle.textContent = item.gtitle || '';
+            modalTitle.textContent = item.dataset.title || '';
             // vignettes du groupe (navigation directe)
             modalThumbs.textContent = '';
             if (currentList.length > 1) currentList.forEach((m, k) => {
@@ -1377,7 +1427,7 @@
             });
             // pastilles : catégorie + détails (séparés par « · »)
             modalMeta.textContent = '';
-            [trLabel(CATEGORIES[item.dataset.cat] || ''), ...(item.dataset.sub || '').split('·').map(s => s.trim())].filter(Boolean).forEach(t => {
+            [catTitle(item.dataset.cat), ...(item.dataset.sub || '').split('·').map(s => s.trim())].filter(Boolean).forEach(t => {
                 const s = document.createElement('span');
                 s.className = 'px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-white/85';
                 s.textContent = t;
@@ -1414,10 +1464,10 @@
             }
         }
 
-        function openModal(item) {
-            currentList = item._members;
-            currentIndex = 0;
-            renderItem(currentList[0]);
+        function openModal(m, list) {
+            currentList = list || [m];
+            currentIndex = Math.max(0, currentList.indexOf(m));
+            renderItem(m);
             lastFocus = document.activeElement;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1488,8 +1538,7 @@
 
         // changement de langue : les tuiles, le compteur et la modale ouverte suivent
         document.addEventListener('langchange', () => {
-            galleryItems.forEach(fillTile);
-            if (galleryItems.length) galleryCount.textContent = countLabel(galleryItems.filter(i => !i.classList.contains('hidden')).length);
+            if (allMedia.length) { allMedia.forEach(fillMember); if (currentCat) renderDetail(); else renderHome(); }
             if (!modal.classList.contains('hidden') && currentList[currentIndex]) renderItem(currentList[currentIndex]);
         });
 
