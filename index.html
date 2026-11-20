@@ -145,7 +145,7 @@
         .f-stage { --f-ink: #2D3035; --f-text: #4A4C50; --f-muted: rgba(74,76,80,.72); --f-accent: #6A8CF0; --f-glass: rgba(255,255,255,.75); --f-line: rgba(255,255,255,.85);
             --t-blue: #D9E4FC; --t-pink: #FBDDE4; --t-green: #DDF0C2; --t-grad: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%);
             --f-shadow: 0 10px 30px -8px rgba(0,0,0,.16);
-            position: relative; width: 100%; height: calc(100vh - 4.75rem); height: calc(100svh - 4.75rem); min-height: 560px; max-height: 1200px; overflow: hidden; color: var(--f-ink); user-select: none; -webkit-user-select: none; }
+            position: relative; width: 100%; height: calc(100vh - 4.75rem); height: calc(100svh - 4.75rem); min-height: 560px; max-height: 1200px; overflow: hidden; overflow-x: clip; overflow-y: visible; color: var(--f-ink); user-select: none; -webkit-user-select: none; }
         html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #d4d7df; --f-muted: rgba(212,215,223,.85); --f-glass: rgba(44,48,62,.9); --f-line: rgba(255,255,255,.22);
             --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
@@ -157,6 +157,10 @@
             -webkit-mask-position: 0 0, 0 100%, 0 75px; mask-position: 0 0, 0 100%, 0 75px;
             -webkit-mask-repeat: repeat-x, repeat-x, no-repeat; mask-repeat: repeat-x, repeat-x, no-repeat; }
         .f-stage.is-full .f-view { -webkit-mask-image: none; mask-image: none; }
+        /* jonction avec le pied de page : fondu au lieu d'un trait net (ni bordure, ni coupure du fond de brume) */
+        .site-footer { position: relative; }
+        .site-footer::before { content: ""; position: absolute; left: 0; right: 0; top: -110px; height: 110px; pointer-events: none; background: linear-gradient(to bottom, rgba(252,251,249,0), rgba(252,251,249,.55) 55%, #fcfbf9); }
+        html.dark .site-footer::before { background: linear-gradient(to bottom, rgba(19,21,26,0), rgba(19,21,26,.55) 55%, #13151a); }
         .f-view.is-drag { cursor: grabbing; }
         .f-view:focus-visible { box-shadow: inset 0 0 0 3px var(--f-accent); }
         .f-world { position: absolute; left: 0; top: 0; will-change: transform; }
@@ -263,7 +267,7 @@
         html.f-full body { overflow: hidden; }
         html.f-full #navbar { visibility: hidden; }
         html.f-full #page-realisations { z-index: 55; }
-        .f-stage.is-full { position: fixed; inset: 0; z-index: 40; height: 100vh; height: 100svh; max-height: none; min-height: 0;
+        .f-stage.is-full { overflow: hidden; position: fixed; inset: 0; z-index: 40; height: 100vh; height: 100svh; max-height: none; min-height: 0;
             background: radial-gradient(60vw 50vh at 12% 10%, #d6fcff, transparent 70%), radial-gradient(50vw 45vh at 88% 85%, #ffe1e5, transparent 70%), #FCFBF9; }
         html.dark .f-stage.is-full { background: radial-gradient(60vw 50vh at 12% 10%, rgba(106,140,240,.18), transparent 70%), radial-gradient(50vw 45vh at 88% 85%, rgba(221,130,159,.14), transparent 70%), #101216; }
         .f-stage.is-full .f-ctl--page, .f-stage.is-full #f-wheel { display: none; }
@@ -1211,7 +1215,7 @@
     </div>
     </main>
 
-    <footer class="bg-pastel-bg py-12 border-t border-gray-100 text-center relative z-50">
+    <footer class="site-footer bg-pastel-bg py-12 text-center relative z-50">
         <div class="max-w-4xl mx-auto px-6">
             <h4 class="text-xl font-medium text-pastel-heading mb-2">Contactez-moi</h4>
             <p class="text-sm font-light text-pastel-text mb-6">Paris (75) • Permis A2 et B</p>
