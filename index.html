@@ -1098,61 +1098,62 @@
            RÉALISATIONS : LISTE DES PROJETS
            Pour ajouter une réalisation : déposez l'image dans le dossier images/
            puis ajoutez UNE ligne dans PROJECTS ci-dessous.
-           - Photo :  { src: 'images/mon-image.jpg', cat: 'galas', title: '...', sub: '...', caption: '...' }
-           - Vidéo :  { video: 'ID_YOUTUBE', cat: 'corporate', title: '...', sub: '...', caption: '...' }
+           - Photo :  { src: 'images/mon-image.jpg', cat: 'diners', title: '...', sub: '...', caption: '...' }
+           - Vidéo :  { video: 'ID_YOUTUBE', cat: 'scenes', title: '...', sub: '...', caption: '...' }
              (la miniature YouTube est utilisée automatiquement ; 'thumb' est facultatif)
            Une image introuvable est simplement masquée : vous pouvez publier sans avoir tous les supports.
-           Catégories possibles : galas, corporate, lieux (voir CATEGORIES).
+           Catégories possibles : diners, cocktails, gastronomie, scenes, lieux (voir CATEGORIES).
+           Convention de nom des fichiers : <categorie>-<description>.jpg (ex. diner-gala-eclairage-bleu.jpg).
            ===================================================================== */
-        const CATEGORIES = { galas: 'Galas & soirées', corporate: 'Corporate', lieux: 'Lieux & scénographie' };
+        const CATEGORIES = { diners: 'Dîners de gala', cocktails: 'Cocktails', gastronomie: 'Gastronomie', scenes: 'Scène & plénières', lieux: 'Lieux & salles' };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
-            { src: 'images/CK-SD-PA.jpg', cat: 'galas', title: 'Gala étudiant', sub: 'Cocktail · 1200 participants',
+            { src: 'images/cocktail-gala-1200-participants.jpg', cat: 'cocktails', title: 'Gala étudiant', sub: 'Cocktail · 1200 participants',
               caption: 'Gala de grande envergure - Cocktail (1200 participants)',
               en: { title: 'Student gala', sub: 'Cocktail · 1200 attendees', caption: 'Large-scale gala - Cocktail (1200 attendees)' } },
-            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'corporate', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
+            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'scenes', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
               caption: "Teaser vidéo - Séminaire d'entreprise Corporate",
               en: { title: 'Corporate seminar', sub: 'Video teaser', caption: 'Video teaser - Corporate company seminar' } },
-            { src: 'images/Diner-500-personnes-PA.jpg', cat: 'lieux', title: "Pavillon d'Armenonville", sub: "Jusqu'à 2000 personnes",
+            { src: 'images/lieu-pavillon-armenonville.jpg', cat: 'lieux', title: "Pavillon d'Armenonville", sub: "Jusqu'à 2000 personnes",
               caption: "Événement au Pavillon d'Armenonville (2000 personnes) - Scénographie",
               en: { sub: 'Up to 2000 people', caption: "Event at the Pavillon d'Armenonville (2000 people) - Scenography" } },
-            { src: 'images/gala-salle-bleue.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
+            { src: 'images/diner-gala-eclairage-bleu.jpg', cat: 'diners', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
               caption: 'Dîner de gala - salle plongée dans un éclairage scénique bleu',
               en: { title: 'Gala dinner', sub: 'Blue stage lighting', caption: 'Gala dinner - room bathed in blue stage lighting' } },
-            { src: 'images/cocktail-boule-a-facettes.jpg', cat: 'galas', title: 'Cocktail', sub: 'Boule à facettes & pyramides de verres',
+            { src: 'images/cocktail-boule-a-facettes.jpg', cat: 'cocktails', title: 'Cocktail', sub: 'Boule à facettes & pyramides de verres',
               caption: 'Espace cocktail - boule à facettes et pyramides de verres',
               en: { title: 'Cocktail', sub: 'Mirror ball & champagne towers', caption: 'Cocktail area - mirror ball and glass pyramids' } },
-            { src: 'images/salle-de-bal-rose.jpg', cat: 'lieux', title: 'Salle de réception', sub: 'Décor floral & éclairage rose',
+            { src: 'images/lieu-salle-reception-rose.jpg', cat: 'lieux', title: 'Salle de réception', sub: 'Décor floral & éclairage rose',
               caption: 'Grande salle de réception - arbres en fleurs, buffets et éclairage rose',
               en: { title: 'Reception hall', sub: 'Floral decor & pink lighting', caption: 'Large reception hall - blossom trees, buffets and pink lighting' } },
-            { src: 'images/ceremonie-remise-diplomes.jpg', cat: 'corporate', title: 'Remise de diplômes', sub: 'Cérémonie en plénière',
+            { src: 'images/scene-remise-diplomes.jpg', cat: 'scenes', title: 'Remise de diplômes', sub: 'Cérémonie en plénière',
               caption: 'Cérémonie de remise de diplômes - plénière, scène et mise en lumière',
               en: { title: 'Graduation ceremony', sub: 'Plenary session', caption: 'Graduation ceremony - plenary session, stage and lighting' } },
-            { src: 'images/cocktail-lumieres-bleues.jpg', cat: 'galas', title: 'Cocktail & ambiance lumineuse', sub: 'Jeux de lumière',
+            { src: 'images/cocktail-lumieres-bleues.jpg', cat: 'cocktails', title: 'Cocktail & ambiance lumineuse', sub: 'Jeux de lumière',
               caption: 'Cocktail - ambiance lumineuse et jeux de lumière au plafond',
               en: { title: 'Cocktail & lighting ambience', sub: 'Light effects', caption: 'Cocktail - lighting ambience and ceiling light effects' } },
-            { src: 'images/dressage-assiettes.jpg', cat: 'galas', title: 'Dressage des assiettes', sub: 'Brigade de cuisine',
+            { src: 'images/gastronomie-dressage-assiettes.jpg', cat: 'gastronomie', title: 'Dressage des assiettes', sub: 'Brigade de cuisine',
               caption: 'Dressage des assiettes en salle - brigade de cuisine à l\'œuvre',
               en: { title: 'Plating', sub: 'Kitchen brigade', caption: 'Plating on site - the kitchen brigade at work' } },
-            { src: 'images/gala-scene-ecrans.jpg', cat: 'corporate', title: 'Dîner de gala & scène', sub: 'Scène, écrans & éclairage',
+            { src: 'images/scene-diner-gala-ecrans.jpg', cat: 'scenes', title: 'Dîner de gala & scène', sub: 'Scène, écrans & éclairage',
               caption: 'Dîner de gala - scène, écrans et éclairage',
               en: { title: 'Gala dinner & stage', sub: 'Stage, screens & lighting', caption: 'Gala dinner - stage, screens and lighting' } },
-            { src: 'images/cocktail-colonnes.jpg', cat: 'lieux', title: 'Espace réception', sub: 'Colonnes & jeux de lumière',
+            { src: 'images/lieu-espace-colonnes.jpg', cat: 'lieux', title: 'Espace réception', sub: 'Colonnes & jeux de lumière',
               caption: 'Espace de réception aménagé - colonnes et jeux de lumière',
               en: { title: 'Reception space', sub: 'Columns & light effects', caption: 'Reception space layout - columns and light effects' } },
-            { src: 'images/diner-tables-rouges.jpg', cat: 'galas', title: 'Dîner assis', sub: 'Mise en place des tables',
+            { src: 'images/diner-tables-rouges.jpg', cat: 'diners', title: 'Dîner assis', sub: 'Mise en place des tables',
               caption: 'Dîner assis - mise en place des tables et allée rouge',
               en: { title: 'Seated dinner', sub: 'Table setting', caption: 'Seated dinner - table setting and red aisle' } },
-            { src: 'images/buffet-salle-des-fetes.jpg', cat: 'galas', title: 'Buffet de réception', sub: 'Salle des fêtes',
+            { src: 'images/gastronomie-buffet-salle-des-fetes.jpg', cat: 'gastronomie', title: 'Buffet de réception', sub: 'Salle des fêtes',
               caption: 'Buffet de réception en salle des fêtes',
               en: { title: 'Reception buffet', sub: 'Village hall', caption: 'Reception buffet in a village hall' } },
-            { src: 'images/scene-ecrans-bleue.jpg', cat: 'corporate', title: 'Dîner & scène', sub: 'Écrans & éclairage',
+            { src: 'images/scene-diner-ecrans-bleus.jpg', cat: 'scenes', title: 'Dîner & scène', sub: 'Écrans & éclairage',
               caption: 'Dîner de gala avec scène et écrans - éclairage bleu',
               en: { title: 'Dinner & stage', sub: 'Screens & lighting', caption: 'Gala dinner with stage and screens - blue lighting' } },
-            { src: 'images/salle-lac-tables.jpg', cat: 'lieux', title: 'Salle avec vue', sub: 'Tables rondes & vue sur le lac',
+            { src: 'images/lieu-salle-vue-lac.jpg', cat: 'lieux', title: 'Salle avec vue', sub: 'Tables rondes & vue sur le lac',
               caption: 'Salle de réception avec vue panoramique - tables rondes dressées',
               en: { title: 'Room with a view', sub: 'Round tables & lake view', caption: 'Reception room with panoramic view - round tables set' } },
-            { src: 'images/buffet-vue-dessus.jpg', cat: 'galas', title: 'Buffet', sub: 'Mise en scène culinaire',
+            { src: 'images/gastronomie-buffet-vue-dessus.jpg', cat: 'gastronomie', title: 'Buffet', sub: 'Mise en scène culinaire',
               caption: 'Buffet - présentation et mise en scène culinaire',
               en: { title: 'Buffet', sub: 'Culinary staging', caption: 'Buffet - presentation and culinary staging' } }
         ];
