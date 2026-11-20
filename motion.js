@@ -700,7 +700,12 @@
     const shapeMouse = [24, -32, 16, -26];
     let mouseX = 0, mouseY = 0;
 
+    // fond WebGL actif (classe posée à son initialisation) : les formes sont masquées, la parallaxe n'a plus d'objet
+    let glKnown = false;
+    const glOn = () => glKnown || (glKnown = !!document.querySelector('.gl-on'));
+
     function applyParallax() {
+        if (glOn()) return;
         const y = scrollY;
         shapes.forEach((s, i) => {
             s.style.translate = `${mouseX * shapeMouse[i]}px ${y * shapeScroll[i] + mouseY * shapeMouse[i]}px`;
@@ -738,13 +743,6 @@
     frame();
 
     /* ---------- Transitions de page ---------- */
-    const staggerGallery = () => {
-        $$('.gallery-item:not(.hidden)').forEach((el, i) => {
-            el.style.setProperty('--i', i);
-            restart(el, 'g-in');
-        });
-    };
-
     /* Rideau de transition entre pages */
     const pageIds = ['page-cv', 'page-realisations', 'page-apropos'];
     const pageLabels = { 'page-cv': 'Charles Marti', 'page-realisations': 'Mes Réalisations', 'page-apropos': 'Mon Parcours' };
@@ -990,7 +988,6 @@ void main(){
                 window.scrollTo({ top: 0, behavior: 'instant' });
                 if (window.__fogReset) window.__fogReset(page.id);
                 if (page.id === 'page-cv') drawLogo();
-                if (page.id === 'page-realisations') staggerGallery();
                 if (curtained) {
                     pendingCover = false;
                     setTimeout(uncover, 420);
@@ -1008,9 +1005,6 @@ void main(){
             if (e.target === page) page.classList.remove('page-enter');
         });
     });
-
-    window.__staggerGallery = staggerGallery;
-    document.addEventListener('click', e => { if (e.target.closest('.filter-btn')) requestAnimationFrame(staggerGallery); });
 
     /* ---------- Modale ---------- */
     const modalImg = $('#modal-image');
@@ -1223,6 +1217,7 @@ void main(){
         let skip = false, warm = 0, fpsAcc = 0, fpsN = 0;
         function frame(now) {
             if (low && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
+            if (root.classList.contains('f-full')) { last = now; requestAnimationFrame(frame); return; } // plan en plein écran : le fond est entièrement recouvert, inutile de le calculer
             const raw = now - last;
             const dt = Math.min(0.05, raw / 1000);
             last = now;
@@ -1384,7 +1379,7 @@ void main(){
             const r = card.getBoundingClientRect();
             const px = (e.clientX - r.left) / r.width;
             const py = (e.clientY - r.top) / r.height;
-            const amp = card.classList.contains('gallery-item') ? 3 : (r.width > 600 ? 2.6 : 5);
+            const amp = r.width > 600 ? 2.6 : 5;
             card.style.setProperty('--mx', `${e.clientX - r.left}px`);
             card.style.setProperty('--my', `${e.clientY - r.top}px`);
             card.style.setProperty('--px', String((px - 0.5) * 2));
@@ -1399,17 +1394,14 @@ void main(){
             card.style.removeProperty('--py');
         });
     };
-    $$('.modern-card:not(.form-card):not(.no3d), .gallery-item').forEach(bindTilt);
-    const galleryHost = $('#gallery-grid');
-    if (galleryHost) new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
-        if (n.nodeType === 1 && n.classList.contains('gallery-item')) bindTilt(n);
-    }))).observe(galleryHost, { childList: true });
+    $$('.modern-card:not(.form-card):not(.no3d)').forEach(bindTilt);
 
     // Souris : parallax du fond de repli (si WebGL indisponible)
     (function loop() {
+        if (glOn()) return; // fond WebGL actif : la boucle n'a plus rien à faire
         mouseX += ((pointer.x / innerWidth - 0.5) - mouseX) * 0.05;
         mouseY += ((pointer.y / innerHeight - 0.5) - mouseY) * 0.05;
-        if (!document.querySelector('.gl-on')) applyParallax();
+        applyParallax();
         requestAnimationFrame(loop);
     })();
 })();

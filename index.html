@@ -127,9 +127,6 @@
         @keyframes ink-shift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
 
         /* Galerie */
-        .gallery-item { box-shadow: 0 10px 30px -8px rgba(0,0,0,.15); transition: box-shadow .4s ease, transform .4s ease; }
-        .gallery-item:hover { box-shadow: 0 20px 40px -8px rgba(0,0,0,.22); transform: translateY(-3px); }
-        .gallery-grid.is-filtered .gallery-item { grid-column: auto !important; grid-row: auto !important; }
         .filter-btn {
             padding: .5rem 1.25rem; border-radius: 9999px; font-size: .875rem; font-weight: 500;
             background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); color: #4A4C50;
@@ -151,18 +148,11 @@
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
         @media (max-width: 719px) { .f-stage { height: calc(100vh - 11.5rem); height: calc(100svh - 11.5rem); min-height: 400px; } }
         .f-view { position: absolute; inset: 0; overflow: hidden; overflow: clip; touch-action: none; cursor: grab; outline: none;
-            /* coupure haut et bas irrégulière, comme la brume du site : bandes de 1200 x 240 px non étirées, raccord périodique (aucun trait), qui ondulent lentement (va-et-vient doux, léger souffle vertical) */
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='240'%20viewBox='0%200%201200%20240'%3E%3Cfilter%20id='f'%20x='0%25'%20y='-60%25'%20width='100%25'%20height='220%25'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='700'%20type='fractalNoise'%20baseFrequency='0.0065%200.022'%20numOctaves='4'%20seed='7'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='9'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='80'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3Crect%20x='-120'%20y='70'%20width='1440'%20height='200'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='240'%20viewBox='0%200%201200%20240'%3E%3Cfilter%20id='f'%20x='0%25'%20y='-60%25'%20width='100%25'%20height='220%25'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='700'%20type='fractalNoise'%20baseFrequency='0.0065%200.022'%20numOctaves='4'%20seed='11'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='9'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='80'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3Crect%20x='-120'%20y='-30'%20width='1440'%20height='200'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"), linear-gradient(#000, #000); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='240'%20viewBox='0%200%201200%20240'%3E%3Cfilter%20id='f'%20x='0%25'%20y='-60%25'%20width='100%25'%20height='220%25'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='700'%20type='fractalNoise'%20baseFrequency='0.0065%200.022'%20numOctaves='4'%20seed='7'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='9'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='80'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3Crect%20x='-120'%20y='70'%20width='1440'%20height='200'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='240'%20viewBox='0%200%201200%20240'%3E%3Cfilter%20id='f'%20x='0%25'%20y='-60%25'%20width='100%25'%20height='220%25'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='700'%20type='fractalNoise'%20baseFrequency='0.0065%200.022'%20numOctaves='4'%20seed='11'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='9'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='80'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3Crect%20x='-120'%20y='-30'%20width='1440'%20height='200'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"), linear-gradient(#000, #000);
-            -webkit-mask-size: 1200px 240px, 1200px 240px, 100% calc(100% - 300px); mask-size: 1200px 240px, 1200px 240px, 100% calc(100% - 300px);
-            --bx: 0px; --by: 0px;
-            -webkit-mask-position: var(--bx, 0px) var(--by, 0px), calc(var(--bx, 0px) * -1.35) calc(100% - var(--by, 0px)), 0 150px; mask-position: var(--bx, 0px) var(--by, 0px), calc(var(--bx, 0px) * -1.35) calc(100% - var(--by, 0px)), 0 150px;
+            /* coupure haut et bas irrégulière, comme la brume du site : bandes de 1200 x 300 px (grands lobes + bruit fin) non étirées, raccord périodique (aucun trait), fixes (aucune animation : coût de rendu), bord adouci */
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='300'%20viewBox='0%200%201200%20300'%3E%3Cdefs%3E%3Cpath%20id='p'%20d='M0,110%20C85,110%2085,62%20170,62%20C250,62%20250,130%20330,130%20C425,130%20425,152%20520,152%20C610,152%20610,86%20700,86%20C780,86%20780,54%20860,54%20C945,54%20945,126%201030,126%20C1075,126%201075,144%201120,144%20C1160,144%201160,110%201200,110%20L1200,700%20L0,700%20Z'%20fill='white'/%3E%3Cfilter%20id='f'%20filterUnits='userSpaceOnUse'%20x='-200'%20y='-300'%20width='1600'%20height='1000'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='1000'%20type='fractalNoise'%20baseFrequency='0.006%200.02'%20numOctaves='3'%20seed='7'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='22'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='42'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cg%20filter='url%28%23f%29'%3E%3Cuse%20href='%23p'%20x='-1200'/%3E%3Cuse%20href='%23p'/%3E%3Cuse%20href='%23p'%20x='1200'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='300'%20viewBox='0%200%201200%20300'%3E%3Cdefs%3E%3Cpath%20id='p'%20d='M0,194%20C70,194%2070,234%20140,234%20C220,234%20220,156%20300,156%20C385,156%20385,212%20470,212%20C545,212%20545,250%20620,250%20C705,250%20705,170%20790,170%20C870,170%20870,148%20950,148%20C1020,148%201020,224%201090,224%20C1145,224%201145,194%201200,194%20L1200,-400%20L0,-400%20Z'%20fill='white'/%3E%3Cfilter%20id='f'%20filterUnits='userSpaceOnUse'%20x='-200'%20y='-300'%20width='1600'%20height='1000'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='1000'%20type='fractalNoise'%20baseFrequency='0.006%200.02'%20numOctaves='3'%20seed='11'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='22'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='42'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cg%20filter='url%28%23f%29'%3E%3Cuse%20href='%23p'%20x='-1200'/%3E%3Cuse%20href='%23p'/%3E%3Cuse%20href='%23p'%20x='1200'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(#000, #000); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='300'%20viewBox='0%200%201200%20300'%3E%3Cdefs%3E%3Cpath%20id='p'%20d='M0,110%20C85,110%2085,62%20170,62%20C250,62%20250,130%20330,130%20C425,130%20425,152%20520,152%20C610,152%20610,86%20700,86%20C780,86%20780,54%20860,54%20C945,54%20945,126%201030,126%20C1075,126%201075,144%201120,144%20C1160,144%201160,110%201200,110%20L1200,700%20L0,700%20Z'%20fill='white'/%3E%3Cfilter%20id='f'%20filterUnits='userSpaceOnUse'%20x='-200'%20y='-300'%20width='1600'%20height='1000'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='1000'%20type='fractalNoise'%20baseFrequency='0.006%200.02'%20numOctaves='3'%20seed='7'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='22'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='42'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cg%20filter='url%28%23f%29'%3E%3Cuse%20href='%23p'%20x='-1200'/%3E%3Cuse%20href='%23p'/%3E%3Cuse%20href='%23p'%20x='1200'/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1200'%20height='300'%20viewBox='0%200%201200%20300'%3E%3Cdefs%3E%3Cpath%20id='p'%20d='M0,194%20C70,194%2070,234%20140,234%20C220,234%20220,156%20300,156%20C385,156%20385,212%20470,212%20C545,212%20545,250%20620,250%20C705,250%20705,170%20790,170%20C870,170%20870,148%20950,148%20C1020,148%201020,224%201090,224%20C1145,224%201145,194%201200,194%20L1200,-400%20L0,-400%20Z'%20fill='white'/%3E%3Cfilter%20id='f'%20filterUnits='userSpaceOnUse'%20x='-200'%20y='-300'%20width='1600'%20height='1000'%3E%3CfeTurbulence%20x='0'%20y='-300'%20width='1200'%20height='1000'%20type='fractalNoise'%20baseFrequency='0.006%200.02'%20numOctaves='3'%20seed='11'%20stitchTiles='stitch'%20result='n'/%3E%3CfeGaussianBlur%20in='SourceGraphic'%20stdDeviation='22'%20result='g'/%3E%3CfeDisplacementMap%20in='g'%20in2='n'%20scale='42'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cg%20filter='url%28%23f%29'%3E%3Cuse%20href='%23p'%20x='-1200'/%3E%3Cuse%20href='%23p'/%3E%3Cuse%20href='%23p'%20x='1200'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(#000, #000);
+            -webkit-mask-size: 1200px 300px, 1200px 300px, 100% calc(100% - 400px); mask-size: 1200px 300px, 1200px 300px, 100% calc(100% - 400px);
+            -webkit-mask-position: 0 0, 0 100%, 0 200px; mask-position: 0 0, 0 100%, 0 200px;
             -webkit-mask-repeat: repeat-x, repeat-x, no-repeat; mask-repeat: repeat-x, repeat-x, no-repeat; }
-        @property --bx { syntax: '<length>'; inherits: false; initial-value: 0px; }
-        @property --by { syntax: '<length>'; inherits: false; initial-value: 0px; }
-        @keyframes f-bx { from { --bx: 0px; } to { --bx: 520px; } }
-        @keyframes f-by { from { --by: -9px; } to { --by: 9px; } }
-        html.motion .f-stage:not(.is-full) .f-view { animation: f-bx 80s ease-in-out infinite alternate, f-by 23s ease-in-out infinite alternate; }
-        @media (prefers-reduced-motion: reduce) { html.motion .f-stage .f-view { animation: none; } }
         .f-stage.is-full .f-view { -webkit-mask-image: none; mask-image: none; }
         /* jonction avec le pied de page : fondu au lieu d'un trait net (ni bordure, ni coupure du fond de brume) */
         .site-footer { position: relative; }
@@ -182,9 +172,13 @@
         .f-img { position: relative; flex: 1; min-height: 0; border-radius: 1.25rem; overflow: hidden; background: var(--t-blue); box-shadow: var(--f-shadow); }
         .f-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; scale: calc(1.02 + var(--speed, 0) * .05); transition: scale .9s cubic-bezier(.2,.8,.2,1); }
         .f-media:hover .f-img img, .f-media.is-aim .f-img img { scale: 1.08; }
-        .f-play { position: absolute; left: 12px; bottom: 12px; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: rgba(255,255,255,.9); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: .85rem; padding-left: 2px; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
-        .motion .f-play { animation: f-pulse 2.8s ease-in-out infinite; }
-        @keyframes f-pulse { 0%, 100% { box-shadow: 0 6px 18px rgba(0,0,0,.2), 0 0 0 0 rgba(221,130,159,.45); } 50% { box-shadow: 0 6px 18px rgba(0,0,0,.2), 0 0 0 14px rgba(221,130,159,0); } }
+        .f-play { position: absolute; left: 12px; bottom: 12px; width: 2.6rem; height: 2.6rem; border-radius: 9999px; color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: .85rem; padding-left: 2px; box-shadow: 0 6px 18px rgba(0,0,0,.2); isolation: isolate; }
+        /* disque blanc + halo rose pulsé : le halo n'anime que transform et opacity (gérés par le GPU), au lieu d'un box-shadow redessiné à chaque image sur chaque vignette vidéo */
+        .f-play::before, .f-play::after { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; }
+        .f-play::before { background: rgba(255,255,255,.9); }
+        .f-play::after { z-index: -2; background: #DD829F; opacity: 0; }
+        .motion .f-play::after { animation: f-pulse 2.8s ease-in-out infinite; }
+        @keyframes f-pulse { 0%, 100% { transform: scale(1); opacity: .45; } 50% { transform: scale(1.673); opacity: 0; } }
         .f-cap { display: flex; align-items: baseline; gap: .7rem; height: 34px; font-size: .95rem; color: var(--f-ink); white-space: nowrap; }
         .f-cap b { font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-decoration: underline transparent; text-decoration-thickness: 2px; text-underline-offset: 5px; transition: text-decoration-color .3s ease; }
         .f-no { font-style: normal; font-size: .78rem; font-weight: 500; color: var(--f-accent); font-variant-numeric: tabular-nums; }
@@ -426,10 +420,9 @@
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; width: 100%; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: .75rem; }
 
-        .gallery-item:focus-visible, a:focus-visible, button:focus-visible {
+        a:focus-visible, button:focus-visible {
             outline: 2px solid #3F6F7B; outline-offset: 3px;
         }
-        .gallery-item:focus-visible .gallery-overlay { opacity: 1; }
 
         @media (prefers-reduced-motion: reduce) {
             .fluid-shape, .contact-btn { animation: none; }
@@ -440,7 +433,7 @@
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
 
     <!-- Motion design -->
-    <link rel="stylesheet" href="motion.css?v=110">
+    <link rel="stylesheet" href="motion.css?v=111">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
     <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
@@ -1566,8 +1559,11 @@
         function loop(t) {
             F.raf = 0;
             if (!F.ready) return;
+            // dérive lente au repos : ~30 images/s suffisent (0,4 px par pas), le plan n'est pas redessiné à chaque rafraîchissement
+            if (F.idle && !F.drag && !F.tween && !F.vx && !F.vy && t - F.last < 30) { if (F.vis && !document.hidden) F.raf = requestAnimationFrame(loop); return; }
             const dt = Math.min(48, t - (F.last || t)); F.last = t;
             let busy = false;
+            F.idle = false;
             if (F.tween) {
                 const k = Math.min(1, (t - F.tween.t0) / F.tween.d), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
                 F.px = F.tween.x0 + (F.tween.x1 - F.tween.x0) * e; F.py = F.tween.y0 + (F.tween.y1 - F.tween.y0) * e;
@@ -1576,11 +1572,13 @@
                 F.px += F.vx * dt; F.py += F.vy * dt;
                 const damp = Math.pow(0.94, dt / 16.7); F.vx *= damp; F.vy *= damp;
                 if (Math.abs(F.vx) < 0.004) F.vx = 0; if (Math.abs(F.vy) < 0.004) F.vy = 0;
-                if (!F.vx && !F.vy && motionOn() && !F.hover && !F.sheetOpen()) { F.px -= 0.012 * dt; F.py -= 0.006 * dt; }  // dérive lente
+                if (!F.vx && !F.vy && motionOn() && !F.hover && !F.sheetOpen()) { F.px -= 0.012 * dt; F.py -= 0.006 * dt; F.idle = true; }  // dérive lente
                 busy = true;
             } else busy = true;
             applyPan();
-            F.view.style.setProperty('--speed', Math.min(1, Math.hypot(F.vx, F.vy) / 1.4).toFixed(2));
+            // --speed est hérité par toutes les vignettes : on ne le change que par paliers de 0,2 (l'effet est lissé par la transition de 0,9 s)
+            const spd = Math.round(Math.min(1, Math.hypot(F.vx, F.vy) / 1.4) * 5) / 5;
+            if (spd !== F.spd) { F.spd = spd; F.view.style.setProperty('--speed', spd.toFixed(1)); }
             if (F.frame % 8 === 0) updateAim();
             if (busy && F.vis && !document.hidden) F.raf = requestAnimationFrame(loop);
         }
@@ -2129,8 +2127,6 @@
                 if (t.closest('a[data-user]')) return ev('clic-email', 'Clic : écrire un e-mail');
                 if (t.closest('a[data-linkedin]')) return ev('clic-linkedin', 'Clic : LinkedIn');
                 if (t.closest('#fc-copy')) return ev('copie-adresse', "Clic : copier l'adresse e-mail");
-                var g = t.closest('.gallery-item');
-                if (g) return ev('projet-' + (g.dataset.title || 'sans-titre'), 'Projet ouvert : ' + (g.dataset.title || ''));
                 if (t.closest('.lang-toggle')) setTimeout(function () { ev('langue-' + (window.SITE ? window.SITE.lang() : '?'), 'Langue choisie : ' + (window.SITE ? window.SITE.lang() : '?')); }, 0);
                 if (t.closest('.theme-toggle')) setTimeout(function () { ev('theme-' + (document.documentElement.classList.contains('dark') ? 'sombre' : 'clair'), 'Thème choisi'); }, 0);
             }, true);
@@ -2140,8 +2136,8 @@
             }, true);
         })();
     </script>
-    <script src="i18n.js?v=110" defer></script>
-    <script src="motion.js?v=110" defer></script>
+    <script src="i18n.js?v=111" defer></script>
+    <script src="motion.js?v=111" defer></script>
     <script>
     /* Confort de navigation : bouton « retour en haut » + lien de menu actif selon la section affichée */
     (function () {
