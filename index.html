@@ -910,7 +910,7 @@
             </header>
             <footer class="f-hud f-hud--bottom">
                 <div class="f-left">
-                    <button type="button" id="f-wheel" class="f-pill-btn" aria-pressed="true"><i class="fa-solid fa-computer-mouse" aria-hidden="true"></i><span id="f-wheel-txt">Molette : plan</span></button>
+                    <button type="button" id="f-wheel" class="f-pill-btn" aria-pressed="false"><i class="fa-solid fa-computer-mouse" aria-hidden="true"></i><span id="f-wheel-txt">Molette : page</span></button>
                 </div>
                 <div class="f-right">
                     <div class="f-ctl" role="group" aria-label="Déplacer le plan" id="f-pan">
@@ -1466,7 +1466,7 @@
                     '<span class="f-mono f-between"><span>Portfolio</span><span>Paris</span></span>' +
                     '<span class="f-title title-pastel">' + (isEn() ? 'My <span class="grad">work</span>' : 'Mes <span class="grad">réalisations</span>') + '</span>' +
                     '<span class="f-sub">' + (isEn() ? 'Galas, parties, seminars: events I designed, produced and coordinated.' : 'Galas, soirées, séminaires : des événements conçus, produits et coordonnés.') + '</span>' +
-                    '<span class="f-mono">' + (isEn() ? 'Scroll or drag to explore' : 'Molette ou glisser pour explorer') + '</span></div>';
+                    '<span class="f-mono">' + (isEn() ? 'Drag to explore' : 'Glissez pour explorer') + '</span></div>';
             }
             return '<button type="button" class="f-tile f-contact contact-btn"' + attrs + focus + '>' +
                 '<span class="f-mono f-between"><span>Contact</span><span aria-hidden="true">↗</span></span>' +
@@ -1657,7 +1657,7 @@
             });
             document.getElementById('f-pgup').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
             document.getElementById('f-pgdn').addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
-            try { F.wheelMode = localStorage.getItem('site-f-wheel') === 'page' ? 'page' : 'plan'; } catch (_) { F.wheelMode = 'plan'; }
+            try { F.wheelMode = localStorage.getItem('site-f-wheel') === 'plan' ? 'plan' : 'page'; } catch (_) { F.wheelMode = 'page'; }   // par défaut la molette fait défiler la page
             const wheelBtn = document.getElementById('f-wheel');
             const paintWheel = () => { wheelBtn.setAttribute('aria-pressed', String(F.wheelMode === 'plan')); document.getElementById('f-wheel-txt').textContent = (isEn() ? 'Wheel: ' : 'Molette : ') + (F.wheelMode === 'plan' ? (isEn() ? 'map' : 'plan') : 'page'); };
             F.paintWheel = paintWheel; paintWheel();
