@@ -204,6 +204,7 @@
         .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
         .f-hud--top { top: 0; justify-content: flex-end; } .f-hud--bottom { bottom: 0; }
         .f-label { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-short { display: none; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
         .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -211,6 +212,15 @@
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
         @media (hover: none) { .f-cursor { display: none; } }
+        @media (max-width: 719px) {
+            /* toutes les catégories visibles d'un coup (libellés courts, retour à la ligne) : plus de défilement horizontal */
+            .f-hud--top { align-items: flex-start; }
+            .f-top-right { align-items: flex-start; width: 100%; justify-content: space-between; }
+            .f-nav { flex-wrap: wrap; overflow: visible; gap: 6px; padding: 0; flex: 1; min-width: 0; }
+            .f-nav .filter-btn { padding: .42rem .85rem; font-size: .8rem; }
+            .f-nav .f-long, .cs-tabs .f-long { display: none; } .f-nav .f-short, .cs-tabs .f-short { display: inline; }
+            .cs-tabs { flex-wrap: wrap; overflow: visible; }
+        }
         @media (max-width: 719px) { .f-expand span { display: none; } .f-expand { padding: 0; width: 2.9rem; height: 2.9rem; justify-content: center; } }
         .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
         .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
@@ -1324,10 +1334,10 @@
            ===================================================================== */
         const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies', videos: 'Vidéos' };
         const CAT_INFO = {
-            galas:      { sub: 'Dîners de gala, spectacles & mise en place', en: { title: 'Galas & dinners', sub: 'Gala dinners, shows & table setting' } },
-            cocktails:  { sub: 'Cocktails, buffets & soirées dansantes', en: { title: 'Cocktails & parties', sub: 'Cocktails, buffets & dance parties' } },
-            seminaires: { sub: 'Séminaires, buffets & cérémonies', en: { title: 'Seminars & ceremonies', sub: 'Seminars, buffets & ceremonies' } },
-            videos:     { sub: 'Les montages vidéo de mes événements', en: { title: 'Videos', sub: 'Video montages of my events' } }
+            galas:      { short: 'Galas', sub: 'Dîners de gala, spectacles & mise en place', en: { short: 'Galas', title: 'Galas & dinners', sub: 'Gala dinners, shows & table setting' } },
+            cocktails:  { short: 'Cocktails', sub: 'Cocktails, buffets & soirées dansantes', en: { short: 'Cocktails', title: 'Cocktails & parties', sub: 'Cocktails, buffets & dance parties' } },
+            seminaires: { short: 'Séminaires', sub: 'Séminaires, buffets & cérémonies', en: { short: 'Seminars', title: 'Seminars & ceremonies', sub: 'Seminars, buffets & ceremonies' } },
+            videos:     { short: 'Vidéos', sub: 'Les montages vidéo de mes événements', en: { short: 'Videos', title: 'Videos', sub: 'Video montages of my events' } }
         };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
@@ -1411,6 +1421,8 @@
         const loc = p => (isEn() && p.en) ? Object.assign({}, p, p.en) : p;
         const isVid = p => !!(p.video || p.file);
         const catTitle = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.title : (CATEGORIES[c] || '');
+        const catShort = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.short : (CAT_INFO[c] ? CAT_INFO[c].short : '');
+        const labelHTML = c => '<span class="f-long">' + esc(catTitle(c)) + '</span><span class="f-short">' + esc(catShort(c)) + '</span>';
         const catSub = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.sub : (CAT_INFO[c] ? CAT_INFO[c].sub : '');
         const plural = (n, fr, en) => isEn() ? n + ' ' + en + (n > 1 ? 's' : '') : n + ' ' + fr + (n > 1 ? 's' : '');
         const mediaLabel = c => {
@@ -1694,7 +1706,7 @@
             F.nav.textContent = '';
             cats.forEach(c => {
                 const b = document.createElement('button');
-                b.type = 'button'; b.className = 'filter-btn'; b.dataset.cat = c; b.textContent = catTitle(c);
+                b.type = 'button'; b.className = 'filter-btn'; b.dataset.cat = c; b.setAttribute('aria-label', catTitle(c)); b.innerHTML = labelHTML(c);
                 b.addEventListener('click', () => openSheet(c));
                 F.nav.append(b);
             });
@@ -1752,7 +1764,7 @@
                 (nv ? '<span class="cs-chip" style="--chip:#FBDDE4"><i class="fa-solid fa-video" aria-hidden="true"></i>' + plural(nv, 'vidéo', 'video') + '</span>' : '') +
                 '<span class="cs-chip" style="--chip:#DDF0C2"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i>' + (isEn() ? 'Click to enlarge' : 'Cliquez pour agrandir') + '</span></div>' +
                 '<div class="cs-tabs" role="group" aria-label="' + (isEn() ? 'Categories' : 'Catégories') + '">' +
-                cats.map(c => '<button type="button" class="filter-btn' + (c === cat ? ' is-active' : '') + '" data-cat="' + c + '">' + esc(catTitle(c)) + '</button>').join('') + '</div>' +
+                cats.map(c => '<button type="button" class="filter-btn' + (c === cat ? ' is-active' : '') + '" data-cat="' + c + '" aria-label="' + esc(catTitle(c)) + '">' + labelHTML(c) + '</button>').join('') + '</div>' +
                 '<div class="cs-grid">' + list.map((m, i) => {
                     const d = m.dataset, isV = isVid(m.p), r = isV ? Math.min(1.78, Math.max(0.8, m.img.w / m.img.h)) : Math.min(1.6, Math.max(0.9, m.img.w / m.img.h));
                     return '<button type="button" class="cs-card" data-i="' + i + '" style="--i:' + i + '">' +
