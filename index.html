@@ -1825,6 +1825,15 @@
         const modalVideoContainer = document.getElementById('modal-video-container');
         const modalVideo = document.getElementById('modal-video');
         const modalVideoFile = document.getElementById('modal-video-file');
+        /* plein écran du lecteur vidéo (bouton du lecteur) : il faut le quitter explicitement, sinon il reste actif quand l'aperçu se ferme (écran noir, rien ne répond, message « pour quitter… » affiché) */
+        const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement || modalVideoFile.webkitDisplayingFullscreen);
+        const leaveFullscreen = () => {
+            try {
+                if (document.fullscreenElement && document.exitFullscreen) { const r = document.exitFullscreen(); if (r && r.catch) r.catch(() => {}); }
+                else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+                if (modalVideoFile.webkitDisplayingFullscreen && modalVideoFile.webkitExitFullscreen) modalVideoFile.webkitExitFullscreen();
+            } catch (e) {}
+        };
         const stopFileVideo = () => { modalVideoFile.pause(); modalVideoFile.removeAttribute('src'); modalVideoFile.removeAttribute('poster'); modalVideoFile.load(); };
         const modalCaption = document.getElementById('modal-caption');
         const modalMeta = document.getElementById('modal-meta');
@@ -1930,6 +1939,7 @@
         function closeModal(fromPop) {
             if (!modalOpen) return;
             modalOpen = false;
+            leaveFullscreen();
             if (fromPop !== true) popLayer('modal');
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
@@ -1969,7 +1979,7 @@
             modalBody.style.transition = 'none';
         }, { passive: true });
         modal.addEventListener('touchmove', (e) => {
-            if (touchX === null || touchOnControls) return;
+            if (touchX === null || touchOnControls || inFullscreen()) return;
             const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
             if (!touchDrag && Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx) * 1.5) touchDrag = true;
             if (touchDrag) {
@@ -1981,6 +1991,11 @@
             if (touchX === null) return;
             const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
             touchX = null;
+            if (inFullscreen()) {                                              // plein écran : le glissement le quitte (l'aperçu reste ouvert, un second glissement le fermera)
+                resetDrag(false);
+                if (!touchOnControls && Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx) * 1.5) leaveFullscreen();
+                return;
+            }
             if (touchOnControls) { resetDrag(false); return; }
             if (Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) {      // glisser vers le haut ou le bas : fermer
                 modalBody.style.transition = 'transform .3s ease'; modalBody.style.transform = 'translateY(' + (dy * 1.6) + 'px)';
