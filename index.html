@@ -141,52 +141,166 @@
             color: #2D3035; box-shadow: 0 6px 20px -6px rgba(0,0,0,.15);
         }
 
-        /* Réalisations : mosaïque d'accueil */
-        .mosaic { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
-        .m-tile { position: relative; display: block; width: 100%; min-height: 15rem; overflow: hidden; border-radius: 1.75rem; text-align: left; color: #fff; cursor: pointer; isolation: isolate;
-            box-shadow: 0 14px 34px -12px rgba(30,32,45,.35); transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; animation: rise .8s ease-out calc(var(--i, 0) * .09s) backwards; }
-        .m-tile:hover { transform: translateY(-4px); box-shadow: 0 26px 48px -14px rgba(30,32,45,.45); }
-        .m-collage { position: absolute; inset: 0; display: grid; gap: 3px; background: #fff; }
-        .m-collage.c2 { grid-template-columns: 3fr 2fr; }
-        .m-collage.c3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
-        .m-collage.c3 .m-cell:first-child { grid-row: 1 / 3; }
-        .m-collage.c4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr 1fr; }
-        .m-cell { position: relative; overflow: hidden; min-height: 0; }
-        .m-cell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.8,.2,1); }
-        .m-tile:hover .m-cell img { transform: scale(1.06); }
-        .m-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,20,30,.82) 0%, rgba(18,20,30,.45) 34%, rgba(18,20,30,0) 66%); }
-        .m-body { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
-        .m-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .8rem; margin-bottom: .55rem; border-radius: 9999px; background: rgba(255,255,255,.82); color: #2D3035; font-size: .75rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .m-title { font-size: 1.5rem; font-weight: 500; letter-spacing: -.015em; line-height: 1.15; text-shadow: 0 2px 16px rgba(0,0,0,.35); }
-        .m-sub { font-size: .875rem; font-weight: 300; color: rgba(255,255,255,.88); }
-        .m-cta { margin-top: .75rem; display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.45); font-size: .8rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background-color .35s ease, color .35s ease, gap .35s ease; }
-        .m-tile:hover .m-cta { background: #fff; color: #2D3035; gap: .8rem; }
-        .m-tile:focus-visible { outline: 3px solid #6A8CF0; outline-offset: 3px; }
-        @media (min-width: 768px) {
-            .mosaic { grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(2, 15rem) 13.5rem; gap: 1.5rem; }
-            .m-tile { min-height: 0; }
-            .m-tile.m-galas { grid-column: 1 / 5; grid-row: 1 / 3; }
-            .m-tile.m-cocktails { grid-column: 5 / 7; grid-row: 1; }
-            .m-tile.m-seminaires { grid-column: 5 / 7; grid-row: 2; }
-            .m-tile.m-videos { grid-column: 1 / 7; grid-row: 3; }
-            .m-collage.c4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; }
-            .m-tile.m-galas .m-title { font-size: 2.1rem; }
-            .m-tile.m-galas .m-body, .m-tile.m-videos .m-body { padding: 2rem; }
+        /* ---- Réalisations : plan interactif (charte du site : Outfit, pastel bleu / rose / vert, cartes en verre) ---- */
+        .f-stage { --f-ink: #2D3035; --f-text: #4A4C50; --f-muted: rgba(74,76,80,.72); --f-accent: #6A8CF0; --f-glass: rgba(255,255,255,.75); --f-line: rgba(255,255,255,.85);
+            --t-blue: #D9E4FC; --t-pink: #FBDDE4; --t-green: #DDF0C2; --t-grad: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%);
+            --f-shadow: 0 10px 30px -8px rgba(0,0,0,.16);
+            position: relative; width: 100%; height: calc(100vh - 4.75rem); height: calc(100svh - 4.75rem); min-height: 560px; max-height: 1200px; overflow: hidden; color: var(--f-ink); user-select: none; -webkit-user-select: none; }
+        html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #c3c6cf; --f-muted: rgba(195,198,207,.75); --f-glass: rgba(28,31,38,.72); --f-line: rgba(255,255,255,.09);
+            --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
+            --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
+        .f-view { position: absolute; inset: 0; touch-action: none; cursor: grab; outline: none;
+            /* coupure haut et bas irrégulière, comme la brume du site (et non un dégradé uniforme) */
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+        .f-stage.is-full .f-view { -webkit-mask-image: none; mask-image: none; }
+        .f-view.is-drag { cursor: grabbing; }
+        .f-view:focus-visible { box-shadow: inset 0 0 0 3px var(--f-accent); }
+        .f-world { position: absolute; left: 0; top: 0; will-change: transform; }
+        .f-col { position: absolute; top: 0; will-change: transform; }
+        .f-slot { position: relative; }
+        .motion .f-slot { animation: f-in 1s cubic-bezier(.2,.8,.2,1) var(--d, 0s) backwards; }
+        @keyframes f-in { from { opacity: 0; transform: translateY(46px) scale(.93); } }
+        .f-tile { display: block; width: 100%; height: 100%; text-align: left; color: inherit; border-radius: 1.25rem; position: relative; overflow: hidden; cursor: inherit; font: inherit; }
+        .f-mono { font-size: .7rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--f-muted); }
+        .f-between { display: flex; justify-content: space-between; gap: 1rem; }
+        .f-media { display: flex; flex-direction: column; gap: 10px; overflow: visible; background: none; }
+        .f-img { position: relative; flex: 1; min-height: 0; border-radius: 1.25rem; overflow: hidden; background: var(--t-blue); box-shadow: var(--f-shadow); }
+        .f-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; scale: calc(1.02 + var(--speed, 0) * .05); transition: scale .9s cubic-bezier(.2,.8,.2,1); }
+        .f-media:hover .f-img img, .f-media.is-aim .f-img img { scale: 1.08; }
+        .f-play { position: absolute; left: 12px; bottom: 12px; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: rgba(255,255,255,.9); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: .85rem; padding-left: 2px; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+        .motion .f-play { animation: f-pulse 2.8s ease-in-out infinite; }
+        @keyframes f-pulse { 0%, 100% { box-shadow: 0 6px 18px rgba(0,0,0,.2), 0 0 0 0 rgba(221,130,159,.45); } 50% { box-shadow: 0 6px 18px rgba(0,0,0,.2), 0 0 0 14px rgba(221,130,159,0); } }
+        .f-cap { display: flex; align-items: baseline; gap: .7rem; height: 34px; font-size: .95rem; color: var(--f-ink); white-space: nowrap; }
+        .f-cap b { font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-decoration: underline transparent; text-decoration-thickness: 2px; text-underline-offset: 5px; transition: text-decoration-color .3s ease; }
+        .f-no { font-style: normal; font-size: .78rem; font-weight: 500; color: var(--f-accent); font-variant-numeric: tabular-nums; }
+        .f-cap em { font-style: normal; font-size: .66rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--f-muted); }
+        .f-media:hover .f-cap b, .f-media.is-aim .f-cap b { text-decoration-color: #DD829F; }
+        .f-cat, .f-contact, .f-intro { padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; gap: .6rem; border: 1px solid var(--f-line); box-shadow: var(--f-shadow); }
+        .f-cat[data-tone="blue"] { background: var(--t-blue); } .f-cat[data-tone="pink"] { background: var(--t-pink); }
+        .f-cat[data-tone="green"] { background: var(--t-green); } .f-cat[data-tone="grad"] { background: var(--t-grad); }
+        .f-big { font-size: clamp(1.45rem, 2vw, 1.9rem); font-weight: 500; line-height: 1.1; letter-spacing: -.02em; color: var(--f-ink); }
+        .f-sub { font-size: .9rem; font-weight: 300; color: var(--f-text); line-height: 1.45; }
+        .f-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .f-arrow { width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: var(--f-ink); color: var(--f-glass); display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; transition: transform .35s ease; }
+        html:not(.dark) .f-arrow { color: #fff; } html.dark .f-arrow { color: #14161a; }
+        .f-cat:hover .f-arrow, .f-cat.is-aim .f-arrow, .f-contact:hover .f-arrow { transform: translateX(5px) rotate(-45deg); }
+        .f-cat.is-aim, .f-contact.is-aim { box-shadow: var(--f-shadow), 0 0 0 2px var(--f-accent); }
+        .f-intro { background: var(--f-glass); cursor: inherit; }
+        .f-title { font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.08; }
+        .f-contact { cursor: inherit; }
+        .f-contact .f-big, .f-contact .f-sub, .f-contact .f-mono { color: var(--f-ink); }
+        .f-cross { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; z-index: 4; pointer-events: none; opacity: .4; }
+        .f-cross::before, .f-cross::after { content: ""; position: absolute; background: var(--f-ink); }
+        .f-cross::before { left: 9px; top: 0; width: 1px; height: 20px; } .f-cross::after { top: 9px; left: 0; height: 1px; width: 20px; }
+        .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
+        .f-hud--top { top: 0; justify-content: flex-end; } .f-hud--bottom { bottom: 0; }
+        .f-label { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
+        .f-nav::-webkit-scrollbar { display: none; }
+        .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-cursor { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; margin: 16px 0 0 20px; padding: .35rem .85rem; border-radius: 9999px; background: var(--f-ink); font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; transition: opacity .2s ease; white-space: nowrap; }
+        html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
+        .f-cursor.is-on { opacity: 1; }
+        @media (hover: none) { .f-cursor { display: none; } }
+        @media (max-width: 719px) { .f-expand span { display: none; } .f-expand { padding: 0; width: 2.9rem; height: 2.9rem; justify-content: center; } }
+        .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
+        .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
+        @keyframes f-blink { 50% { opacity: .35; } }
+        .f-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+
+        /* ---- Boutons toujours présents sur le plan (déplacer, défiler la page, molette, agrandir) ---- */
+        .f-round, .f-pill-btn, .f-ctl button { pointer-events: auto; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; color: var(--f-ink); background: var(--f-glass); border: 1px solid var(--f-line);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease; font: inherit; }
+        .f-expand { pointer-events: auto; cursor: pointer; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; padding: .7rem 1.25rem; border-radius: 9999px; font: inherit; font-size: .88rem; font-weight: 500;
+            background: var(--f-ink); color: #fff; border: 1px solid transparent; box-shadow: 0 12px 28px -10px rgba(45,48,53,.55); transition: transform .25s ease, box-shadow .25s ease; }
+        html.dark .f-expand { color: #14161a; box-shadow: 0 12px 28px -10px rgba(0,0,0,.7); }
+        .f-expand:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -10px rgba(45,48,53,.6); }
+        .f-expand:active { transform: scale(.96); }
+        .motion .f-expand i { animation: f-nudge 2.6s ease-in-out infinite; }
+        @keyframes f-nudge { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.25); } }
+        .f-round { width: 2.75rem; height: 2.75rem; border-radius: 9999px; font-size: .95rem; flex: none; box-shadow: var(--f-shadow); }
+        .f-pill-btn { padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; box-shadow: var(--f-shadow); }
+        .f-round:hover, .f-pill-btn:hover, .f-ctl button:hover { background: #fff; transform: translateY(-1px); }
+        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.14); }
+        .f-ctl button:active, .f-round:active { transform: scale(.94); }
+        .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%); }
+        html.dark .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #1f2a4d 0%, #3a2342 55%, #17342f 100%); }
+        .f-left, .f-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; pointer-events: none; }
+        .f-right { justify-content: flex-end; }
+        .f-ctl { pointer-events: auto; display: inline-flex; align-items: center; gap: .3rem; padding: .3rem; border-radius: 9999px; background: var(--f-glass); border: 1px solid var(--f-line); box-shadow: var(--f-shadow);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+        .f-ctl button { width: 2.4rem; height: 2.4rem; border-radius: 9999px; border-color: transparent; background: transparent; box-shadow: none; font-size: .85rem; }
+        .f-ctl--page button { width: auto; padding: 0 .85rem 0 .7rem; font-size: .78rem; font-weight: 500; }
+        .f-ctl-lab { font-size: .62rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--f-muted); padding: 0 .45rem 0 .6rem; }
+        .f-top-right { display: flex; align-items: center; gap: .6rem; min-width: 0; pointer-events: none; }
+        /* mode agrandi : la scène occupe tout l'écran */
+        html.f-full body { overflow: hidden; }
+        html.f-full #navbar { visibility: hidden; }
+        html.f-full #page-realisations { z-index: 55; }
+        .f-stage.is-full { position: fixed; inset: 0; z-index: 40; height: 100vh; height: 100svh; max-height: none; min-height: 0;
+            background: radial-gradient(60vw 50vh at 12% 10%, #d6fcff, transparent 70%), radial-gradient(50vw 45vh at 88% 85%, #ffe1e5, transparent 70%), #FCFBF9; }
+        html.dark .f-stage.is-full { background: radial-gradient(60vw 50vh at 12% 10%, rgba(106,140,240,.18), transparent 70%), radial-gradient(50vw 45vh at 88% 85%, rgba(221,130,159,.14), transparent 70%), #101216; }
+        .f-stage.is-full .f-ctl--page, .f-stage.is-full #f-wheel { display: none; }
+        @media (max-width: 719px) {
+            .f-hud--bottom { align-items: flex-end; }
+            .f-ctl-lab { display: none; }
+            .f-left { display: none; }
+            .f-top-right { flex: 1; justify-content: flex-end; }
+            .f-nav { flex: 1; }
         }
-        .m-play { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 4rem; height: 4rem; border-radius: 9999px; background: rgba(255,255,255,.85); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding-left: .2rem; box-shadow: 0 10px 30px rgba(0,0,0,.3); transition: transform .4s ease; }
-        .m-tile:hover .m-play { transform: translate(-50%, -50%) scale(1.1); }
-        .m-skel { border-radius: 1.75rem; }
-        /* Vue détaillée */
-        .g-justify { display: flex; flex-wrap: wrap; gap: 1.1rem; }
-        .g-justify > .gallery-item { flex: 1 1 100%; aspect-ratio: var(--r); border-radius: 1.25rem; }
-        @media (min-width: 640px) {
-            .g-justify { gap: 1.5rem; }
-            .g-justify > .gallery-item { height: var(--h); aspect-ratio: auto; flex: var(--r) 1 calc(var(--h) * var(--r)); max-width: calc(var(--h) * var(--r) * 1.45); }
+        /* ---- Volet « catégorie » : demi-page avec les médias et les infos ---- */
+        .cs { position: fixed; inset: 0; z-index: 90; visibility: hidden; pointer-events: none; transition: visibility 0s linear .5s; }
+        .cs.is-open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
+        .cs-backdrop { position: absolute; inset: 0; background: rgba(24,28,52,.34); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); opacity: 0; transition: opacity .45s ease; }
+        .cs.is-open .cs-backdrop { opacity: 1; }
+        .cs-panel { position: absolute; right: 0; top: 0; bottom: 0; width: min(50vw, 860px); min-width: 520px; display: flex; flex-direction: column;
+            background: rgba(252,251,249,.95); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-left: 1px solid rgba(255,255,255,.9);
+            box-shadow: -24px 0 60px -24px rgba(24,28,52,.35); border-radius: 1.75rem 0 0 1.75rem; transform: translateX(104%); transition: transform .55s cubic-bezier(.2,.8,.2,1); color: #4A4C50; }
+        html.dark .cs-panel { background: rgba(19,21,26,.95); border-left-color: rgba(255,255,255,.08); color: #c3c6cf; box-shadow: -24px 0 60px -24px rgba(0,0,0,.7); }
+        .cs.is-open .cs-panel { transform: none; }
+        .cs-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.6rem .4rem; }
+        .cs-top .eyebrow { margin: 0; }
+        .cs-close { width: 3rem; height: 3rem; border-radius: 9999px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; background: #2D3035; color: #fff; cursor: pointer; transition: transform .3s ease; }
+        html.dark .cs-close { background: #f1f2f5; color: #14161a; }
+        .cs-close:hover { transform: rotate(90deg); }
+        .cs-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: .4rem 1.6rem 2rem; }
+        .cs-title { margin: .3rem 0 .4rem; }
+        .cs-sub { font-weight: 300; font-size: 1.05rem; line-height: 1.5; max-width: 34rem; margin: 0; }
+        .cs-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.1rem 0 0; }
+        .cs-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; background: var(--chip, #D9E4FC); color: #2D3035; }
+        html.dark .cs-chip { color: #f1f2f5; }
+        .cs-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: 1.2rem 0 .3rem; scrollbar-width: none; }
+        .cs-tabs::-webkit-scrollbar { display: none; }
+        .cs-tabs .filter-btn { flex: none; cursor: pointer; }
+        .cs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.2rem; margin-top: 1.1rem; }
+        .cs-card { display: flex; flex-direction: column; gap: .75rem; text-align: left; padding: .7rem; border-radius: 1.25rem; background: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 10px 30px -10px rgba(0,0,0,.14); cursor: pointer; color: inherit; font: inherit; transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease; }
+        html.dark .cs-card { background: rgba(28,31,38,.72); border-color: rgba(255,255,255,.08); box-shadow: 0 10px 30px -10px rgba(0,0,0,.5); }
+        .cs-card:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -14px rgba(0,0,0,.25); }
+        .cs-img { position: relative; display: block; border-radius: .95rem; overflow: hidden; aspect-ratio: var(--r, 1.4); background: #D9E4FC; }
+        .cs-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+        .cs-card:hover .cs-img img { transform: scale(1.06); }
+        .cs-play { position: absolute; left: 10px; bottom: 10px; width: 2.4rem; height: 2.4rem; border-radius: 9999px; background: rgba(255,255,255,.92); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: .8rem; padding-left: 2px; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+        .cs-txt { display: flex; flex-direction: column; gap: .15rem; padding: 0 .35rem .35rem; }
+        .cs-no { font-size: .72rem; font-weight: 500; color: #6A8CF0; letter-spacing: .1em; }
+        .cs-txt b { font-size: 1.05rem; font-weight: 500; color: #2D3035; line-height: 1.25; }
+        html.dark .cs-txt b { color: #f1f2f5; }
+        .cs-txt i { font-style: normal; font-size: .85rem; font-weight: 400; color: rgba(74,76,80,.8); }
+        html.dark .cs-txt i { color: rgba(195,198,207,.8); }
+        .cs-txt p { margin: .25rem 0 0; font-size: .85rem; font-weight: 300; line-height: 1.45; }
+        .cs-cta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.8rem; padding: 1.1rem 1.4rem; border-radius: 1.25rem; font-weight: 500; color: #2D3035; }
+        html.dark .cs-cta { color: #f1f2f5; }
+        .motion .cs.is-open .cs-card { animation: f-in .8s cubic-bezier(.2,.8,.2,1) calc(var(--i, 0) * 70ms + 250ms) backwards; }
+        .motion .cs.is-open .cs-scroll > * { animation: f-in .7s cubic-bezier(.2,.8,.2,1) backwards; }
+        @media (max-width: 899px) {
+            .cs-panel { left: 0; right: 0; top: auto; width: auto; min-width: 0; height: 90vh; height: 90dvh; border-radius: 1.75rem 1.75rem 0 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.9); transform: translateY(104%); box-shadow: 0 -24px 60px -24px rgba(24,28,52,.4); }
+            .cs-top { padding: 1.1rem 1.2rem .3rem; } .cs-scroll { padding: .3rem 1.2rem 2rem; }
+            .cs-grid { grid-template-columns: 1fr; }
         }
-        .gallery-item .g-shade { background: linear-gradient(to top, rgba(20,22,30,.7) 0%, rgba(20,22,30,.25) 34%, rgba(20,22,30,0) 60%); }
-        .gallery-item .g-title { font-size: 1.05rem; font-weight: 500; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
-        .g-back { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; font-size: .875rem; font-weight: 500; color: #2D3035; background: transparent; border: 1px solid rgba(45,48,53,.25); transition: background-color .3s ease, transform .3s ease; }
-        .g-back:hover { background: #fff; transform: translateX(-2px); }
+        /* fermer l'aperçu : grand bouton rond, facile à toucher sur téléphone */
+        #gallery-modal #close-modal { top: calc(env(safe-area-inset-top, 0px) + .75rem); right: .75rem; width: 3.1rem; height: 3.1rem; border-radius: 9999px; background: rgba(255,255,255,.2); color: #fff; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        #gallery-modal #close-modal:hover { background: rgba(255,255,255,.34); }
+        @media (min-width: 768px) { #gallery-modal #close-modal { top: 2rem; right: 2rem; } }
         .filter-btn { display: inline-flex; align-items: center; gap: .55rem; }
         .filter-btn .f-count { font-size: .72rem; min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(45,48,53,.08); color: #4A4C50; font-weight: 500; }
         .filter-btn.is-active .f-count { background: rgba(255,255,255,.75); color: #2D3035; }
@@ -767,9 +881,9 @@
     </div>
 
     <!-- PAGE 2 : RÉALISATIONS -->
-    <div id="page-realisations" class="hidden min-h-screen pt-32 pb-24 relative z-10 bg-white/30">
+    <div id="page-realisations" class="hidden min-h-screen pt-28 pb-24 relative z-10 bg-white/30">
         <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center md:text-left mb-16 reveal">
+            <div class="text-center md:text-left mb-10 reveal">
                 <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
                     <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Retour au CV
                 </a>
@@ -777,29 +891,48 @@
                     <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
                 <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
                 <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
-                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Choisissez une catégorie pour découvrir les photos et vidéos en détail.
+                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Faites glisser le plan pour explorer, ou choisissez une catégorie.
                 </p>
             </div>
 
-            <!-- Mosaïque d'accueil (construite par le script, section « Réalisations ») -->
-            <div id="realisations-top"></div>
-            <div id="gallery-home" class="mosaic" aria-busy="true">
-                <div class="g-skel m-skel" style="height: 240px"></div>
-                <div class="g-skel m-skel" style="height: 240px"></div>
-                <div class="g-skel m-skel" style="height: 240px"></div>
-                <div class="g-skel m-skel" style="height: 240px"></div>
-            </div>
+        </div>
 
-            <!-- Vue détaillée d'une catégorie -->
-            <div id="gallery-detail" class="hidden">
-                <div id="gallery-bar" class="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div id="gallery-filters" class="flex flex-wrap items-center gap-3" role="group" aria-label="Choisir une catégorie"></div>
-                    <p id="gallery-count" data-i18n-skip class="text-sm font-light text-pastel-text" aria-live="polite"></p>
+        <!-- Plan interactif : on fait glisser les vignettes dans toutes les directions (construit par le script, section « Réalisations ») -->
+        <div id="realisations-top"></div>
+        <div id="field-stage" class="f-stage" data-i18n-skip aria-busy="true" role="region" aria-label="Plan des réalisations : faites glisser pour explorer">
+            <div id="field-view" class="f-view" tabindex="0"><div id="field-world" class="f-world" aria-hidden="true"></div></div>
+            <div class="f-cross" aria-hidden="true"></div>
+            <header class="f-hud f-hud--top">
+                <div class="f-top-right">
+                    <nav id="f-nav" class="f-nav" aria-label="Aller à une catégorie"></nav>
+                    <button type="button" id="f-expand" class="f-expand" aria-label="Plein écran" aria-pressed="false"><i class="fa-solid fa-expand" aria-hidden="true"></i><span id="f-expand-txt">Plein écran</span></button>
                 </div>
-                <div id="gallery-cat-head" data-i18n-skip class="mb-8"></div>
-                <div id="gallery-grid" class="g-justify"></div>
-            </div>
+            </header>
+            <footer class="f-hud f-hud--bottom">
+                <div class="f-left">
+                    <button type="button" id="f-wheel" class="f-pill-btn" aria-pressed="false"><i class="fa-solid fa-computer-mouse" aria-hidden="true"></i><span id="f-wheel-txt">Molette : page</span></button>
+                </div>
+                <div class="f-right">
+                    <div class="f-ctl" role="group" aria-label="Déplacer le plan" id="f-pan">
+                        <span class="f-ctl-lab" id="f-lab-plan">Plan</span>
+                        <button type="button" data-d="l" aria-label="Vers la gauche"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                        <button type="button" data-d="u" aria-label="Vers le haut"><i class="fa-solid fa-chevron-up" aria-hidden="true"></i></button>
+                        <button type="button" data-d="d" aria-label="Vers le bas"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+                        <button type="button" data-d="r" aria-label="Vers la droite"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="f-ctl f-ctl--page" role="group" aria-label="Défiler la page">
+                        <span class="f-ctl-lab" id="f-lab-page">Page</span>
+                        <button type="button" id="f-pgup" aria-label="Haut de la page"><i class="fa-solid fa-angles-up" aria-hidden="true"></i><span id="f-pgup-t">Haut</span></button>
+                        <button type="button" id="f-pgdn" aria-label="Bas de la page"><i class="fa-solid fa-angles-down" aria-hidden="true"></i><span id="f-pgdn-t">Bas</span></button>
+                    </div>
+                </div>
+            </footer>
+            <div id="f-cursor" class="f-cursor" aria-hidden="true"></div>
+            <div id="f-loading" class="f-loading f-mono">Chargement…</div>
+            <ul id="f-sr" class="f-sr" aria-label="Liste des réalisations"></ul>
+        </div>
 
+        <div class="max-w-6xl mx-auto px-6">
             <!-- Affiché tant qu'aucun support n'est disponible -->
             <div id="gallery-empty" class="hidden modern-card p-10 md:p-14 text-center max-w-2xl mx-auto">
                 <div class="w-14 h-14 mx-auto rounded-2xl bg-pastel-blue/40 flex items-center justify-center text-pastel-blue-accent"><i class="fa-regular fa-images text-2xl" aria-hidden="true"></i></div>
@@ -1072,9 +1205,19 @@
         </div>
     </footer>
 
+    <!-- Volet d'une catégorie : demi-page avec les médias et les infos -->
+    <div id="cat-sheet" class="cs" role="dialog" aria-modal="true" aria-labelledby="cs-title" aria-hidden="true" data-i18n-skip>
+        <div class="cs-backdrop" id="cs-backdrop"></div>
+        <div class="cs-panel">
+            <div class="cs-top"><p class="eyebrow" id="cs-eyebrow"></p><button type="button" class="cs-close" id="cs-close" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+            <div class="cs-scroll" id="cs-body"></div>
+        </div>
+    </div>
+
+
     <!-- MODALE (images & vidéos) -->
     <div id="gallery-modal" class="fixed inset-0 z-[100] hidden bg-pastel-heading/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300" role="dialog" aria-modal="true" aria-label="Aperçu de la réalisation" aria-hidden="true">
-        <button id="close-modal" type="button" aria-label="Fermer" class="absolute top-6 right-6 md:top-10 md:right-10 text-white/70 hover:text-white text-4xl transition-colors z-10">
+        <button id="close-modal" type="button" aria-label="Fermer l'aperçu" class="absolute top-6 right-6 md:top-10 md:right-10 text-white/70 hover:text-white text-4xl transition-colors z-10">
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
         <button id="modal-prev" type="button" aria-label="Précédent" class="modal-nav left-3 md:left-8"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
@@ -1231,17 +1374,10 @@
               en: { title: 'Graduation & party', sub: 'Video montage', caption: 'Graduation ceremony and party - video montage' } }
         ];
 
-        /* ---------- Galerie : mosaïque d'accueil + vue détaillée par catégorie ---------- */
-        const galleryHome = document.getElementById('gallery-home');
-        const galleryDetail = document.getElementById('gallery-detail');
-        const galleryGrid = document.getElementById('gallery-grid');
-        const galleryFilters = document.getElementById('gallery-filters');
-        const galleryCount = document.getElementById('gallery-count');
+        /* ---------- Réalisations : plan interactif (inspiré d'un « champ » de vignettes qu'on fait glisser) ---------- */
+        const fieldStage = document.getElementById('field-stage');
         const galleryEmpty = document.getElementById('gallery-empty');
-        const galleryHead = document.getElementById('gallery-cat-head');
-        let galleryItems = [];   // cartes de la vue détaillée (catégorie ouverte)
         let allMedia = [];       // tous les supports disponibles : { p, img, thumb, dataset }
-        let currentCat = null;
 
         const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -1280,103 +1416,282 @@
                 caption: p.caption || p.title || '', title: p.title || '', sub: p.sub || ''
             };
         }
+        const two = n => String(n).padStart(2, '0');
+        const TONES = { galas: 'blue', cocktails: 'pink', seminaires: 'green', videos: 'grad' };
+        const motionOn = () => document.documentElement.classList.contains('motion');
+        const mod = (a, n) => ((a % n) + n) % n;
 
-        /* --- Mosaïque d'accueil : une grande tuile illustrée par catégorie --- */
-        function renderHome() {
-            galleryHome.textContent = '';
-            galleryHome.setAttribute('aria-busy', 'false');
+        const F = { view: null, world: null, nav: null, cursor: null, nc: 0, cw: 0, gap: 0, W: 0, cols: [], cycle: [], items: [],
+                    px: 0, py: 0, vx: 0, vy: 0, drag: null, tween: null, raf: 0, last: 0, vis: false, aim: null, frame: 0, ready: false };
+
+        /* Liste logique des vignettes : accueil, une vignette par catégorie suivie de ses supports, contact */
+        function fieldItems() {
             const cats = Object.keys(CATEGORIES).filter(c => allMedia.some(m => m.p.cat === c));
-            cats.forEach((c, k) => {
-                const list = allMedia.filter(m => m.p.cat === c);
-                const nCells = c === 'videos' ? Math.min(4, list.length) : c === 'galas' ? Math.min(3, list.length) : 1;
-                const el = document.createElement('button');
-                el.type = 'button';
-                el.className = 'm-tile m-' + c;
-                el.style.setProperty('--i', k);
-                el.setAttribute('data-i18n-skip', '');
-                el.setAttribute('aria-label', (isEn() ? 'See: ' : 'Voir : ') + catTitle(c) + ' (' + mediaLabel(c) + ')');
-                el.innerHTML =
-                    '<span class="m-collage c' + nCells + '">' +
-                    list.slice(0, nCells).map(m => '<span class="m-cell"><img src="' + esc(m.thumb) + '" alt="" decoding="async" style="object-position:' + (m.p.file ? 'center 38%' : 'center') + '"></span>').join('') +
-                    '</span><span class="m-shade"></span>' +
-                    (c === 'videos' ? '<span class="m-play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>' : '') +
-                    '<span class="m-body">' +
-                    '<span class="m-chip">' + (c === 'videos' ? '<i class="fa-solid fa-play" aria-hidden="true"></i>' : '<i class="fa-solid fa-images" aria-hidden="true"></i>') + esc(mediaLabel(c)) + '</span>' +
-                    '<span class="m-title">' + esc(catTitle(c)) + '</span>' +
-                    '<span class="m-sub">' + esc(catSub(c)) + '</span>' +
-                    '<span class="m-cta">' + (isEn() ? 'Explore' : 'Découvrir') + ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>' +
-                    '</span>';
-                el.addEventListener('click', () => showCategory(c));
-                galleryHome.append(el);
+            const items = [{ k: 'intro' }];
+            let n = 0;
+            cats.forEach((c, ci) => {
+                items.push({ k: 'cat', cat: c, no: ci + 1, of: cats.length });
+                allMedia.filter(m => m.p.cat === c).forEach(m => items.push({ k: 'media', m, n: ++n }));
             });
+            items.push({ k: 'contact' });
+            return items;
         }
 
-        /* --- Vue détaillée : photos ou vidéos d'une catégorie --- */
-        function renderDetail() {
+        function tileHeight(it, cw) {
+            if (it.k === 'media') { const r = it.m.p.file ? Math.min(1.78, Math.max(0.5625, it.m.img.w / it.m.img.h)) : Math.min(1.6, Math.max(0.72, it.m.img.w / it.m.img.h)); return Math.round(cw / r) + 52; }
+            if (it.k === 'intro') return Math.max(Math.round(cw * 1.3), 285);
+            if (it.k === 'cat') return Math.max(Math.round(cw * 0.92), 210);
+            return Math.max(Math.round(cw * 0.78), 170);
+        }
+
+        function tileHTML(it, main) {
+            const attrs = ' data-f="' + it.k + '"' + (it.cat ? ' data-cat="' + it.cat + '"' : '') + (it.m ? ' data-cat="' + it.m.p.cat + '"' : '');
+            const focus = ' tabindex="-1"' + (main ? '' : ' aria-hidden="true"');
+            if (it.k === 'media') {
+                const m = it.m, isV = isVid(m.p), d = m.dataset;
+                return '<button type="button" class="f-tile f-media"' + attrs + focus + ' aria-label="' + esc((isV ? (isEn() ? 'Play: ' : 'Lancer : ') : (isEn() ? 'View: ' : 'Voir : ')) + d.title) + '">' +
+                    '<span class="f-img"><img src="' + esc(m.thumb) + '" alt="" decoding="async" loading="lazy" draggable="false">' +
+                    (isV ? '<span class="f-play"><i class="fa-solid fa-play" aria-hidden="true"></i></span>' : '') + '</span>' +
+                    '<span class="f-cap"><i class="f-no">' + two(it.n) + '</i><b>' + esc(d.title) + '</b><em>' + (isV ? (isEn() ? 'Video' : 'Vidéo') : 'Photo') + ' ↗</em></span></button>';
+            }
+            if (it.k === 'cat') {
+                return '<button type="button" class="f-tile f-cat" data-tone="' + (TONES[it.cat] || 'blue') + '"' + attrs + focus + '>' +
+                    '<span class="f-mono">' + two(it.no) + ' / ' + two(it.of) + '</span>' +
+                    '<span class="f-big">' + esc(catTitle(it.cat)) + '</span>' +
+                    '<span class="f-sub">' + esc(catSub(it.cat)) + '</span>' +
+                    '<span class="f-foot"><span class="f-mono">' + esc(mediaLabel(it.cat)) + '</span><span class="f-arrow" aria-hidden="true">→</span></span></button>';
+            }
+            if (it.k === 'intro') {
+                return '<div class="f-tile f-intro"' + attrs + '>' +
+                    '<span class="f-mono f-between"><span>Portfolio</span><span>Paris</span></span>' +
+                    '<span class="f-title title-pastel">' + (isEn() ? 'My <span class="grad">work</span>' : 'Mes <span class="grad">réalisations</span>') + '</span>' +
+                    '<span class="f-sub">' + (isEn() ? 'Galas, parties, seminars: events I designed, produced and coordinated.' : 'Galas, soirées, séminaires : des événements conçus, produits et coordonnés.') + '</span>' +
+                    '<span class="f-mono">' + (isEn() ? 'Drag to explore' : 'Glissez pour explorer') + '</span></div>';
+            }
+            return '<button type="button" class="f-tile f-contact contact-btn"' + attrs + focus + '>' +
+                '<span class="f-mono f-between"><span>Contact</span><span aria-hidden="true">↗</span></span>' +
+                '<span class="f-big">' + (isEn() ? 'An event to imagine?' : 'Un événement à imaginer ?') + '</span>' +
+                '<span class="f-foot"><span class="f-sub">' + (isEn() ? "Let's talk." : 'Parlons-en.') + '</span><span class="f-arrow" aria-hidden="true">→</span></span></button>';
+        }
+
+        /* Construit les colonnes (chacune boucle sur sa propre hauteur : le plan est sans fin) */
+        function layoutField() {
+            const view = F.view, vw = view.clientWidth, vh = view.clientHeight;
+            if (!vw || !vh) return;
+            const small = vw < 720;
+            F.nc = vw >= 1100 ? 4 : vw >= 720 ? 3 : 2;
+            F.gap = small ? 12 : 20;
+            F.cw = small ? Math.floor((vw - F.gap * 3) / 2) : Math.min(340, Math.floor((vw - F.gap * (F.nc + 1)) / (F.nc - 0.35)));
+            F.W = F.nc * (F.cw + F.gap);
+            const items = fieldItems();
+            const cols = Array.from({ length: F.nc }, () => ({ h: 0, list: [] }));
+            // les colonnes démarrent décalées pour éviter un alignement trop régulier
+            cols.forEach((c, i) => { c.h = [0, 70, 24, 110][i % 4]; });
+            items.forEach((it, idx) => {
+                const h = tileHeight(it, F.cw);
+                let best = 0; cols.forEach((c, i) => { if (c.h < cols[best].h - 1) best = i; });
+                cols[best].list.push({ it, h, y: cols[best].h, idx });
+                cols[best].h += h + F.gap;
+            });
+            const world = F.world; world.textContent = '';
+            F.cols = [];
+            for (let hc = 0; hc < 3; hc++) cols.forEach((c, ci) => {
+                const col = document.createElement('div');
+                col.className = 'f-col';
+                col.style.cssText = 'left:' + (hc * F.W + ci * (F.cw + F.gap)) + 'px;width:' + F.cw + 'px';
+                const vcop = Math.max(3, Math.ceil(vh / c.h) + 2);
+                let html = '';
+                for (let v = 0; v < vcop; v++) c.list.forEach(({ it, h, idx }) => {
+                    const main = hc === 1 && v === 1;
+                    const d = Math.min(1.4, ci * 0.09 + idx * 0.035);
+                    html += '<div class="f-slot" style="height:' + h + 'px;margin-bottom:' + F.gap + 'px;--d:' + d.toFixed(2) + 's" data-i="' + idx + '">' + tileHTML(it, main) + '</div>';
+                });
+                // ajustement : la hauteur d'un cycle est exactement F.colH
+                col.innerHTML = html;
+                world.append(col);
+                F.cols.push({ el: col, ci, list: c.list });
+            });
+            F.cycle = cols.map(c => c.h);
+            F.items = items;
+            applyPan();
+        }
+
+        function applyPan() {
+            F.world.style.transform = 'translate3d(' + (mod(F.px, F.W) - F.W) + 'px,0,0)';
+            F.cols.forEach(c => { c.el.style.transform = 'translate3d(0,' + (mod(F.py, F.cycle[c.ci]) - F.cycle[c.ci]) + 'px,0)'; });
+            F.frame++;
+        }
+
+        /* Boucle d'animation : inertie, dérive lente au repos, vol vers une catégorie */
+        function loop(t) {
+            F.raf = 0;
+            if (!F.ready) return;
+            const dt = Math.min(48, t - (F.last || t)); F.last = t;
+            let busy = false;
+            if (F.tween) {
+                const k = Math.min(1, (t - F.tween.t0) / F.tween.d), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+                F.px = F.tween.x0 + (F.tween.x1 - F.tween.x0) * e; F.py = F.tween.y0 + (F.tween.y1 - F.tween.y0) * e;
+                if (k >= 1) F.tween = null; busy = true;
+            } else if (!F.drag) {
+                F.px += F.vx * dt; F.py += F.vy * dt;
+                const damp = Math.pow(0.94, dt / 16.7); F.vx *= damp; F.vy *= damp;
+                if (Math.abs(F.vx) < 0.004) F.vx = 0; if (Math.abs(F.vy) < 0.004) F.vy = 0;
+                if (!F.vx && !F.vy && motionOn() && !F.hover && !F.sheetOpen()) { F.px -= 0.012 * dt; F.py -= 0.006 * dt; }  // dérive lente
+                busy = true;
+            } else busy = true;
+            applyPan();
+            F.view.style.setProperty('--speed', Math.min(1, Math.hypot(F.vx, F.vy) / 1.4).toFixed(2));
+            if (F.frame % 8 === 0) updateAim();
+            if (busy && F.vis && !document.hidden) F.raf = requestAnimationFrame(loop);
+        }
+        const kick = () => { if (!F.raf && F.ready) { F.last = 0; F.raf = requestAnimationFrame(loop); } };
+        F.sheetOpen = () => sheetIsOpen || modalOpen;
+
+        function updateAim() {
+            const r = F.view.getBoundingClientRect(), el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            const tile = el && el.closest ? el.closest('.f-tile') : null;
+            if (tile === F.aim) return;
+            if (F.aim) F.aim.classList.remove('is-aim');
+            F.aim = tile; if (tile) tile.classList.add('is-aim');
+            const cat = tile && tile.dataset.cat;
+            F.nav.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', !!cat && b.dataset.cat === cat));
+        }
+
+        function flyTo(cat, fx) {
+            const target = F.cols.find(c => c.list.some(x => x.it.k === 'cat' && x.it.cat === cat));
+            if (!target) return;
+            const ent = target.list.find(x => x.it.k === 'cat' && x.it.cat === cat), hc = 1;
+            const vw = F.view.clientWidth, vh = F.view.clientHeight;
+            // position cible : la vignette de catégorie au centre de la scène
+            const wantX = vw * (fx || 0.5) - (target.ci * (F.cw + F.gap) + F.cw / 2), wantY = vh / 2 - (ent.y + ent.h / 2);
+            const dx = mod(wantX - F.px + F.W / 2, F.W) - F.W / 2, dy = mod(wantY - F.py + F.cycle[target.ci] / 2, F.cycle[target.ci]) - F.cycle[target.ci] / 2;
+            F.vx = F.vy = 0;
+            F.tween = { t0: performance.now(), d: motionOn() ? 1100 : 1, x0: F.px, y0: F.py, x1: F.px + dx, y1: F.py + dy };
+            kick();
+        }
+
+        function activate(tile) {
+            if (!tile) return;
+            const k = tile.dataset.f, slot = tile.closest('.f-slot'), it = slot && F.items[+slot.dataset.i];
+            if (k === 'media' && it) {
+                const list = allMedia.filter(x => x.p.cat === it.m.p.cat);
+                openModal(it.m, list);
+            } else if (k === 'cat' && it) openSheet(it.cat);
+            else if (k === 'contact') { location.hash = '#contact'; }
+        }
+
+        function setupField() {
+            F.view = document.getElementById('field-view'); F.world = document.getElementById('field-world');
+            F.nav = document.getElementById('f-nav'); F.cursor = document.getElementById('f-cursor');
+            const view = F.view;
+            // pointeur : glisser pour déplacer, simple clic pour ouvrir
+            view.addEventListener('pointerdown', e => {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                F.tween = null; F.vx = F.vy = 0;
+                F.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: 0, t: performance.now(), sx: e.clientX, sy: e.clientY };
+                try { view.setPointerCapture(e.pointerId); } catch (_) {}
+                view.classList.add('is-drag'); kick();
+            });
+            view.addEventListener('pointermove', e => {
+                if (F.cursor && e.pointerType === 'mouse') {
+                    const r = F.view.parentElement.getBoundingClientRect();
+                    F.cursor.style.transform = 'translate3d(' + (e.clientX - r.left) + 'px,' + (e.clientY - r.top) + 'px,0)';
+                    const t = document.elementFromPoint(e.clientX, e.clientY), tile = t && t.closest ? t.closest('.f-tile') : null;
+                    const k = tile && tile.dataset.f;
+                    F.hover = !!tile;
+                    F.cursor.textContent = F.drag ? '' : k === 'media' ? (isEn() ? 'Open' : 'Ouvrir') : k === 'cat' ? (isEn() ? 'Explore' : 'Explorer') : k === 'contact' ? 'Contact' : (isEn() ? 'Drag' : 'Glisser');
+                    F.cursor.classList.toggle('is-on', !F.drag);
+                }
+                const d = F.drag; if (!d || d.id !== e.pointerId) return;
+                const dx = e.clientX - d.x, dy = e.clientY - d.y, now = performance.now(), dt = Math.max(8, now - d.t);
+                d.x = e.clientX; d.y = e.clientY; d.t = now; d.moved += Math.abs(dx) + Math.abs(dy);
+                F.px += dx; F.py += dy;
+                F.vx = F.vx * .6 + (dx / dt) * .4; F.vy = F.vy * .6 + (dy / dt) * .4;
+            });
+            const end = e => {
+                const d = F.drag; if (!d || d.id !== e.pointerId) return;
+                F.drag = null; view.classList.remove('is-drag');
+                try { view.releasePointerCapture(e.pointerId); } catch (_) {}
+                if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 7 && d.moved < 12) { F.vx = F.vy = 0; const el = document.elementFromPoint(e.clientX, e.clientY); activate(el && el.closest ? el.closest('.f-tile') : null); }
+                else if (performance.now() - d.t > 90) { F.vx = F.vy = 0; }
+                kick();
+            };
+            view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end);
+            view.addEventListener('pointerleave', () => { F.hover = false; if (F.cursor) F.cursor.classList.remove('is-on'); });
+            // molette / pavé tactile : déplacent le plan dans toutes les directions (Maj + molette = horizontal).
+            // Sur les bords haut et bas de la scène, la molette fait défiler la page normalement.
+            view.addEventListener('wheel', e => {
+                if (F.wheelMode === 'page' && !F.full) return;
+                const r = view.getBoundingClientRect(), y = e.clientY - r.top;
+                if (!F.full && (y < 56 || y > r.height - 56)) return;
+                e.preventDefault(); F.tween = null;
+                const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? r.height : 1;
+                let dx = e.deltaX * k, dy = e.deltaY * k;
+                if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+                F.px -= dx; F.py -= dy; F.vx = F.vy = 0;
+                if (!e.deltaX && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY)) F.vy = -dy * 0.006;   // molette à crans : petite glisse
+                kick();
+            }, { passive: false });
+            // clavier : flèches pour se déplacer, Entrée pour ouvrir la vignette sous le viseur
+            view.addEventListener('keydown', e => {
+                const step = 150, map = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
+                if (map[e.key]) { e.preventDefault(); F.tween = { t0: performance.now(), d: motionOn() ? 420 : 1, x0: F.px, y0: F.py, x1: F.px + map[e.key][0], y1: F.py + map[e.key][1] }; kick(); }
+                else if (e.key === 'Enter' && e.target === view) { e.preventDefault(); activate(F.aim); }
+            });
+            // le plan ne doit jamais défiler tout seul (focus clavier) : on remet toujours le défilement natif à zéro
+            view.addEventListener('scroll', () => { view.scrollLeft = 0; view.scrollTop = 0; });
+            // visibilité : on n'anime que si le plan est à l'écran
+            new IntersectionObserver(es => { F.vis = es[0].isIntersecting; if (F.vis) kick(); }, { threshold: 0.05 }).observe(fieldStage);
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+            let rt = 0;
+            new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (F.ready) { layoutField(); buildNav(); } }, 160); }).observe(view);
+                        // ---- boutons toujours présents : déplacer le plan, défiler la page, molette, agrandir ----
+            const panBy = (dx, dy) => { F.vx = F.vy = 0; F.tween = { t0: performance.now(), d: motionOn() ? 380 : 1, x0: F.px, y0: F.py, x1: F.px + dx, y1: F.py + dy }; kick(); };
+            const DIR = { l: [260, 0], r: [-260, 0], u: [0, 260], d: [0, -260] };
+            document.querySelectorAll('#f-pan [data-d]').forEach(b => {
+                const v = DIR[b.dataset.d]; let t = 0;
+                const stop = () => { clearInterval(t); t = 0; };
+                b.addEventListener('pointerdown', e => { e.preventDefault(); panBy(v[0], v[1]); stop(); t = setInterval(() => panBy(v[0], v[1]), 320); });
+                ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+                b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); panBy(v[0], v[1]); } });
+            });
+            document.getElementById('f-pgup').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            document.getElementById('f-pgdn').addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
+            try { F.wheelMode = localStorage.getItem('site-f-wheel') === 'plan' ? 'plan' : 'page'; } catch (_) { F.wheelMode = 'page'; }   // par défaut la molette fait défiler la page
+            const wheelBtn = document.getElementById('f-wheel');
+            const paintWheel = () => { wheelBtn.setAttribute('aria-pressed', String(F.wheelMode === 'plan')); document.getElementById('f-wheel-txt').textContent = (isEn() ? 'Wheel: ' : 'Molette : ') + (F.wheelMode === 'plan' ? (isEn() ? 'map' : 'plan') : 'page'); };
+            F.paintWheel = paintWheel; paintWheel();
+            wheelBtn.addEventListener('click', () => { F.wheelMode = F.wheelMode === 'plan' ? 'page' : 'plan'; try { localStorage.setItem('site-f-wheel', F.wheelMode); } catch (_) {} paintWheel(); });
+            // agrandir : la scène passe en plein écran dans la page (Échap, le bouton ou « retour » pour revenir)
+            const expandBtn = document.getElementById('f-expand');
+            window.setFull = function (on, fromPop) {
+                if (on === !!F.full) return;
+                F.full = !!on;
+                fieldStage.classList.toggle('is-full', F.full);
+                document.documentElement.classList.toggle('f-full', F.full);
+                expandBtn.setAttribute('aria-pressed', String(F.full));
+                document.getElementById('f-expand-txt').textContent = F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran');
+                expandBtn.setAttribute('aria-label', F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran'));
+                expandBtn.firstElementChild.className = 'fa-solid ' + (F.full ? 'fa-compress' : 'fa-expand');
+                if (F.full) pushLayer('full', () => setFull(false, true)); else if (fromPop !== true) popLayer('full');
+                kick();
+            };
+            expandBtn.addEventListener('click', () => setFull(!F.full));
+        }
+
+        function buildNav() {
             const cats = Object.keys(CATEGORIES).filter(c => allMedia.some(m => m.p.cat === c));
-            galleryFilters.textContent = '';
-            const back = document.createElement('button');
-            back.type = 'button'; back.className = 'g-back';
-            back.innerHTML = '<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> ' + (isEn() ? 'Overview' : "Vue d'ensemble");
-            back.addEventListener('click', showHome);
-            galleryFilters.append(back);
+            F.nav.textContent = '';
             cats.forEach(c => {
                 const b = document.createElement('button');
-                b.type = 'button'; b.className = 'filter-btn' + (c === currentCat ? ' is-active' : '');
-                b.setAttribute('aria-pressed', String(c === currentCat));
-                b.dataset.filter = c;
-                b.append(document.createTextNode(catTitle(c)));
-                const n = document.createElement('span'); n.className = 'f-count'; n.textContent = String(allMedia.filter(m => m.p.cat === c).length); b.append(n);
-                b.addEventListener('click', () => showCategory(c));
-                galleryFilters.append(b);
+                b.type = 'button'; b.className = 'filter-btn'; b.dataset.cat = c; b.textContent = catTitle(c);
+                b.addEventListener('click', () => openSheet(c));
+                F.nav.append(b);
             });
-            galleryHead.innerHTML = '<h4 class="text-2xl md:text-3xl font-medium text-pastel-heading tracking-tight">' + esc(catTitle(currentCat)) + '</h4>' +
-                '<p class="mt-1 text-pastel-text font-light">' + esc(catSub(currentCat)) + '</p>';
-            const list = allMedia.filter(m => m.p.cat === currentCat);
-            galleryCount.textContent = mediaLabel(currentCat);
-            galleryGrid.textContent = '';
-            galleryItems = list.map(m => {
-                fillMember(m);
-                const p = m.p, isVideo = isVid(p), img = m.img;
-                const el = document.createElement('div');
-                el.className = 'gallery-item g-card group relative overflow-hidden rounded-2xl cursor-pointer';
-                el.setAttribute('role', 'button'); el.setAttribute('data-i18n-skip', ''); el.tabIndex = 0;
-                el.dataset.cat = p.cat;
-                el.setAttribute('aria-label', (isVideo ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + m.dataset.title);
-                el.style.setProperty('--r', String(isVideo ? Math.min(1.78, Math.max(0.5625, img.w / img.h)) : Math.min(1.78, Math.max(0.7, img.w / img.h))));
-                el.style.setProperty('--h', isVideo ? '25rem' : '17.5rem');
-                el.innerHTML =
-                    '<img src="' + esc(m.thumb) + '" alt="' + esc(m.dataset.caption) + '" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">' +
-                    (isVideo
-                        ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>'
-                        : '<span class="g-shade absolute inset-0"></span>' +
-                          '<span class="absolute inset-x-0 bottom-0 p-4 md:p-5 text-white">' +
-                          '<span class="g-title block leading-tight">' + esc(m.dataset.title) + '</span>' +
-                          '<span class="block text-xs md:text-sm text-white/85 font-light mt-0.5 empty:hidden">' + esc(m.dataset.sub) + '</span></span>');
-                const open = () => openModal(m, list);
-                el.addEventListener('click', open);
-                el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-                galleryGrid.append(el);
-                return el;
-            });
-            if (window.__staggerGallery) window.__staggerGallery();
-        }
-
-        function showCategory(c) {
-            currentCat = c;
-            galleryHome.classList.add('hidden');
-            galleryDetail.classList.remove('hidden');
-            renderDetail();
-            const top = document.getElementById('realisations-top');
-            if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
-        }
-        function showHome() {
-            currentCat = null;
-            galleryDetail.classList.add('hidden');
-            galleryHome.classList.remove('hidden');
-            renderHome();
-            const top = document.getElementById('realisations-top');
-            if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+            document.getElementById('f-lab-plan').textContent = isEn() ? 'Map' : 'Plan'; document.getElementById('f-lab-page').textContent = 'Page';
+            document.getElementById('f-pgup-t').textContent = isEn() ? 'Top' : 'Haut'; document.getElementById('f-pgdn-t').textContent = isEn() ? 'Bottom' : 'Bas';
+            if (F.paintWheel) F.paintWheel();
+            document.getElementById('f-expand-txt').textContent = F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran');
         }
 
         async function buildGallery() {
@@ -1386,13 +1701,83 @@
             allMedia = usable.map((p, i) => ({ p, img: found[i], thumb: found[i] && found[i].url })).filter(m => m.img);
             allMedia.forEach(fillMember);
             if (!allMedia.length) {
-                galleryHome.classList.add('hidden');
+                fieldStage.classList.add('hidden');
                 galleryEmpty.classList.remove('hidden');
                 return;
             }
-            renderHome();
-            if (window.__staggerGallery) window.__staggerGallery();
+            // liste accessible (clavier / lecteur d'écran) : de vrais boutons qui ouvrent l'aperçu
+            const sr = document.getElementById('f-sr');
+            allMedia.forEach(m => {
+                const li = document.createElement('li'), b = document.createElement('button');
+                b.type = 'button'; b.textContent = (isVid(m.p) ? 'Vidéo : ' : 'Photo : ') + m.dataset.title;
+                b.addEventListener('click', () => openModal(m, allMedia.filter(x => x.p.cat === m.p.cat)));
+                li.append(b); sr.append(li);
+            });
+            setupField();
+            F.ready = true;
+            fieldStage.classList.add('is-ready');
+            F.px = 0; F.py = 0;
+            layoutField(); buildNav();
+            document.getElementById('f-loading').remove();
+            fieldStage.setAttribute('aria-busy', 'false');
+            kick();
         }
+
+
+        /* ---------- Volet d'une catégorie : demi-page avec les médias et les infos ---------- */
+        let sheetIsOpen = false, sheetCat = null, sheetFocus = null;
+        const SHEET_CHIP = { galas: '#D9E4FC', cocktails: '#FBDDE4', seminaires: '#DDF0C2', videos: '#E7E1FB' };
+        function renderSheet(cat) {
+            sheetCat = cat;
+            const cats = Object.keys(CATEGORIES).filter(c => allMedia.some(m => m.p.cat === c));
+            const list = allMedia.filter(m => m.p.cat === cat);
+            const nv = list.filter(m => isVid(m.p)).length, np = list.length - nv;
+            document.getElementById('cs-eyebrow').textContent = two(cats.indexOf(cat) + 1) + ' / ' + two(cats.length) + ' · ' + (isEn() ? 'Category' : 'Catégorie');
+            const body = document.getElementById('cs-body');
+            body.innerHTML =
+                '<h3 class="title-pastel cs-title" id="cs-title">' + esc(catTitle(cat)) + '</h3>' +
+                '<p class="cs-sub">' + esc(catSub(cat)) + '</p>' +
+                '<div class="cs-chips">' +
+                (np ? '<span class="cs-chip" style="--chip:#D9E4FC"><i class="fa-solid fa-image" aria-hidden="true"></i>' + plural(np, 'photo', 'photo') + '</span>' : '') +
+                (nv ? '<span class="cs-chip" style="--chip:#FBDDE4"><i class="fa-solid fa-video" aria-hidden="true"></i>' + plural(nv, 'vidéo', 'video') + '</span>' : '') +
+                '<span class="cs-chip" style="--chip:#DDF0C2"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i>' + (isEn() ? 'Click to enlarge' : 'Cliquez pour agrandir') + '</span></div>' +
+                '<div class="cs-tabs" role="group" aria-label="' + (isEn() ? 'Categories' : 'Catégories') + '">' +
+                cats.map(c => '<button type="button" class="filter-btn' + (c === cat ? ' is-active' : '') + '" data-cat="' + c + '">' + esc(catTitle(c)) + '</button>').join('') + '</div>' +
+                '<div class="cs-grid">' + list.map((m, i) => {
+                    const d = m.dataset, isV = isVid(m.p), r = isV ? Math.min(1.78, Math.max(0.8, m.img.w / m.img.h)) : Math.min(1.6, Math.max(0.9, m.img.w / m.img.h));
+                    return '<button type="button" class="cs-card" data-i="' + i + '" style="--i:' + i + '">' +
+                        '<span class="cs-img" style="--r:' + r.toFixed(3) + '"><img src="' + esc(m.thumb) + '" alt="" decoding="async"' + (m.p.file ? ' style="object-position:center 35%"' : '') + '>' + (isV ? '<span class="cs-play"><i class="fa-solid fa-play" aria-hidden="true"></i></span>' : '') + '</span>' +
+                        '<span class="cs-txt"><span class="cs-no">' + two(allMedia.indexOf(m) + 1) + ' · ' + (isV ? (isEn() ? 'VIDEO' : 'VIDÉO') : 'PHOTO') + '</span>' +
+                        '<b>' + esc(d.title) + '</b>' + (d.sub ? '<i>' + esc(d.sub) + '</i>' : '') + '<p>' + esc(d.caption) + '</p></span></button>';
+                }).join('') + '</div>' +
+                '<a href="#contact" class="contact-btn cs-cta" id="cs-cta"><span>' + (isEn() ? 'Let’s talk about your event' : 'Parlons de votre événement') + '</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>';
+            body.querySelectorAll('.cs-card').forEach(b => b.addEventListener('click', () => openModal(list[+b.dataset.i], list)));
+            body.querySelectorAll('.cs-tabs .filter-btn').forEach(b => b.addEventListener('click', () => { renderSheet(b.dataset.cat); body.scrollTop = 0; if (matchMedia('(min-width: 900px)').matches) flyTo(b.dataset.cat, 0.25); }));
+            const cta = document.getElementById('cs-cta'); if (cta) cta.addEventListener('click', () => closeSheet());
+        }
+        function openSheet(cat) {
+            const el = document.getElementById('cat-sheet');
+            renderSheet(cat);
+            if (!sheetIsOpen) {
+                sheetIsOpen = true; sheetFocus = document.activeElement;
+                el.classList.add('is-open'); el.setAttribute('aria-hidden', 'false');
+                pushLayer('sheet', () => closeSheet(true));
+                setTimeout(() => document.getElementById('cs-close').focus({ preventScroll: true }), 60);
+            }
+            document.getElementById('cs-body').scrollTop = 0;
+            if (matchMedia('(min-width: 900px)').matches) flyTo(cat, 0.25);   // la vignette de la catégorie reste visible dans la moitié gauche
+        }
+        function closeSheet(fromPop) {
+            if (!sheetIsOpen) return;
+            sheetIsOpen = false;
+            const el = document.getElementById('cat-sheet');
+            el.classList.remove('is-open'); el.setAttribute('aria-hidden', 'true');
+            if (fromPop !== true) popLayer('sheet');
+            if (sheetFocus && sheetFocus.focus) { try { sheetFocus.focus({ preventScroll: true }); } catch (_) {} }
+            kick();
+        }
+        document.getElementById('cs-close').addEventListener('click', () => closeSheet());
+        document.getElementById('cs-backdrop').addEventListener('click', () => closeSheet());
 
         /* ---------- Modale galerie (avec navigation) ---------- */
         const modal = document.getElementById('gallery-modal');
@@ -1464,6 +1849,16 @@
             }
         }
 
+        /* ---------- Pile d'aperçus ouverts (volet de catégorie, visionneuse) : « retour » ferme le plus récent ---------- */
+        const layers = []; let skipPop = 0;
+        function pushLayer(id, closeFn) { const l = { id, closeFn, pushed: false }; try { history.pushState({ gm: id }, ''); l.pushed = true; } catch (e) {} layers.push(l); }
+        function popLayer(id) {
+            const i = layers.map(l => l.id).lastIndexOf(id); if (i < 0) return;
+            const l = layers.splice(i, 1)[0];
+            if (l.pushed) { skipPop++; try { history.back(); } catch (e) { skipPop--; } }
+        }
+        window.addEventListener('popstate', () => { if (skipPop > 0) { skipPop--; return; } const l = layers.pop(); if (l) l.closeFn(); });
+
         function openModal(m, list) {
             currentList = list || [m];
             currentIndex = Math.max(0, currentList.indexOf(m));
@@ -1478,6 +1873,7 @@
             });
             document.body.style.overflow = 'hidden';
             closeBtn.focus();
+            if (!modalOpen) { modalOpen = true; pushLayer('modal', () => closeModal(true)); }   // le bouton « retour » ferme l'aperçu
         }
 
         function step(dir) {
@@ -1486,7 +1882,11 @@
             renderItem(currentList[currentIndex]);
         }
 
-        function closeModal() {
+        let modalOpen = false;
+        function closeModal(fromPop) {
+            if (!modalOpen) return;
+            modalOpen = false;
+            if (fromPop !== true) popLayer('modal');
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
             modal.setAttribute('aria-hidden', 'true');
@@ -1507,17 +1907,21 @@
         nextBtn.addEventListener('click', () => step(1));
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        let touchX = null;
-        modal.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].clientX; }, { passive: true });
+        let touchX = null, touchY = null, touchOnVideo = false;
+        modal.addEventListener('touchstart', (e) => {
+            touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY;
+            touchOnVideo = !!(e.target.closest && e.target.closest('video'));
+        }, { passive: true });
         modal.addEventListener('touchend', (e) => {
             if (touchX === null) return;
-            const dx = e.changedTouches[0].clientX - touchX;
-            if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+            const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+            if (!touchOnVideo && Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) closeModal();   // glisser vers le haut ou le bas : fermer
+            else if (!touchOnVideo && Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
             touchX = null;
         });
 
         document.addEventListener('keydown', (e) => {
-            if (modal.classList.contains('hidden')) return;
+            if (modal.classList.contains('hidden')) { if (e.key === 'Escape') { if (sheetIsOpen) closeSheet(); else if (F.full) setFull(false); } return; }
             if (e.key === 'Escape') closeModal();
             if (e.key === 'ArrowLeft') step(-1);
             if (e.key === 'ArrowRight') step(1);
@@ -1532,13 +1936,14 @@
         /* la galerie n'est construite qu'une fois la page au repos (ou dès qu'on ouvre Réalisations) : plus rapide au premier affichage */
         let galleryReady = false;
         const ensureGallery = () => { if (galleryReady) return; galleryReady = true; buildGallery(); };
-        if (/^#realisations/.test(location.hash)) ensureGallery();
+        // on attend la fin du chargement des scripts (motion.js) pour que les animations démarrent proprement
+        if (/^#realisations/.test(location.hash)) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureGallery); else ensureGallery(); }
         window.addEventListener('hashchange', () => { if (/^#realisations/.test(location.hash)) ensureGallery(); });
         ('requestIdleCallback' in window ? requestIdleCallback : f => setTimeout(f, 2500))(ensureGallery, { timeout: 4000 });
 
         // changement de langue : les tuiles, le compteur et la modale ouverte suivent
         document.addEventListener('langchange', () => {
-            if (allMedia.length) { allMedia.forEach(fillMember); if (currentCat) renderDetail(); else renderHome(); }
+            if (F.ready) { allMedia.forEach(fillMember); layoutField(); buildNav(); if (sheetIsOpen) renderSheet(sheetCat); }
             if (!modal.classList.contains('hidden') && currentList[currentIndex]) renderItem(currentList[currentIndex]);
         });
 
