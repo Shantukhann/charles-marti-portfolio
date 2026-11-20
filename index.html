@@ -141,12 +141,15 @@
             color: #2D3035; box-shadow: 0 6px 20px -6px rgba(0,0,0,.15);
         }
 
-        /* Réalisations : mosaïque d'accueil */
+        /* Réalisations : mosaïque d'accueil (charte pastel du site : bleu, rose, vert) */
         .mosaic { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
-        .m-tile { position: relative; display: block; width: 100%; min-height: 15rem; overflow: hidden; border-radius: 1.75rem; text-align: left; color: #fff; cursor: pointer; isolation: isolate;
-            box-shadow: 0 14px 34px -12px rgba(30,32,45,.35); transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; animation: rise .8s ease-out calc(var(--i, 0) * .09s) backwards; }
-        .m-tile:hover { transform: translateY(-4px); box-shadow: 0 26px 48px -14px rgba(30,32,45,.45); }
-        .m-collage { position: absolute; inset: 0; display: grid; gap: 3px; background: #fff; }
+        .m-tile { --accent: #6A8CF0; --pastel: #D9E4FC; position: relative; display: block; width: 100%; min-height: 15rem; overflow: hidden; border-radius: 1.75rem; text-align: left; color: #fff; cursor: pointer; isolation: isolate;
+            box-shadow: 0 16px 36px -16px rgba(63,111,123,.45); transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s ease; animation: rise .8s ease-out calc(var(--i, 0) * .09s) backwards; }
+        .m-tile.m-cocktails { --accent: #DD829F; --pastel: #FBDDE4; }
+        .m-tile.m-seminaires { --accent: #3DA57A; --pastel: #DDF0C2; }
+        .m-tile.m-videos { --accent: #8E7CF0; --pastel: #E7E1FB; }
+        .m-tile:hover { transform: translateY(-4px); box-shadow: 0 28px 50px -18px rgba(63,111,123,.55); }
+        .m-collage { position: absolute; inset: 0; display: grid; gap: 4px; background: var(--pastel); }
         .m-collage.c2 { grid-template-columns: 3fr 2fr; }
         .m-collage.c3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
         .m-collage.c3 .m-cell:first-child { grid-row: 1 / 3; }
@@ -154,14 +157,17 @@
         .m-cell { position: relative; overflow: hidden; min-height: 0; }
         .m-cell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.8,.2,1); }
         .m-tile:hover .m-cell img { transform: scale(1.06); }
-        .m-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,20,30,.82) 0%, rgba(18,20,30,.45) 34%, rgba(18,20,30,0) 66%); }
-        .m-body { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; }
-        .m-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .8rem; margin-bottom: .55rem; border-radius: 9999px; background: rgba(255,255,255,.82); color: #2D3035; font-size: .75rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .m-title { font-size: 1.5rem; font-weight: 500; letter-spacing: -.015em; line-height: 1.15; text-shadow: 0 2px 16px rgba(0,0,0,.35); }
-        .m-sub { font-size: .875rem; font-weight: 300; color: rgba(255,255,255,.88); }
-        .m-cta { margin-top: .75rem; display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.45); font-size: .8rem; font-weight: 500; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background-color .35s ease, color .35s ease, gap .35s ease; }
-        .m-tile:hover .m-cta { background: #fff; color: #2D3035; gap: .8rem; }
+        /* voile indigo : s'accorde avec les éclairages bleus/violets des photos et laisse le texte lisible */
+        .m-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(31,36,74,.86) 0%, rgba(31,36,74,.5) 30%, rgba(31,36,74,0) 62%); }
+        .m-body { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.4rem 1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; }
+        .m-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .28rem .75rem; margin-bottom: .5rem; border-radius: 9999px; background: var(--pastel); color: #2D3035; font-size: .72rem; font-weight: 500; letter-spacing: .01em; }
+        .m-chip i { color: var(--accent); }
+        .m-title { font-size: 1.4rem; font-weight: 500; letter-spacing: -.015em; line-height: 1.15; text-shadow: 0 2px 14px rgba(20,24,60,.4); }
+        .m-sub { font-size: .85rem; font-weight: 300; color: rgba(255,255,255,.86); }
+        .m-go { position: absolute; right: 1.25rem; bottom: 1.25rem; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: #fff; color: #2D3035; display: flex; align-items: center; justify-content: center; font-size: .85rem; box-shadow: 0 8px 20px -6px rgba(20,24,60,.5); transition: transform .35s ease, background-color .35s ease, color .35s ease; }
+        .m-tile:hover .m-go { transform: translateX(3px); background: var(--accent); color: #fff; }
         .m-tile:focus-visible { outline: 3px solid #6A8CF0; outline-offset: 3px; }
+        .m-tile.m-cocktails .m-sub, .m-tile.m-seminaires .m-sub { display: none; }
         @media (min-width: 768px) {
             .mosaic { grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(2, 15rem) 13.5rem; gap: 1.5rem; }
             .m-tile { min-height: 0; }
@@ -170,10 +176,11 @@
             .m-tile.m-seminaires { grid-column: 5 / 7; grid-row: 2; }
             .m-tile.m-videos { grid-column: 1 / 7; grid-row: 3; }
             .m-collage.c4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; }
-            .m-tile.m-galas .m-title { font-size: 2.1rem; }
-            .m-tile.m-galas .m-body, .m-tile.m-videos .m-body { padding: 2rem; }
+            .m-tile.m-galas .m-title { font-size: 2rem; }
+            .m-tile.m-galas .m-body, .m-tile.m-videos .m-body { padding: 1.9rem 2rem; }
+            .m-tile.m-galas .m-go, .m-tile.m-videos .m-go { right: 1.75rem; bottom: 1.75rem; }
         }
-        .m-play { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 4rem; height: 4rem; border-radius: 9999px; background: rgba(255,255,255,.85); color: #DD829F; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding-left: .2rem; box-shadow: 0 10px 30px rgba(0,0,0,.3); transition: transform .4s ease; }
+        .m-play { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 4rem; height: 4rem; border-radius: 9999px; background: rgba(255,255,255,.9); color: #8E7CF0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding-left: .2rem; box-shadow: 0 10px 30px rgba(20,24,60,.35); transition: transform .4s ease; }
         .m-tile:hover .m-play { transform: translate(-50%, -50%) scale(1.1); }
         .m-skel { border-radius: 1.75rem; }
         /* Vue détaillée */
@@ -187,6 +194,14 @@
         .gallery-item .g-title { font-size: 1.05rem; font-weight: 500; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
         .g-back { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem 1.1rem; border-radius: 9999px; font-size: .875rem; font-weight: 500; color: #2D3035; background: transparent; border: 1px solid rgba(45,48,53,.25); transition: background-color .3s ease, transform .3s ease; }
         .g-back:hover { background: #fff; transform: translateX(-2px); }
+        html.dark .g-back { color: #f1f2f5; border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.07); }
+        html.dark .g-back:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.6); }
+        html.dark .filter-btn .f-count { background: rgba(255,255,255,.14); color: #e6e8ee; }
+        html.dark .filter-btn.is-active .f-count { background: rgba(255,255,255,.22); color: #fff; }
+        /* fermer l'aperçu : grand bouton rond, facile à toucher sur téléphone */
+        #gallery-modal #close-modal { top: calc(env(safe-area-inset-top, 0px) + .75rem); right: .75rem; width: 3.1rem; height: 3.1rem; border-radius: 9999px; background: rgba(255,255,255,.2); color: #fff; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        #gallery-modal #close-modal:hover { background: rgba(255,255,255,.34); }
+        @media (min-width: 768px) { #gallery-modal #close-modal { top: 2rem; right: 2rem; } }
         .filter-btn { display: inline-flex; align-items: center; gap: .55rem; }
         .filter-btn .f-count { font-size: .72rem; min-width: 1.35rem; height: 1.35rem; padding: 0 .35rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(45,48,53,.08); color: #4A4C50; font-weight: 500; }
         .filter-btn.is-active .f-count { background: rgba(255,255,255,.75); color: #2D3035; }
@@ -1074,7 +1089,7 @@
 
     <!-- MODALE (images & vidéos) -->
     <div id="gallery-modal" class="fixed inset-0 z-[100] hidden bg-pastel-heading/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300" role="dialog" aria-modal="true" aria-label="Aperçu de la réalisation" aria-hidden="true">
-        <button id="close-modal" type="button" aria-label="Fermer" class="absolute top-6 right-6 md:top-10 md:right-10 text-white/70 hover:text-white text-4xl transition-colors z-10">
+        <button id="close-modal" type="button" aria-label="Fermer l'aperçu" class="absolute top-6 right-6 md:top-10 md:right-10 text-white/70 hover:text-white text-4xl transition-colors z-10">
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
         <button id="modal-prev" type="button" aria-label="Précédent" class="modal-nav left-3 md:left-8"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
@@ -1304,8 +1319,8 @@
                     '<span class="m-chip">' + (c === 'videos' ? '<i class="fa-solid fa-play" aria-hidden="true"></i>' : '<i class="fa-solid fa-images" aria-hidden="true"></i>') + esc(mediaLabel(c)) + '</span>' +
                     '<span class="m-title">' + esc(catTitle(c)) + '</span>' +
                     '<span class="m-sub">' + esc(catSub(c)) + '</span>' +
-                    '<span class="m-cta">' + (isEn() ? 'Explore' : 'Découvrir') + ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>' +
-                    '</span>';
+                    '</span>' +
+                    '<span class="m-go" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>';
                 el.addEventListener('click', () => showCategory(c));
                 galleryHome.append(el);
             });
@@ -1478,6 +1493,9 @@
             });
             document.body.style.overflow = 'hidden';
             closeBtn.focus();
+            modalOpen = true;
+            // le bouton « retour » du téléphone ferme l'aperçu au lieu de quitter la page
+            if (!modalPushed) { try { history.pushState({ gm: 1 }, ''); modalPushed = true; } catch (e) {} }
         }
 
         function step(dir) {
@@ -1486,7 +1504,11 @@
             renderItem(currentList[currentIndex]);
         }
 
+        let modalOpen = false, modalPushed = false;
         function closeModal() {
+            if (!modalOpen) return;
+            modalOpen = false;
+            if (modalPushed) { modalPushed = false; try { history.back(); } catch (e) {} }
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
             modal.setAttribute('aria-hidden', 'true');
@@ -1507,12 +1529,17 @@
         nextBtn.addEventListener('click', () => step(1));
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        let touchX = null;
-        modal.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].clientX; }, { passive: true });
+        window.addEventListener('popstate', () => { if (modalOpen) { modalPushed = false; closeModal(); } });
+        let touchX = null, touchY = null, touchOnVideo = false;
+        modal.addEventListener('touchstart', (e) => {
+            touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY;
+            touchOnVideo = !!(e.target.closest && e.target.closest('video'));
+        }, { passive: true });
         modal.addEventListener('touchend', (e) => {
             if (touchX === null) return;
-            const dx = e.changedTouches[0].clientX - touchX;
-            if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+            const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+            if (!touchOnVideo && Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) closeModal();   // glisser vers le haut ou le bas : fermer
+            else if (!touchOnVideo && Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
             touchX = null;
         });
 
