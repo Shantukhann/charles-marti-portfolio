@@ -207,7 +207,7 @@
         .f-short { display: none; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
-        .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-nav .filter-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .f-cursor { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; margin: 16px 0 0 20px; padding: .35rem .85rem; border-radius: 9999px; background: var(--f-ink); font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; transition: opacity .2s ease; white-space: nowrap; }
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
@@ -1508,7 +1508,7 @@
             const items = fieldItems();
             const cols = Array.from({ length: F.nc }, () => ({ h: 0, list: [] }));
             // les colonnes démarrent décalées pour éviter un alignement trop régulier
-            cols.forEach((c, i) => { c.h = [0, 70, 24, 110][i % 4]; });
+            cols.forEach((c, i) => { c.off = [0, 70, 24, 110][i % 4]; c.h = c.off; });
             items.forEach((it, idx) => {
                 const h = tileHeight(it, F.cw);
                 let best = 0; cols.forEach((c, i) => { if (c.h < cols[best].h - 1) best = i; });
@@ -1523,11 +1523,11 @@
                 col.style.cssText = 'left:' + (hc * F.W + ci * (F.cw + F.gap)) + 'px;width:' + F.cw + 'px';
                 const vcop = Math.max(3, Math.ceil(vh / c.h) + 2);
                 let html = '';
-                for (let v = 0; v < vcop; v++) c.list.forEach(({ it, h, idx }) => {
+                for (let v = 0; v < vcop; v++) { if (c.off) html += '<div style="height:' + c.off + 'px"></div>'; c.list.forEach(({ it, h, idx }) => {
                     const main = hc === 1 && v === 1;
                     const d = Math.min(1.4, ci * 0.09 + idx * 0.035);
                     html += '<div class="f-slot" style="height:' + h + 'px;margin-bottom:' + F.gap + 'px;--d:' + d.toFixed(2) + 's" data-i="' + idx + '">' + tileHTML(it, main) + '</div>';
-                });
+                }); }
                 // ajustement : la hauteur d'un cycle est exactement F.colH
                 col.innerHTML = html;
                 world.append(col);
@@ -1634,7 +1634,8 @@
                 const d = F.drag; if (!d || d.id !== e.pointerId) return;
                 F.drag = null; view.classList.remove('is-drag');
                 try { view.releasePointerCapture(e.pointerId); } catch (_) {}
-                if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 7 && d.moved < 12) { F.vx = F.vy = 0; const el = document.elementFromPoint(e.clientX, e.clientY); activate(el && el.closest ? el.closest('.f-tile') : null); }
+                const touch = e.pointerType === 'touch';   // un doigt bouge toujours un peu : tolérance plus large qu'à la souris
+                if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < (touch ? 16 : 7) && d.moved < (touch ? 30 : 12)) { F.vx = F.vy = 0; const el = document.elementFromPoint(d.sx, d.sy); activate(el && el.closest ? el.closest('.f-tile') : null); }
                 else if (performance.now() - d.t > 90) { F.vx = F.vy = 0; }
                 kick();
             };
@@ -1799,7 +1800,7 @@
             kick();
         }
         document.getElementById('cs-close').addEventListener('click', () => closeSheet());
-        document.getElementById('cs-backdrop').addEventListener('click', () => closeSheet());
+        document.getElementById('cs-backdrop').addEventListener('click', () => { if (!justOpened()) closeSheet(); });
 
         /* ---------- Modale galerie (avec navigation) ---------- */
         const modal = document.getElementById('gallery-modal');
@@ -1873,7 +1874,10 @@
 
         /* ---------- Pile d'aperçus ouverts (volet de catégorie, visionneuse) : « retour » ferme le plus récent ---------- */
         const layers = []; let skipPop = 0;
-        function pushLayer(id, closeFn) { const l = { id, closeFn, pushed: false }; try { history.pushState({ gm: id }, ''); l.pushed = true; } catch (e) {} layers.push(l); }
+        // Sur écran tactile, le « clic » qui suit un appui arrive APRÈS l'ouverture de l'aperçu, sur le fond de l'aperçu : on l'ignore brièvement, sinon l'aperçu se referme aussitôt (« ça ne fait rien »)
+        let layerOpenedAt = 0;
+        const justOpened = () => performance.now() - layerOpenedAt < 600;
+        function pushLayer(id, closeFn) { layerOpenedAt = performance.now(); const l = { id, closeFn, pushed: false }; try { history.pushState({ gm: id }, ''); l.pushed = true; } catch (e) {} layers.push(l); }
         function popLayer(id) {
             const i = layers.map(l => l.id).lastIndexOf(id); if (i < 0) return;
             const l = layers.splice(i, 1)[0];
@@ -1927,7 +1931,7 @@
         closeBtn.addEventListener('click', closeModal);
         prevBtn.addEventListener('click', () => step(-1));
         nextBtn.addEventListener('click', () => step(1));
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        modal.addEventListener('click', (e) => { if (e.target === modal && !justOpened()) closeModal(); });
 
         let touchX = null, touchY = null, touchOnVideo = false;
         modal.addEventListener('touchstart', (e) => {
