@@ -330,6 +330,23 @@
         }
         /* fermer l'aperçu : grand bouton rond, facile à toucher sur téléphone */
         #gallery-modal #close-modal { top: calc(env(safe-area-inset-top, 0px) + .75rem); right: .75rem; width: 3.1rem; height: 3.1rem; border-radius: 9999px; background: rgba(255,255,255,.2); color: #fff; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        /* lecteur vidéo : commandes à nous (le plein écran natif du navigateur ne peut pas être quitté de façon fiable sur téléphone) */
+        .vbox { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 100%; margin-bottom: 1.5rem; }
+        .vbox.hidden { display: none; }
+        .vvideo { display: block; max-height: 60vh; max-width: 100%; border-radius: .75rem; background: #000; box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
+        .vc-bar { display: flex; align-items: center; gap: .5rem; width: 100%; margin-top: .65rem; padding: .3rem .55rem; border-radius: 9999px; background: rgba(255,255,255,.12); color: #fff; }
+        .vc-btn { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 9999px; display: grid; place-items: center; background: rgba(255,255,255,.16); color: #fff; font-size: .95rem; border: 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background-color .2s ease; }
+        .vc-btn:hover, .vc-btn:focus-visible { background: rgba(255,255,255,.3); }
+        .vc-time { flex: none; min-width: 2.6em; text-align: center; font-size: .75rem; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.85); }
+        .vc-seek { flex: 1; min-width: 0; height: 1.8rem; margin: 0; accent-color: #DD829F; cursor: pointer; touch-action: none; }
+        /* agrandi : la vidéo occupe tout l'écran, la croix de fermeture reste visible en haut à droite */
+        #gallery-modal.is-vexp { background: #000; }
+        #gallery-modal.is-vexp #modal-title, #gallery-modal.is-vexp #modal-meta, #gallery-modal.is-vexp #modal-caption, #gallery-modal.is-vexp #modal-counter, #gallery-modal.is-vexp #modal-thumbs, #gallery-modal.is-vexp .modal-nav { display: none; }
+        #gallery-modal.is-vexp #modal-body { max-width: none; width: 100%; height: 100%; padding: 0; justify-content: center; }
+        #gallery-modal.is-vexp .vbox { width: 100%; height: 100%; margin: 0; justify-content: center; }
+        #gallery-modal.is-vexp .vvideo { width: 100%; max-height: calc(100vh - 4.5rem); max-height: calc(100svh - 4.5rem); border-radius: 0; box-shadow: none; }
+        #gallery-modal.is-vexp .vc-bar { position: absolute; left: .6rem; right: .6rem; bottom: calc(env(safe-area-inset-bottom, 0px) + .6rem); width: auto; margin: 0; background: rgba(20,22,28,.72); }
+        #gallery-modal.is-vexp #close-modal { background: rgba(20,22,28,.6); }
         #gallery-modal { overscroll-behavior: none; touch-action: none; }   /* les glissements (fermer, média suivant) sont gérés par le script : le navigateur ne doit pas les prendre pour un défilement */
         #gallery-modal #close-modal:hover { background: rgba(255,255,255,.34); }
         @media (min-width: 768px) { #gallery-modal #close-modal { top: 2rem; right: 2rem; } }
@@ -1258,7 +1275,17 @@
         <div id="modal-body" class="relative max-w-5xl mx-auto px-16 md:px-4 w-full flex flex-col items-center">
             <img id="modal-image" alt="" class="max-h-[60vh] w-auto rounded-xl shadow-2xl object-contain mb-6 hidden">
 
-            <video id="modal-video-file" class="max-h-[60vh] max-w-full rounded-xl shadow-2xl bg-black mb-6 hidden" controls playsinline preload="none"></video>
+            <div id="modal-video-box" class="vbox hidden">
+                <video id="modal-video-file" class="vvideo" playsinline webkit-playsinline preload="none" disablepictureinpicture disableremoteplayback></video>
+                <div class="vc-bar" id="vc-bar" data-i18n-skip>
+                    <button type="button" id="vc-play" class="vc-btn" aria-label="Lecture"><i class="fa-solid fa-play" aria-hidden="true"></i></button>
+                    <span id="vc-cur" class="vc-time" aria-hidden="true">0:00</span>
+                    <input id="vc-seek" class="vc-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Position de lecture">
+                    <span id="vc-dur" class="vc-time" aria-hidden="true">0:00</span>
+                    <button type="button" id="vc-mute" class="vc-btn" aria-label="Couper le son"><i class="fa-solid fa-volume-high" aria-hidden="true"></i></button>
+                    <button type="button" id="vc-full" class="vc-btn" aria-label="Plein écran" aria-pressed="false"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                </div>
+            </div>
 
             <div id="modal-video-container" class="w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden mb-6 hidden video-container">
                 <iframe id="modal-video" title="Vidéo de réalisation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
@@ -1826,15 +1853,44 @@
         const modalVideo = document.getElementById('modal-video');
         const modalVideoFile = document.getElementById('modal-video-file');
         /* plein écran du lecteur vidéo (bouton du lecteur) : il faut le quitter explicitement, sinon il reste actif quand l'aperçu se ferme (écran noir, rien ne répond, message « pour quitter… » affiché) */
-        const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement || modalVideoFile.webkitDisplayingFullscreen);
+        const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement || modalVideoFile.webkitDisplayingFullscreen || modal.classList.contains('is-vexp'));
         const leaveFullscreen = () => {
+            modal.classList.remove('is-vexp'); paintVC();
             try {
                 if (document.fullscreenElement && document.exitFullscreen) { const r = document.exitFullscreen(); if (r && r.catch) r.catch(() => {}); }
                 else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
                 if (modalVideoFile.webkitDisplayingFullscreen && modalVideoFile.webkitExitFullscreen) modalVideoFile.webkitExitFullscreen();
             } catch (e) {}
         };
-        const stopFileVideo = () => { modalVideoFile.pause(); modalVideoFile.removeAttribute('src'); modalVideoFile.removeAttribute('poster'); modalVideoFile.load(); };
+        const modalVideoBox = document.getElementById('modal-video-box');
+        const vcPlay = document.getElementById('vc-play'), vcSeek = document.getElementById('vc-seek'), vcCur = document.getElementById('vc-cur'), vcDur = document.getElementById('vc-dur'),
+              vcMute = document.getElementById('vc-mute'), vcFull = document.getElementById('vc-full');
+        const fmtT = t => { t = isFinite(t) ? Math.max(0, Math.floor(t)) : 0; return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+        let vcSeeking = false;
+        const paintVC = () => {
+            const v = modalVideoFile, en = isEn(), expanded = modal.classList.contains('is-vexp');
+            vcPlay.firstElementChild.className = 'fa-solid ' + (v.paused || v.ended ? 'fa-play' : 'fa-pause');
+            vcPlay.setAttribute('aria-label', v.paused || v.ended ? (en ? 'Play' : 'Lecture') : 'Pause');
+            vcMute.firstElementChild.className = 'fa-solid ' + (v.muted || v.volume === 0 ? 'fa-volume-xmark' : 'fa-volume-high');
+            vcMute.setAttribute('aria-label', v.muted ? (en ? 'Unmute' : 'Activer le son') : (en ? 'Mute' : 'Couper le son'));
+            vcFull.firstElementChild.className = 'fa-solid ' + (expanded ? 'fa-compress' : 'fa-expand');
+            vcFull.setAttribute('aria-pressed', String(expanded));
+            vcFull.setAttribute('aria-label', expanded ? (en ? 'Exit full screen' : 'Quitter le plein écran') : (en ? 'Full screen' : 'Plein écran'));
+            vcSeek.setAttribute('aria-label', en ? 'Playback position' : 'Position de lecture');
+            if (!vcSeeking) { vcSeek.value = v.duration ? Math.round(v.currentTime / v.duration * 1000) : 0; vcCur.textContent = fmtT(v.currentTime); }
+            vcDur.textContent = fmtT(v.duration);
+        };
+        const setVExp = (on) => { modal.classList.toggle('is-vexp', !!on); paintVC(); };
+        ['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended', 'volumechange', 'emptied'].forEach(n => modalVideoFile.addEventListener(n, paintVC));
+        vcPlay.addEventListener('click', () => { if (modalVideoFile.paused || modalVideoFile.ended) { const r = modalVideoFile.play(); if (r && r.catch) r.catch(() => {}); } else modalVideoFile.pause(); });
+        modalVideoFile.addEventListener('click', () => vcPlay.click());                  // un appui sur la vidéo = lecture / pause
+        vcMute.addEventListener('click', () => { modalVideoFile.muted = !modalVideoFile.muted; });
+        vcFull.addEventListener('click', () => setVExp(!modal.classList.contains('is-vexp')));
+        vcSeek.addEventListener('pointerdown', () => { vcSeeking = true; });
+        const endSeek = () => { vcSeeking = false; paintVC(); };
+        vcSeek.addEventListener('pointerup', endSeek); vcSeek.addEventListener('pointercancel', endSeek); vcSeek.addEventListener('change', endSeek);
+        vcSeek.addEventListener('input', () => { if (modalVideoFile.duration) { modalVideoFile.currentTime = vcSeek.value / 1000 * modalVideoFile.duration; vcCur.textContent = fmtT(modalVideoFile.currentTime); } });
+        const stopFileVideo = () => { modalVideoFile.pause(); modalVideoFile.removeAttribute('src'); modalVideoFile.removeAttribute('poster'); modalVideoFile.load(); setVExp(false); };
         const modalCaption = document.getElementById('modal-caption');
         const modalMeta = document.getElementById('modal-meta');
         const modalCounter = document.getElementById('modal-counter');
@@ -1876,13 +1932,13 @@
                 modalImg.removeAttribute('src');
                 modalVideoContainer.classList.add('hidden');
                 modalVideo.removeAttribute('src');
-                modalVideoFile.classList.remove('hidden');
+                modalVideoBox.classList.remove('hidden');
                 modalVideoFile.poster = item.dataset.poster;
                 modalVideoFile.src = item.dataset.src;
                 const pl = modalVideoFile.play(); if (pl && pl.catch) pl.catch(() => {});
                 return;
             }
-            modalVideoFile.classList.add('hidden'); stopFileVideo();
+            modalVideoBox.classList.add('hidden'); stopFileVideo();
             if (item.dataset.type === 'youtube') {
                 modalImg.classList.add('hidden');
                 modalImg.removeAttribute('src');
@@ -1974,8 +2030,7 @@
         modal.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) { touchX = null; resetDrag(false); return; }   // pincement : on laisse faire
             touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY; touchDrag = false;
-            const v = e.target.closest && e.target.closest('video');
-            touchOnControls = !!v && touchY > v.getBoundingClientRect().bottom - 52;
+            touchOnControls = !!(e.target.closest && e.target.closest('.vc-bar'));   // barre de commandes : curseur, boutons : on ne l'utilise pas pour fermer
             modalBody.style.transition = 'none';
         }, { passive: true });
         modal.addEventListener('touchmove', (e) => {
