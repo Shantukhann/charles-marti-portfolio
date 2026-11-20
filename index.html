@@ -1105,65 +1105,72 @@
              (déposez le .mp4 et l'image d'aperçu dans le dossier videos/ ; la vidéo ne se charge qu'au clic)
            - Vidéo YouTube :  { video: 'ID_YOUTUBE', cat: 'seminaires', title: '...', sub: '...', caption: '...' }
              (la miniature YouTube est utilisée automatiquement ; 'thumb' est facultatif)
+           Pour regrouper des supports proches sous une seule vignette : ajoutez group: 'cle' à chaque entrée et définissez la clé dans GROUPS.
            Une image introuvable est simplement masquée : vous pouvez publier sans avoir tous les supports.
            Catégories possibles : galas, cocktails, seminaires (voir CATEGORIES).
            Convention de nom des fichiers : <categorie>-<description>.jpg (ex. gala-diner-eclairage-bleu.jpg).
            ===================================================================== */
         const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies' };
+        /* Regroupement : les entrées qui partagent le même `group` s'affichent sous UNE vignette (on les parcourt dans la fenêtre d'aperçu). Une entrée sans `group` reste seule. */
+        const GROUPS = {
+            'diners-gala': { title: 'Dîners de gala', sub: 'Dîners assis & dressage', en: { title: 'Gala dinners', sub: 'Seated dinners & plating' } },
+            'gala-spectacle': { title: 'Gala & spectacle', sub: 'Photo & montages vidéo', en: { title: 'Gala & show', sub: 'Photo & video montages' } },
+            'cocktails': { title: 'Cocktails', sub: 'Buffets, bars & ambiances', en: { title: 'Cocktails', sub: 'Buffets, bars & ambiences' } },
+            'soirees-etudiantes': { title: 'Soirées étudiantes', sub: 'Photo & montages vidéo', en: { title: 'Student parties', sub: 'Photo & video montages' } },
+            'seminaires': { title: 'Séminaires', sub: 'Dîners & buffets', en: { title: 'Seminars', sub: 'Dinners & buffets' } },
+            'ceremonies': { title: 'Cérémonies', sub: 'Remise de diplômes & soirée', en: { title: 'Ceremonies', sub: 'Graduation & party' } }
+        };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
-            { src: 'images/diner-de-gala.jpg', cat: 'galas', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
+            { src: 'images/diner-de-gala.jpg', cat: 'galas', group: 'diners-gala', title: 'Dîner de gala', sub: 'Éclairage scénique bleu',
               caption: 'Dîner de gala - salle plongée dans un éclairage scénique bleu',
               en: { title: 'Gala dinner', sub: 'Blue stage lighting', caption: 'Gala dinner - room bathed in blue stage lighting' } },
-            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', title: 'Dîner remise de prix', sub: 'Pavillon d\'Armenonville · jusqu\'à 2000 personnes',
+            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', group: 'diners-gala', title: 'Dîner remise de prix', sub: 'Pavillon d\'Armenonville · jusqu\'à 2000 personnes',
               caption: 'Dîner remise de prix au Pavillon d\'Armenonville (2000 personnes)',
               en: { title: 'Awards dinner', sub: 'Pavillon d\'Armenonville · up to 2000 people', caption: 'Awards dinner at the Pavillon d\'Armenonville (2000 people)' } },
-            { src: 'images/diner-spectacle.jpg', cat: 'galas', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
-              caption: 'Dîner-spectacle - scène, écrans et éclairage',
-              en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
-            { src: 'images/dressage-diner-assis.jpg', cat: 'galas', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
+            { src: 'images/dressage-diner-assis.jpg', cat: 'galas', group: 'diners-gala', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
               caption: 'Dressage des assiettes d\'un dîner assis - brigade de cuisine à l\'œuvre',
               en: { title: 'Seated dinner plating', sub: 'Kitchen brigade', caption: 'Plating for a seated dinner - the kitchen brigade at work' } },
-            { file: 'videos/gala-remise-de-prix.mp4', poster: 'videos/gala-remise-de-prix.jpg', cat: 'galas', title: 'Gala & remise de prix', sub: 'Montage vidéo',
+            { src: 'images/diner-spectacle.jpg', cat: 'galas', group: 'gala-spectacle', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
+              caption: 'Dîner-spectacle - scène, écrans et éclairage',
+              en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
+            { file: 'videos/gala-remise-de-prix.mp4', poster: 'videos/gala-remise-de-prix.jpg', cat: 'galas', group: 'gala-spectacle', title: 'Gala & remise de prix', sub: 'Montage vidéo',
               caption: 'Gala et remise de prix - montage vidéo',
               en: { title: 'Gala & awards ceremony', sub: 'Video montage', caption: 'Gala and awards ceremony - video montage' } },
-            { file: 'videos/gala-spectacle.mp4', poster: 'videos/gala-spectacle.jpg', cat: 'galas', title: 'Gala & spectacle', sub: 'Montage vidéo',
+            { file: 'videos/gala-spectacle.mp4', poster: 'videos/gala-spectacle.jpg', cat: 'galas', group: 'gala-spectacle', title: 'Gala & spectacle', sub: 'Montage vidéo',
               caption: 'Gala et spectacle - montage vidéo',
               en: { title: 'Gala & show', sub: 'Video montage', caption: 'Gala and show - video montage' } },
-            { src: 'images/cocktail-gala-etudiant.jpg', cat: 'cocktails', title: 'Cocktail gala étudiant', sub: 'Décor floral & éclairage rose',
+            { src: 'images/cocktail-gala-etudiant.jpg', cat: 'cocktails', group: 'cocktails', title: 'Cocktail gala étudiant', sub: 'Décor floral & éclairage rose',
               caption: 'Cocktail gala étudiant - arbres en fleurs, buffets et éclairage rose',
               en: { title: 'Student gala cocktail', sub: 'Floral decor & pink lighting', caption: 'Student gala cocktail - blossom trees, buffets and pink lighting' } },
-            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
-              caption: 'Soirée dansante - cocktail (1200 participants)',
-              en: { title: 'Dance party', sub: 'Cocktail · 1200 attendees', caption: 'Dance party - cocktail (1200 attendees)' } },
-            { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
+            { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', group: 'cocktails', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
               caption: 'Cocktail et soirée dansante - boule à facettes et pyramides de verres',
               en: { title: 'Cocktail and dance party', sub: 'Mirror ball & champagne towers', caption: 'Cocktail and dance party - mirror ball and glass pyramids' } },
-            { file: 'videos/cocktail-voutes.mp4', poster: 'videos/cocktail-voutes.jpg', cat: 'cocktails', title: 'Soirée cocktail', sub: 'Montage vidéo',
+            { file: 'videos/cocktail-voutes.mp4', poster: 'videos/cocktail-voutes.jpg', cat: 'cocktails', group: 'cocktails', title: 'Soirée cocktail', sub: 'Montage vidéo',
               caption: 'Soirée cocktail - montage vidéo',
               en: { title: 'Cocktail party', sub: 'Video montage', caption: 'Cocktail party - video montage' } },
-            { file: 'videos/soiree-etudiante.mp4', poster: 'videos/soiree-etudiante.jpg', cat: 'cocktails', title: 'Soirée étudiante', sub: 'Montage vidéo',
+            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', group: 'soirees-etudiantes', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
+              caption: 'Soirée dansante - cocktail (1200 participants)',
+              en: { title: 'Dance party', sub: 'Cocktail · 1200 attendees', caption: 'Dance party - cocktail (1200 attendees)' } },
+            { file: 'videos/soiree-etudiante.mp4', poster: 'videos/soiree-etudiante.jpg', cat: 'cocktails', group: 'soirees-etudiantes', title: 'Soirée étudiante', sub: 'Montage vidéo',
               caption: 'Soirée étudiante - montage vidéo',
               en: { title: 'Student party', sub: 'Video montage', caption: 'Student party - video montage' } },
-            { file: 'videos/gala-etudiant.mp4', poster: 'videos/gala-etudiant.jpg', cat: 'cocktails', title: 'Gala étudiant', sub: 'Montage vidéo',
+            { file: 'videos/gala-etudiant.mp4', poster: 'videos/gala-etudiant.jpg', cat: 'cocktails', group: 'soirees-etudiantes', title: 'Gala étudiant', sub: 'Montage vidéo',
               caption: 'Gala étudiant - montage vidéo',
               en: { title: 'Student gala', sub: 'Video montage', caption: 'Student gala - video montage' } },
-            { video: 'VIDEO_ID_ICI', thumb: 'images/miniature-video.jpg', cat: 'seminaires', title: 'Séminaire Corporate', sub: 'Teaser vidéo',
-              caption: "Teaser vidéo - Séminaire d'entreprise Corporate",
-              en: { title: 'Corporate seminar', sub: 'Video teaser', caption: 'Video teaser - Corporate company seminar' } },
-            { src: 'images/diner-seminaire.jpg', cat: 'seminaires', title: 'Dîner séminaire', sub: 'Tables rondes & vue sur le lac',
+            { src: 'images/diner-seminaire.jpg', cat: 'seminaires', group: 'seminaires', title: 'Dîner séminaire', sub: 'Tables rondes & vue sur le lac',
               caption: 'Dîner séminaire - salle avec vue panoramique, tables rondes dressées',
               en: { title: 'Seminar dinner', sub: 'Round tables & lake view', caption: 'Seminar dinner - room with panoramic view, round tables set' } },
-            { src: 'images/buffet-seminaire.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Salle des fêtes',
+            { src: 'images/buffet-seminaire.jpg', cat: 'seminaires', group: 'seminaires', title: 'Buffet séminaire', sub: 'Salle des fêtes',
               caption: 'Buffet de séminaire en salle des fêtes',
               en: { title: 'Seminar buffet', sub: 'Village hall', caption: 'Seminar buffet in a village hall' } },
-            { src: 'images/buffet-seminaire-2.jpg', cat: 'seminaires', title: 'Buffet séminaire', sub: 'Mise en scène culinaire',
+            { src: 'images/buffet-seminaire-2.jpg', cat: 'seminaires', group: 'seminaires', title: 'Buffet séminaire', sub: 'Mise en scène culinaire',
               caption: 'Buffet de séminaire - présentation et mise en scène culinaire',
               en: { title: 'Seminar buffet', sub: 'Culinary staging', caption: 'Seminar buffet - presentation and culinary staging' } },
-            { src: 'images/ceremonie-de-remise-de-diplomes.jpg', cat: 'seminaires', title: 'Cérémonie de remise de diplômes', sub: 'Plénière',
+            { src: 'images/ceremonie-de-remise-de-diplomes.jpg', cat: 'seminaires', group: 'ceremonies', title: 'Cérémonie de remise de diplômes', sub: 'Plénière',
               caption: 'Cérémonie de remise de diplômes - plénière, scène et mise en lumière',
               en: { title: 'Graduation ceremony', sub: 'Plenary session', caption: 'Graduation ceremony - plenary session, stage and lighting' } },
-            { file: 'videos/remise-diplomes-soiree.mp4', poster: 'videos/remise-diplomes-soiree.jpg', cat: 'seminaires', title: 'Remise de diplôme & soirée', sub: 'Montage vidéo',
+            { file: 'videos/remise-diplomes-soiree.mp4', poster: 'videos/remise-diplomes-soiree.jpg', cat: 'seminaires', group: 'ceremonies', title: 'Remise de diplôme & soirée', sub: 'Montage vidéo',
               caption: 'Remise de diplôme et soirée - montage vidéo',
               en: { title: 'Graduation & party', sub: 'Video montage', caption: 'Graduation ceremony and party - video montage' } }
         ];
@@ -1199,16 +1206,30 @@
 
         const isVid = p => !!(p.video || p.file);
         // Remplit (ou met à jour) les textes d'une tuile dans la langue courante
+        function fillMember(m) {
+            const p = loc(m.p);
+            m.dataset = {
+                type: m.p.file ? 'file' : m.p.video ? 'youtube' : 'image',
+                src: m.p.file || m.p.video || m.p.src, poster: m.p.poster || '', cat: m.p.cat || '',
+                caption: p.caption || p.title || '', title: p.title || '', sub: p.sub || ''
+            };
+        }
         function fillTile(el) {
-            const p = loc(el._p), isVideo = isVid(el._p);
-            el.dataset.caption = p.caption || p.title || '';
-            el.dataset.title = p.title || '';
-            el.dataset.sub = p.sub || '';
-            el.setAttribute('aria-label', (isVideo ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + (p.title || ''));
+            el._members.forEach(fillMember);
+            const first = el._members[0], n = el._members.length, g = el._g ? loc(el._g) : loc(first.p);
+            const nv = el._members.filter(m => isVid(m.p)).length, np = n - nv;
+            const label = isEn()
+                ? [np && np + (np > 1 ? ' photos' : ' photo'), nv && nv + (nv > 1 ? ' videos' : ' video')]
+                : [np && np + (np > 1 ? ' photos' : ' photo'), nv && nv + (nv > 1 ? ' vidéos' : ' vidéo')];
+            el.dataset.title = g.title || '';
+            el.dataset.sub = g.sub || '';
+            el.setAttribute('aria-label', (n > 1 ? (isEn() ? 'Open the group: ' : 'Ouvrir le groupe : ') : isVid(first.p) ? (isEn() ? 'Play the video: ' : 'Lancer la vidéo : ') : (isEn() ? 'View the photo: ' : 'Voir la photo : ')) + (g.title || '') + (n > 1 ? ' (' + label.filter(Boolean).join(', ') + ')' : ''));
             const im = el.querySelector('img');
-            if (im) im.alt = p.alt || p.caption || p.title || '';
-            el.querySelector('.g-title').textContent = p.title || '';
-            el.querySelector('.g-sub').textContent = p.sub || '';
+            if (im) im.alt = first.dataset.caption || g.title || '';
+            el.querySelector('.g-title').textContent = g.title || '';
+            el.querySelector('.g-sub').textContent = g.sub || '';
+            const bd = el.querySelector('.g-badge');
+            if (bd) bd.querySelector('span').textContent = label.filter(Boolean).join(' · ');
         }
         function countLabel(n) { return isEn() ? n + (n > 1 ? ' projects' : ' project') : n + (n > 1 ? ' réalisations' : ' réalisation'); }
 
@@ -1228,25 +1249,32 @@
                 return;
             }
 
-            shown.forEach(({ p, img }) => {
+            // une vignette par groupe (ou par entrée isolée), dans l'ordre d'apparition
+            const tiles = new Map();
+            shown.forEach(({ p, img }, idx) => {
+                const key = p.group || ('__' + idx);
+                if (!tiles.has(key)) tiles.set(key, []);
+                tiles.get(key).push({ p, img, thumb: img.url });
+            });
+            tiles.forEach(members => {
+                const first = members[0], p = first.p, img = first.img, n = members.length;
                 const isVideo = isVid(p);
                 const el = document.createElement('div');
-                el._p = p;
+                el._members = members;
+                el._g = p.group ? GROUPS[p.group] : null;
                 el.className = 'gallery-item group relative overflow-hidden rounded-2xl cursor-pointer';
                 el.setAttribute('role', 'button');
                 el.setAttribute('data-i18n-skip', '');
                 el.tabIndex = 0;
-                el.dataset.type = p.file ? 'file' : isVideo ? 'youtube' : 'image';
                 el.dataset.cat = p.cat || '';
-                el.dataset.src = p.file || p.video || p.src;
-                if (p.file) el.dataset.poster = p.poster;
-                // format de la photo conservé (entre 3:4 et 16:9), pour une mise en page sans décalage
-                const ratio = p.file ? Math.min(1.78, Math.max(0.5625, img.w / img.h)) : isVideo ? 16 / 9 : Math.min(1.78, Math.max(0.75, img.w / img.h));
+                // format de la couverture conservé (entre 3:4 et 16:9), pour une mise en page sans décalage
+                const ratio = n > 1 ? 4 / 3 : p.file ? Math.min(1.78, Math.max(0.5625, img.w / img.h)) : isVideo ? 16 / 9 : Math.min(1.78, Math.max(0.75, img.w / img.h));
                 el.style.aspectRatio = String(ratio);
                 el.innerHTML =
                     '<img src="' + esc(img.url) + '" alt="" decoding="async" ' +
                     'class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">' +
-                    (isVideo ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>' : '') +
+                    (isVideo && n === 1 ? '<span class="absolute inset-0 flex items-center justify-center"><span class="w-14 h-14 rounded-full bg-white/85 flex items-center justify-center text-pastel-pink-accent text-xl shadow-lg transition-transform duration-300 group-hover:scale-110"><i class="fa-solid fa-play ml-0.5" aria-hidden="true"></i></span></span>' : '') +
+                    (n > 1 ? '<span class="g-badge absolute top-3 left-3 px-3 py-1 rounded-full bg-white/85 text-pastel-heading text-xs font-medium flex items-center gap-1.5 shadow-sm"><i class="fa-solid fa-images" aria-hidden="true"></i><span></span></span>' : '') +
                     '<span class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/65 via-black/25 to-transparent text-white">' +
                     '<span class="g-title block font-medium text-sm md:text-base leading-tight"></span>' +
                     '<span class="g-sub block text-xs md:text-sm text-white/80 font-light mt-0.5 empty:hidden"></span>' +
@@ -1260,7 +1288,7 @@
             });
 
             // Filtres : uniquement les catégories qui ont au moins une réalisation affichée
-            const cats = Object.keys(CATEGORIES).filter(c => shown.some(x => x.p.cat === c));
+            const cats = Object.keys(CATEGORIES).filter(c => galleryItems.some(x => x.dataset.cat === c));
             const setCount = () => { galleryCount.textContent = countLabel(galleryItems.filter(i => !i.classList.contains('hidden')).length); };
             if (cats.length > 1) {
                 const mk = (f, label, on) => {
@@ -1338,15 +1366,15 @@
                 modalVideo.removeAttribute('src');
                 modalImg.classList.remove('hidden');
                 modalImg.alt = item.dataset.caption;
-                modalImg.onerror = () => { modalImg.onerror = null; modalImg.src = item.querySelector('img').src; };
+                modalImg.onerror = () => { modalImg.onerror = null; modalImg.src = item.thumb; };
                 modalImg.src = item.dataset.src;
             }
         }
 
         function openModal(item) {
-            currentList = galleryItems.filter(i => !i.classList.contains('hidden'));
-            currentIndex = currentList.indexOf(item);
-            renderItem(item);
+            currentList = item._members;
+            currentIndex = 0;
+            renderItem(currentList[0]);
             lastFocus = document.activeElement;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
