@@ -347,6 +347,11 @@
         #gallery-modal.is-vexp .vvideo { width: 100%; max-height: calc(100vh - 4.5rem); max-height: calc(100svh - 4.5rem); border-radius: 0; box-shadow: none; }
         #gallery-modal.is-vexp .vc-bar { position: absolute; left: .6rem; right: .6rem; bottom: calc(env(safe-area-inset-bottom, 0px) + .6rem); width: auto; margin: 0; background: rgba(20,22,28,.72); }
         #gallery-modal.is-vexp #close-modal { background: rgba(20,22,28,.6); }
+        /* vrai plein écran : la boîte du lecteur (vidéo + commandes) remplit l'écran ; les commandes s'effacent après 3 s d'inactivité */
+        #modal-video-box:fullscreen, #modal-video-box:-webkit-full-screen { width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; background: #000; justify-content: center; }
+        #modal-video-box:fullscreen .vvideo, #modal-video-box:-webkit-full-screen .vvideo { width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none; object-fit: contain; }
+        #modal-video-box:fullscreen .vc-bar, #modal-video-box:-webkit-full-screen .vc-bar { position: absolute; left: .6rem; right: .6rem; bottom: calc(env(safe-area-inset-bottom, 0px) + .6rem); width: auto; margin: 0; background: rgba(20,22,28,.72); transition: opacity .35s ease; }
+        #gallery-modal.is-vexp .vbox.vc-idle .vc-bar { opacity: 0; pointer-events: none; }
         #gallery-modal { overscroll-behavior: none; touch-action: none; }   /* les glissements (fermer, média suivant) sont gérés par le script : le navigateur ne doit pas les prendre pour un défilement */
         #gallery-modal #close-modal:hover { background: rgba(255,255,255,.34); }
         @media (min-width: 768px) { #gallery-modal #close-modal { top: 2rem; right: 2rem; } }
@@ -1854,14 +1859,14 @@
         const modalVideoFile = document.getElementById('modal-video-file');
         /* plein écran du lecteur vidéo (bouton du lecteur) : il faut le quitter explicitement, sinon il reste actif quand l'aperçu se ferme (écran noir, rien ne répond, message « pour quitter… » affiché) */
         const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement || modalVideoFile.webkitDisplayingFullscreen || modal.classList.contains('is-vexp'));
-        const leaveFullscreen = () => {
-            modal.classList.remove('is-vexp'); paintVC();
+        const exitAnyFs = () => {
             try {
                 if (document.fullscreenElement && document.exitFullscreen) { const r = document.exitFullscreen(); if (r && r.catch) r.catch(() => {}); }
                 else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
                 if (modalVideoFile.webkitDisplayingFullscreen && modalVideoFile.webkitExitFullscreen) modalVideoFile.webkitExitFullscreen();
             } catch (e) {}
         };
+        const leaveFullscreen = () => { setVExp(false); exitAnyFs(); };
         const modalVideoBox = document.getElementById('modal-video-box');
         const vcPlay = document.getElementById('vc-play'), vcSeek = document.getElementById('vc-seek'), vcCur = document.getElementById('vc-cur'), vcDur = document.getElementById('vc-dur'),
               vcMute = document.getElementById('vc-mute'), vcFull = document.getElementById('vc-full');
@@ -1880,7 +1885,49 @@
             if (!vcSeeking) { vcSeek.value = v.duration ? Math.round(v.currentTime / v.duration * 1000) : 0; vcCur.textContent = fmtT(v.currentTime); }
             vcDur.textContent = fmtT(v.duration);
         };
-        const setVExp = (on) => { modal.classList.toggle('is-vexp', !!on); paintVC(); };
+        /* Agrandir = vrai plein écran du navigateur sur la boîte du lecteur (nos commandes et nos gestes restent actifs), en paysage quand la vidéo est horizontale.
+           Si le navigateur ne le permet pas (iPhone) : affichage agrandi dans la page. Quitter : bouton, glissement vertical, retour, ou geste du système. */
+        let usedRealFs = false, vcIdleTimer = 0;
+        const realFsOn = () => !!(document.fullscreenElement === modalVideoBox || document.webkitFullscreenElement === modalVideoBox);
+        const unlockOrientation = () => { try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {} };
+        const lockLandscape = () => { try { if (modalVideoFile.videoWidth > modalVideoFile.videoHeight && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
+        const wakeVC = () => {
+            modalVideoBox.classList.remove('vc-idle'); clearTimeout(vcIdleTimer);
+            if (modal.classList.contains('is-vexp') && !modalVideoFile.paused) vcIdleTimer = setTimeout(() => modalVideoBox.classList.add('vc-idle'), 3000);
+        };
+        const setVExp = (on) => {
+            on = !!on;
+            if (on && !(modalVideoBox.requestFullscreen || modalVideoBox.webkitRequestFullscreen) && modalVideoFile.webkitEnterFullscreen) {
+                // iPhone : pas de plein écran pour un élément quelconque, seul le lecteur natif de la vidéo peut occuper tout l'écran (il a ses propres gestes pour en sortir)
+                try { modalVideoFile.webkitEnterFullscreen(); paintVC(); return; } catch (e) {}
+            }
+            if (on === modal.classList.contains('is-vexp')) return;
+            modal.classList.toggle('is-vexp', on);
+            if (on) {
+                const rq = modalVideoBox.requestFullscreen || modalVideoBox.webkitRequestFullscreen;
+                if (rq) {
+                    try {
+                        const r = rq.call(modalVideoBox, { navigationUI: 'hide' });
+                        if (r && r.then) r.then(lockLandscape, () => {}); else lockLandscape();
+                    } catch (e) {}
+                }
+                wakeVC();
+            } else {
+                clearTimeout(vcIdleTimer); modalVideoBox.classList.remove('vc-idle');
+                exitAnyFs();
+                unlockOrientation(); usedRealFs = false;
+            }
+            paintVC();
+        };
+        // le plein écran peut aussi se terminer par un geste du système : on remet alors l'affichage normal
+        const onFsChange = () => {
+            if (realFsOn()) usedRealFs = true;
+            else if (usedRealFs) { usedRealFs = false; modal.classList.remove('is-vexp'); modalVideoBox.classList.remove('vc-idle'); unlockOrientation(); paintVC(); }
+        };
+        document.addEventListener('fullscreenchange', onFsChange); document.addEventListener('webkitfullscreenchange', onFsChange);
+        ['pointerdown', 'pointermove', 'touchstart'].forEach(n => modalVideoBox.addEventListener(n, wakeVC, { passive: true }));
+        modalVideoFile.addEventListener('play', wakeVC); modalVideoFile.addEventListener('pause', wakeVC);
+        modalVideoFile.addEventListener('webkitendfullscreen', () => { modal.classList.remove('is-vexp'); paintVC(); });
         ['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended', 'volumechange', 'emptied'].forEach(n => modalVideoFile.addEventListener(n, paintVC));
         vcPlay.addEventListener('click', () => { if (modalVideoFile.paused || modalVideoFile.ended) { const r = modalVideoFile.play(); if (r && r.catch) r.catch(() => {}); } else modalVideoFile.pause(); });
         modalVideoFile.addEventListener('click', () => vcPlay.click());                  // un appui sur la vidéo = lecture / pause
