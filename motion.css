@@ -115,10 +115,6 @@
 /* ---------- Transitions de page ---------- */
 .motion .page-enter { animation: page-in .75s cubic-bezier(.2,.8,.2,1) backwards; }
 
-/* ---------- Galerie ---------- */
-.g-in { animation: gallery-pop .7s cubic-bezier(.2,.8,.2,1) calc(var(--i, 0) * 70ms + 150ms) backwards; }
-.motion .gallery-item img { transition: transform .8s cubic-bezier(.2,.8,.2,1), filter .5s ease; }
-.motion .gallery-item:hover img { filter: saturate(1.12) contrast(1.03); }
 
 /* ---------- Modale ---------- */
 .pop-in { animation: pop-in .55s cubic-bezier(.2,.9,.3,1.1) backwards; }
@@ -139,7 +135,6 @@
 @keyframes stagger-in { from { opacity: 0; translate: 0 14px; scale: .96; } }
 @keyframes bar-grow { from { transform: scaleX(0); } }
 @keyframes page-in { from { opacity: 0; translate: 0 24px; } }
-@keyframes gallery-pop { from { opacity: 0; transform: translateY(30px) scale(.94); } }
 @keyframes pop-in { from { opacity: 0; transform: scale(.9); } }
 @keyframes drop-in { from { opacity: 0; transform: translateY(-8px) scale(.96); } }
 @keyframes icon-spin { from { transform: rotate(-90deg) scale(.6); opacity: 0; } }
@@ -267,20 +262,6 @@
 }
 .icon-host.has-3d > i { opacity: 0; }
 
-/* ---------- Galerie : cartes 3D avec reflet ---------- */
-.motion .gallery-item[data-tilt]:hover {
-    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px) scale(1.015);
-    transition: transform .15s ease-out, box-shadow .4s ease;
-}
-.motion .gallery-item::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease;
-    background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.38), transparent 62%);
-}
-.motion .gallery-item:hover::after { opacity: 1; }
-.motion .gallery-item[data-tilt]:hover img {
-    translate: calc(var(--px, 0) * -9px) calc(var(--py, 0) * -9px);
-}
-
 /* ---------- Modale : retournement 3D ---------- */
 #gallery-modal { perspective: 1600px; }
 .pop-in { animation: flip-in .75s cubic-bezier(.2,.8,.2,1) backwards; transform-origin: center; }
@@ -317,11 +298,6 @@
     transition: box-shadow .5s ease, background-color .5s ease;
 }
 .motion .timeline-line > div > div.absolute.dot-on { scale: 1; box-shadow: 0 0 0 5px rgba(45,48,53,.06); }
-
-/* Galerie : plus de reflet ni de parallaxe interne */
-.motion .gallery-item::after { display: none; }
-.motion .gallery-item[data-tilt]:hover img { translate: none; }
-.motion .gallery-item[data-tilt]:hover { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-3px); }
 
 /* Titres : dégradé fixe */
 .motion .title-pastel { background-image: linear-gradient(90deg, #6A8CF0, #DD829F); background-size: 100% 100%; animation: none; }
@@ -611,18 +587,6 @@ div:has(> .eyebrow) { margin-bottom: 3rem; }
 /* =====================================================
    v33 : page Réalisations (galerie en maçonnerie)
    ===================================================== */
-.gallery-masonry { columns: 1; column-gap: 1.1rem; }
-@media (min-width: 640px)  { .gallery-masonry { columns: 2; column-gap: 1.25rem; } }
-@media (min-width: 1024px) { .gallery-masonry { columns: 3; column-gap: 1.5rem; } }
-.gallery-masonry > .gallery-item, .gallery-masonry > .g-skel { break-inside: avoid; margin-bottom: 1.25rem; display: block; width: 100%; }
-@media (min-width: 1024px) { .gallery-masonry > .gallery-item, .gallery-masonry > .g-skel { margin-bottom: 1.5rem; } }
-.g-skel {
-    border-radius: 1rem;
-    background: linear-gradient(110deg, rgba(255,255,255,.45) 30%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.45) 70%);
-    background-size: 200% 100%; animation: skel 1.4s linear infinite;
-}
-@keyframes skel { to { background-position: -200% 0; } }
-@media (prefers-reduced-motion: reduce) { .g-skel { animation: none; } }
 
 /* =====================================================
    v34 : mode sombre + boutons langue / thème
@@ -720,8 +684,6 @@ html.dark .timeline-line { border-left-color: rgba(255,255,255,.14); }
 html.dark .ticker { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
 html.dark .ticker-item { color: #c3c6cf; }
 html.dark .scroll-cue { border-color: rgba(255,255,255,.45); }
-html.dark .g-skel { background: linear-gradient(110deg, rgba(255,255,255,.04) 30%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 70%); background-size: 200% 100%; }
-html.dark footer { border-top-color: rgba(255,255,255,.08); }
 html.dark ::selection { background: rgba(106,140,240,.35); color: #fff; }
 
 /* Barre de navigation : place pour les boutons langue / thème sur écrans moyens */
@@ -901,7 +863,6 @@ html.dark #home h1 .ch { background-image: linear-gradient(115deg, #8fa8ff 0%, #
     animation: smoke-in var(--t-item) var(--ease) calc(var(--si, 0) * var(--gap) + .25s) backwards;
 }
 .motion .reveal.active > h3 + div { animation: bar-grow 1s var(--ease) .4s backwards; }
-.g-in      { animation: rise-soft var(--t-item) var(--ease) calc(var(--i, 0) * var(--gap) + 150ms) backwards; }
 .fade-up   { animation: rise-soft var(--t-item) var(--ease) .1s backwards; }
 .motion .contact-panel:not(.hidden) .contact-option { animation: rise-soft .7s var(--ease) backwards; }
 @media (min-width: 0) {
@@ -910,7 +871,7 @@ html.dark #home h1 .ch { background-image: linear-gradient(115deg, #8fa8ff 0%, #
 /* nom du hero et logo : même courbe, même rythme */
 .motion #home h1.split.reveal.active .ch { animation-duration: 1.2s; animation-delay: calc(var(--i) * 55ms + .2s); }
 .motion #home svg.fogin { animation: float-gpu 7s ease-in-out infinite, fog-logo 1.8s var(--ease) .15s backwards; }
-@media (prefers-reduced-motion: reduce) { .motion .reveal.active, .g-in, .fade-up { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .motion .reveal.active, .fade-up { animation: none; } }
 
 /* =====================================================
    v51 : animation du logo (remplace les ondes) — tracé, petit « pop », halo, reflet qui parcourt le M
