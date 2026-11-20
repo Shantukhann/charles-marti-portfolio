@@ -150,7 +150,9 @@
             --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
         .f-view { position: absolute; inset: 0; touch-action: none; cursor: grab; outline: none;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%); }
+            /* coupure haut et bas irrégulière, comme la brume du site (et non un dégradé uniforme) */
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+        .f-stage.is-full .f-view { -webkit-mask-image: none; mask-image: none; }
         .f-view.is-drag { cursor: grabbing; }
         .f-view:focus-visible { box-shadow: inset 0 0 0 3px var(--f-accent); }
         .f-world { position: absolute; left: 0; top: 0; will-change: transform; }
@@ -193,7 +195,11 @@
         .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
         .f-hud--top { top: 0; } .f-hud--bottom { bottom: 0; }
         .f-label, .f-hint, .f-coords { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .f-label::before { content: ""; width: .5rem; height: .5rem; border-radius: 9999px; background: linear-gradient(135deg, #6A8CF0, #DD829F); }
+        .f-back { pointer-events: auto; cursor: pointer; text-decoration: none; color: var(--f-ink); transition: background-color .25s ease, transform .25s ease; }
+        .f-back:hover { background: #fff; transform: translateX(-2px); }
+        html.dark .f-back:hover { background: rgba(255,255,255,.14); }
+        .f-back i { font-size: .7rem; }
+        .f-back span { letter-spacing: .12em; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
         .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -206,12 +212,46 @@
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
         @media (hover: none) { .f-cursor { display: none; } .f-hint .f-pad { display: none; } }
-        @media (max-width: 719px) { .f-coords .f-xy, .f-label { display: none; } .f-hud--top { justify-content: flex-start; } }
+        @media (max-width: 719px) { .f-coords .f-xy { display: none; } .f-back span { display: none; } .f-back { padding: .5rem .8rem; } }
         .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
         .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
         @keyframes f-blink { 50% { opacity: .35; } }
         .f-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+
+        /* ---- Boutons toujours présents sur le plan (déplacer, défiler la page, molette, agrandir) ---- */
+        .f-round, .f-pill-btn, .f-ctl button { pointer-events: auto; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; color: var(--f-ink); background: var(--f-glass); border: 1px solid var(--f-line);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease; font: inherit; }
+        .f-round { width: 2.75rem; height: 2.75rem; border-radius: 9999px; font-size: .95rem; flex: none; box-shadow: var(--f-shadow); }
+        .f-pill-btn { padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; box-shadow: var(--f-shadow); }
+        .f-round:hover, .f-pill-btn:hover, .f-ctl button:hover { background: #fff; transform: translateY(-1px); }
+        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.14); }
+        .f-ctl button:active, .f-round:active { transform: scale(.94); }
+        .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%); }
+        html.dark .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #1f2a4d 0%, #3a2342 55%, #17342f 100%); }
+        .f-left, .f-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; pointer-events: none; }
+        .f-right { justify-content: flex-end; }
+        .f-ctl { pointer-events: auto; display: inline-flex; align-items: center; gap: .3rem; padding: .3rem; border-radius: 9999px; background: var(--f-glass); border: 1px solid var(--f-line); box-shadow: var(--f-shadow);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+        .f-ctl button { width: 2.4rem; height: 2.4rem; border-radius: 9999px; border-color: transparent; background: transparent; box-shadow: none; font-size: .85rem; }
+        .f-ctl--page button { width: auto; padding: 0 .85rem 0 .7rem; font-size: .78rem; font-weight: 500; }
+        .f-ctl-lab { font-size: .62rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--f-muted); padding: 0 .45rem 0 .6rem; }
+        .f-top-right { display: flex; align-items: center; gap: .6rem; min-width: 0; pointer-events: none; }
+        /* mode agrandi : la scène occupe tout l'écran */
+        html.f-full body { overflow: hidden; }
+        html.f-full #navbar { visibility: hidden; }
+        html.f-full #page-realisations { z-index: 45; }
+        .f-stage.is-full { position: fixed; inset: 0; z-index: 40; height: 100vh; height: 100svh; max-height: none; min-height: 0;
+            background: radial-gradient(60vw 50vh at 12% 10%, #d6fcff, transparent 70%), radial-gradient(50vw 45vh at 88% 85%, #ffe1e5, transparent 70%), #FCFBF9; }
+        html.dark .f-stage.is-full { background: radial-gradient(60vw 50vh at 12% 10%, rgba(106,140,240,.18), transparent 70%), radial-gradient(50vw 45vh at 88% 85%, rgba(221,130,159,.14), transparent 70%), #101216; }
+        .f-stage.is-full .f-ctl--page, .f-stage.is-full #f-wheel { display: none; }
+        @media (max-width: 719px) {
+            .f-hud--bottom { align-items: flex-end; }
+            .f-hint, .f-coords, .f-ctl-lab { display: none; }
+            .f-left { display: none; }
+            .f-top-right { flex: 1; justify-content: flex-end; }
+            .f-nav { flex: 1; }
+        }
         /* ---- Volet « catégorie » : demi-page avec les médias et les infos ---- */
         .cs { position: fixed; inset: 0; z-index: 90; visibility: hidden; pointer-events: none; transition: visibility 0s linear .5s; }
         .cs.is-open { visibility: visible; pointer-events: auto; transition-delay: 0s; }
@@ -844,34 +884,39 @@
     </div>
 
     <!-- PAGE 2 : RÉALISATIONS -->
-    <div id="page-realisations" class="hidden min-h-screen pt-32 pb-24 relative z-10 bg-white/30">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center md:text-left mb-10 reveal">
-                <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
-                    <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Retour au CV
-                </a>
-                <p class="eyebrow">Portfolio</p>
-                    <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
-                <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
-                <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
-                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Faites glisser le plan pour explorer, ou choisissez une catégorie.
-                </p>
-            </div>
-
-        </div>
-
+    <div id="page-realisations" class="hidden min-h-screen pt-[4.5rem] pb-24 relative z-10 bg-white/30">
         <!-- Plan interactif : on fait glisser les vignettes dans toutes les directions (construit par le script, section « Réalisations ») -->
         <div id="realisations-top"></div>
         <div id="field-stage" class="f-stage" data-i18n-skip aria-busy="true" role="region" aria-label="Plan des réalisations : faites glisser pour explorer">
             <div id="field-view" class="f-view" tabindex="0" aria-describedby="f-hint"><div id="field-world" class="f-world" aria-hidden="true"></div></div>
             <div class="f-cross" aria-hidden="true"></div>
             <header class="f-hud f-hud--top">
-                <span class="f-mono f-label" id="f-title">Plan des réalisations</span>
-                <nav id="f-nav" class="f-nav" aria-label="Aller à une catégorie"></nav>
+                <a href="#accueil" class="f-mono f-label f-back" id="f-title"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour au CV</span></a>
+                <div class="f-top-right">
+                    <nav id="f-nav" class="f-nav" aria-label="Aller à une catégorie"></nav>
+                    <button type="button" id="f-expand" class="f-round" aria-label="Agrandir le plan" aria-pressed="false" title="Agrandir"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                </div>
             </header>
             <footer class="f-hud f-hud--bottom">
-                <p class="f-mono f-hint" id="f-hint"><span class="f-pad" aria-hidden="true"></span><span id="f-hint-txt">Molette · glisser · ↵ ouvrir</span></p>
-                <p class="f-mono f-coords" aria-hidden="true"><span id="f-place">PARIS</span><b id="f-clock">00:00:00</b><span class="f-xy">· X <b id="f-x">+0000</b> Y <b id="f-y">+0000</b></span></p>
+                <div class="f-left">
+                    <button type="button" id="f-wheel" class="f-pill-btn" aria-pressed="true"><i class="fa-solid fa-computer-mouse" aria-hidden="true"></i><span id="f-wheel-txt">Molette : plan</span></button>
+                    <p class="f-mono f-hint" id="f-hint"><span class="f-pad" aria-hidden="true"></span><span id="f-hint-txt">Glisser · ↵ ouvrir</span></p>
+                </div>
+                <div class="f-right">
+                    <p class="f-mono f-coords" aria-hidden="true"><span id="f-place">PARIS</span><b id="f-clock">00:00:00</b><span class="f-xy">· X <b id="f-x">+0000</b> Y <b id="f-y">+0000</b></span></p>
+                    <div class="f-ctl" role="group" aria-label="Déplacer le plan" id="f-pan">
+                        <span class="f-ctl-lab" id="f-lab-plan">Plan</span>
+                        <button type="button" data-d="l" aria-label="Vers la gauche"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                        <button type="button" data-d="u" aria-label="Vers le haut"><i class="fa-solid fa-chevron-up" aria-hidden="true"></i></button>
+                        <button type="button" data-d="d" aria-label="Vers le bas"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+                        <button type="button" data-d="r" aria-label="Vers la droite"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="f-ctl f-ctl--page" role="group" aria-label="Défiler la page">
+                        <span class="f-ctl-lab" id="f-lab-page">Page</span>
+                        <button type="button" id="f-pgup" aria-label="Haut de la page"><i class="fa-solid fa-angles-up" aria-hidden="true"></i><span id="f-pgup-t">Haut</span></button>
+                        <button type="button" id="f-pgdn" aria-label="Bas de la page"><i class="fa-solid fa-angles-down" aria-hidden="true"></i><span id="f-pgdn-t">Bas</span></button>
+                    </div>
+                </div>
             </footer>
             <div id="f-cursor" class="f-cursor" aria-hidden="true"></div>
             <div id="f-loading" class="f-loading f-mono">Chargement…</div>
@@ -1425,10 +1470,9 @@
             const view = F.view, vw = view.clientWidth, vh = view.clientHeight;
             if (!vw || !vh) return;
             const small = vw < 720;
-            F.nc = vw >= 1800 ? 4 : vw >= 720 ? 3 : 2;
-            F.gap = small ? 14 : 24;
-            // vignettes grandes : environ 2,5 colonnes visibles sur ordinateur, 1,6 sur téléphone
-            F.cw = small ? Math.floor((vw - F.gap * 2) / 1.6) : Math.min(480, Math.floor((vw - F.gap * 2) / 2.55));
+            F.nc = vw >= 1100 ? 4 : vw >= 720 ? 3 : 2;
+            F.gap = small ? 12 : 20;
+            F.cw = small ? Math.floor((vw - F.gap * 3) / 2) : Math.min(340, Math.floor((vw - F.gap * (F.nc + 1)) / (F.nc - 0.35)));
             F.W = F.nc * (F.cw + F.gap);
             const items = fieldItems();
             const cols = Array.from({ length: F.nc }, () => ({ h: 0, list: [] }));
@@ -1573,8 +1617,9 @@
             // molette / pavé tactile : déplacent le plan dans toutes les directions (Maj + molette = horizontal).
             // Sur les bords haut et bas de la scène, la molette fait défiler la page normalement.
             view.addEventListener('wheel', e => {
+                if (F.wheelMode === 'page' && !F.full) return;
                 const r = view.getBoundingClientRect(), y = e.clientY - r.top;
-                if (y < 56 || y > r.height - 56) return;
+                if (!F.full && (y < 56 || y > r.height - 56)) return;
                 e.preventDefault(); F.tween = null;
                 const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? r.height : 1;
                 let dx = e.deltaX * k, dy = e.deltaY * k;
@@ -1596,6 +1641,37 @@
             document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
             let rt = 0;
             new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (F.ready) { layoutField(); buildNav(); } }, 160); }).observe(view);
+                        // ---- boutons toujours présents : déplacer le plan, défiler la page, molette, agrandir ----
+            const panBy = (dx, dy) => { F.vx = F.vy = 0; F.tween = { t0: performance.now(), d: motionOn() ? 380 : 1, x0: F.px, y0: F.py, x1: F.px + dx, y1: F.py + dy }; kick(); };
+            const DIR = { l: [260, 0], r: [-260, 0], u: [0, 260], d: [0, -260] };
+            document.querySelectorAll('#f-pan [data-d]').forEach(b => {
+                const v = DIR[b.dataset.d]; let t = 0;
+                const stop = () => { clearInterval(t); t = 0; };
+                b.addEventListener('pointerdown', e => { e.preventDefault(); panBy(v[0], v[1]); stop(); t = setInterval(() => panBy(v[0], v[1]), 320); });
+                ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+                b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); panBy(v[0], v[1]); } });
+            });
+            document.getElementById('f-pgup').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            document.getElementById('f-pgdn').addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
+            try { F.wheelMode = localStorage.getItem('site-f-wheel') === 'page' ? 'page' : 'plan'; } catch (_) { F.wheelMode = 'plan'; }
+            const wheelBtn = document.getElementById('f-wheel');
+            const paintWheel = () => { wheelBtn.setAttribute('aria-pressed', String(F.wheelMode === 'plan')); document.getElementById('f-wheel-txt').textContent = (isEn() ? 'Wheel: ' : 'Molette : ') + (F.wheelMode === 'plan' ? (isEn() ? 'map' : 'plan') : 'page'); };
+            F.paintWheel = paintWheel; paintWheel();
+            wheelBtn.addEventListener('click', () => { F.wheelMode = F.wheelMode === 'plan' ? 'page' : 'plan'; try { localStorage.setItem('site-f-wheel', F.wheelMode); } catch (_) {} paintWheel(); });
+            // agrandir : la scène passe en plein écran dans la page (Échap, le bouton ou « retour » pour revenir)
+            const expandBtn = document.getElementById('f-expand');
+            window.setFull = function (on, fromPop) {
+                if (on === !!F.full) return;
+                F.full = !!on;
+                fieldStage.classList.toggle('is-full', F.full);
+                document.documentElement.classList.toggle('f-full', F.full);
+                expandBtn.setAttribute('aria-pressed', String(F.full));
+                expandBtn.setAttribute('aria-label', F.full ? (isEn() ? 'Reduce the map' : 'Réduire le plan') : (isEn() ? 'Enlarge the map' : 'Agrandir le plan'));
+                expandBtn.firstElementChild.className = 'fa-solid ' + (F.full ? 'fa-compress' : 'fa-expand');
+                if (F.full) pushLayer('full', () => setFull(false, true)); else if (fromPop !== true) popLayer('full');
+                kick();
+            };
+            expandBtn.addEventListener('click', () => setFull(!F.full));
             // horloge de Paris
             const fmt = new Intl.DateTimeFormat(isEn() ? 'en-GB' : 'fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const clock = document.getElementById('f-clock'); const tick = () => { clock.textContent = fmt.format(new Date()); }; tick(); setInterval(tick, 1000);
@@ -1610,8 +1686,11 @@
                 b.addEventListener('click', () => openSheet(c));
                 F.nav.append(b);
             });
-            document.getElementById('f-hint-txt').textContent = isEn() ? 'Wheel · drag · ↵ open' : 'Molette · glisser · ↵ ouvrir';
-            document.getElementById('f-title').textContent = isEn() ? 'Work map' : 'Plan des réalisations';
+            document.getElementById('f-hint-txt').textContent = isEn() ? 'Drag · ↵ open' : 'Glisser · ↵ ouvrir';
+            document.getElementById('f-lab-plan').textContent = isEn() ? 'Map' : 'Plan'; document.getElementById('f-lab-page').textContent = 'Page';
+            document.getElementById('f-pgup-t').textContent = isEn() ? 'Top' : 'Haut'; document.getElementById('f-pgdn-t').textContent = isEn() ? 'Bottom' : 'Bas';
+            if (F.paintWheel) F.paintWheel();
+            document.getElementById('f-title').lastElementChild.textContent = isEn() ? 'Back to CV' : 'Retour au CV';
             document.getElementById('f-place').textContent = 'PARIS';
         }
 
@@ -1842,7 +1921,7 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (modal.classList.contains('hidden')) { if (e.key === 'Escape' && sheetIsOpen) closeSheet(); return; }
+            if (modal.classList.contains('hidden')) { if (e.key === 'Escape') { if (sheetIsOpen) closeSheet(); else if (F.full) setFull(false); } return; }
             if (e.key === 'Escape') closeModal();
             if (e.key === 'ArrowLeft') step(-1);
             if (e.key === 'ArrowRight') step(1);
