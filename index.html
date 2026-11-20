@@ -194,7 +194,7 @@
         .f-cross::before { left: 9px; top: 0; width: 1px; height: 20px; } .f-cross::after { top: 9px; left: 0; height: 1px; width: 20px; }
         .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
         .f-hud--top { top: 0; } .f-hud--bottom { bottom: 0; }
-        .f-label, .f-hint, .f-coords { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-label { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .f-back { pointer-events: auto; cursor: pointer; text-decoration: none; color: var(--f-ink); transition: background-color .25s ease, transform .25s ease; }
         .f-back:hover { background: #fff; transform: translateX(-2px); }
         html.dark .f-back:hover { background: rgba(255,255,255,.14); }
@@ -203,16 +203,11 @@
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
         .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .f-coords b { font-weight: 500; color: var(--f-ink); font-variant-numeric: tabular-nums; }
-        .f-pad { width: 1.4rem; height: 1.4rem; border-radius: 9999px; border: 1px solid var(--f-line); position: relative; flex: none; background: rgba(255,255,255,.5); }
-        .f-pad::after { content: ""; position: absolute; width: .4rem; height: .4rem; border-radius: 9999px; background: #DD829F; left: 50%; top: 50%; margin: -.2rem 0 0 -.2rem; }
-        .motion .f-pad::after { animation: f-pad 3.2s ease-in-out infinite; }
-        @keyframes f-pad { 0%, 100% { transform: translate(-.35rem, 0); } 50% { transform: translate(.35rem, 0); } }
         .f-cursor { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; margin: 16px 0 0 20px; padding: .35rem .85rem; border-radius: 9999px; background: var(--f-ink); font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; transition: opacity .2s ease; white-space: nowrap; }
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
-        @media (hover: none) { .f-cursor { display: none; } .f-hint .f-pad { display: none; } }
-        @media (max-width: 719px) { .f-coords .f-xy { display: none; } .f-back span { display: none; } .f-back { padding: .5rem .8rem; } }
+        @media (hover: none) { .f-cursor { display: none; } }
+        @media (max-width: 719px) { .f-back span { display: none; } .f-back { padding: .5rem .8rem; } }
         .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
         .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
         @keyframes f-blink { 50% { opacity: .35; } }
@@ -247,7 +242,7 @@
         .f-stage.is-full .f-ctl--page, .f-stage.is-full #f-wheel { display: none; }
         @media (max-width: 719px) {
             .f-hud--bottom { align-items: flex-end; }
-            .f-hint, .f-coords, .f-ctl-lab { display: none; }
+            .f-ctl-lab { display: none; }
             .f-left { display: none; }
             .f-top-right { flex: 1; justify-content: flex-end; }
             .f-nav { flex: 1; }
@@ -888,7 +883,7 @@
         <!-- Plan interactif : on fait glisser les vignettes dans toutes les directions (construit par le script, section « Réalisations ») -->
         <div id="realisations-top"></div>
         <div id="field-stage" class="f-stage" data-i18n-skip aria-busy="true" role="region" aria-label="Plan des réalisations : faites glisser pour explorer">
-            <div id="field-view" class="f-view" tabindex="0" aria-describedby="f-hint"><div id="field-world" class="f-world" aria-hidden="true"></div></div>
+            <div id="field-view" class="f-view" tabindex="0"><div id="field-world" class="f-world" aria-hidden="true"></div></div>
             <div class="f-cross" aria-hidden="true"></div>
             <header class="f-hud f-hud--top">
                 <a href="#accueil" class="f-mono f-label f-back" id="f-title"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour au CV</span></a>
@@ -900,10 +895,8 @@
             <footer class="f-hud f-hud--bottom">
                 <div class="f-left">
                     <button type="button" id="f-wheel" class="f-pill-btn" aria-pressed="true"><i class="fa-solid fa-computer-mouse" aria-hidden="true"></i><span id="f-wheel-txt">Molette : plan</span></button>
-                    <p class="f-mono f-hint" id="f-hint"><span class="f-pad" aria-hidden="true"></span><span id="f-hint-txt">Glisser · ↵ ouvrir</span></p>
                 </div>
                 <div class="f-right">
-                    <p class="f-mono f-coords" aria-hidden="true"><span id="f-place">PARIS</span><b id="f-clock">00:00:00</b><span class="f-xy">· X <b id="f-x">+0000</b> Y <b id="f-y">+0000</b></span></p>
                     <div class="f-ctl" role="group" aria-label="Déplacer le plan" id="f-pan">
                         <span class="f-ctl-lab" id="f-lab-plan">Plan</span>
                         <button type="button" data-d="l" aria-label="Vers la gauche"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
@@ -1511,10 +1504,6 @@
             F.world.style.transform = 'translate3d(' + (mod(F.px, F.W) - F.W) + 'px,0,0)';
             F.cols.forEach(c => { c.el.style.transform = 'translate3d(0,' + (mod(F.py, F.cycle[c.ci]) - F.cycle[c.ci]) + 'px,0)'; });
             F.frame++;
-            if (F.frame % 3 === 0) {
-                F.xEl.textContent = (F.px >= 0 ? '+' : '−') + String(Math.abs(Math.round(F.px)) % 10000).padStart(4, '0');
-                F.yEl.textContent = (F.py >= 0 ? '+' : '−') + String(Math.abs(Math.round(F.py)) % 10000).padStart(4, '0');
-            }
         }
 
         /* Boucle d'animation : inertie, dérive lente au repos, vol vers une catégorie */
@@ -1578,7 +1567,6 @@
         function setupField() {
             F.view = document.getElementById('field-view'); F.world = document.getElementById('field-world');
             F.nav = document.getElementById('f-nav'); F.cursor = document.getElementById('f-cursor');
-            F.xEl = document.getElementById('f-x'); F.yEl = document.getElementById('f-y');
             const view = F.view;
             // pointeur : glisser pour déplacer, simple clic pour ouvrir
             view.addEventListener('pointerdown', e => {
@@ -1672,9 +1660,6 @@
                 kick();
             };
             expandBtn.addEventListener('click', () => setFull(!F.full));
-            // horloge de Paris
-            const fmt = new Intl.DateTimeFormat(isEn() ? 'en-GB' : 'fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const clock = document.getElementById('f-clock'); const tick = () => { clock.textContent = fmt.format(new Date()); }; tick(); setInterval(tick, 1000);
         }
 
         function buildNav() {
@@ -1686,12 +1671,10 @@
                 b.addEventListener('click', () => openSheet(c));
                 F.nav.append(b);
             });
-            document.getElementById('f-hint-txt').textContent = isEn() ? 'Drag · ↵ open' : 'Glisser · ↵ ouvrir';
             document.getElementById('f-lab-plan').textContent = isEn() ? 'Map' : 'Plan'; document.getElementById('f-lab-page').textContent = 'Page';
             document.getElementById('f-pgup-t').textContent = isEn() ? 'Top' : 'Haut'; document.getElementById('f-pgdn-t').textContent = isEn() ? 'Bottom' : 'Bas';
             if (F.paintWheel) F.paintWheel();
             document.getElementById('f-title').lastElementChild.textContent = isEn() ? 'Back to CV' : 'Retour au CV';
-            document.getElementById('f-place').textContent = 'PARIS';
         }
 
         async function buildGallery() {
