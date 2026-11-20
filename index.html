@@ -330,6 +330,7 @@
         }
         /* fermer l'aperçu : grand bouton rond, facile à toucher sur téléphone */
         #gallery-modal #close-modal { top: calc(env(safe-area-inset-top, 0px) + .75rem); right: .75rem; width: 3.1rem; height: 3.1rem; border-radius: 9999px; background: rgba(255,255,255,.2); color: #fff; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        #gallery-modal { overscroll-behavior: none; touch-action: none; }   /* les glissements (fermer, média suivant) sont gérés par le script : le navigateur ne doit pas les prendre pour un défilement */
         #gallery-modal #close-modal:hover { background: rgba(255,255,255,.34); }
         @media (min-width: 768px) { #gallery-modal #close-modal { top: 2rem; right: 2rem; } }
         .filter-btn { display: inline-flex; align-items: center; gap: .55rem; }
@@ -1254,7 +1255,7 @@
         <button id="modal-prev" type="button" aria-label="Précédent" class="modal-nav left-3 md:left-8"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
         <button id="modal-next" type="button" aria-label="Suivant" class="modal-nav right-3 md:right-8"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
 
-        <div class="relative max-w-5xl mx-auto px-16 md:px-4 w-full flex flex-col items-center">
+        <div id="modal-body" class="relative max-w-5xl mx-auto px-16 md:px-4 w-full flex flex-col items-center">
             <img id="modal-image" alt="" class="max-h-[60vh] w-auto rounded-xl shadow-2xl object-contain mb-6 hidden">
 
             <video id="modal-video-file" class="max-h-[60vh] max-w-full rounded-xl shadow-2xl bg-black mb-6 hidden" controls playsinline preload="none"></video>
@@ -1358,9 +1359,9 @@
             { src: 'images/diner-spectacle.jpg', cat: 'galas', title: 'Dîner-spectacle', sub: 'Scène, écrans & éclairage',
               caption: 'Dîner-spectacle - scène, écrans et éclairage',
               en: { title: 'Dinner show', sub: 'Stage, screens & lighting', caption: 'Dinner show - stage, screens and lighting' } },
-            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', title: 'Dîner remise de prix', sub: "Jusqu'à 2000 personnes",
-              caption: 'Dîner remise de prix (2000 personnes)',
-              en: { title: 'Awards dinner', sub: 'Up to 2000 people', caption: 'Awards dinner (2000 people)' } },
+            { src: 'images/diner-remise-de-prix.jpg', cat: 'galas', title: 'Dîner remise de prix', sub: 'Grande salle, tables dressées',
+              caption: 'Dîner remise de prix - grande salle aux tables dressées',
+              en: { title: 'Awards dinner', sub: 'Large hall, tables set', caption: 'Awards dinner - large hall with tables set' } },
             { src: 'images/dressage-diner-assis.jpg', cat: 'galas', title: 'Dressage dîner assis', sub: 'Brigade de cuisine',
               caption: "Dressage des assiettes d'un dîner assis - brigade de cuisine à l'œuvre",
               en: { title: 'Seated dinner plating', sub: 'Kitchen brigade', caption: 'Plating for a seated dinner - the kitchen brigade at work' } },
@@ -1370,9 +1371,9 @@
             { src: 'images/cocktail-et-soiree-dansante.jpg', cat: 'cocktails', title: 'Cocktail et soirée dansante', sub: 'Boule à facettes & pyramides de verres',
               caption: 'Cocktail et soirée dansante - boule à facettes et pyramides de verres',
               en: { title: 'Cocktail and dance party', sub: 'Mirror ball & champagne towers', caption: 'Cocktail and dance party - mirror ball and glass pyramids' } },
-            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail · 1200 participants',
-              caption: 'Soirée dansante - cocktail (1200 participants)',
-              en: { title: 'Dance party', sub: 'Cocktail · 1200 attendees', caption: 'Dance party - cocktail (1200 attendees)' } },
+            { src: 'images/soiree-dansante.jpg', cat: 'cocktails', title: 'Soirée dansante', sub: 'Cocktail',
+              caption: 'Soirée dansante - cocktail',
+              en: { title: 'Dance party', sub: 'Cocktail', caption: 'Dance party - cocktail' } },
             { src: 'images/diner-seminaire.jpg', cat: 'seminaires', title: 'Dîner séminaire', sub: 'Tables rondes & vue panoramique',
               caption: 'Dîner séminaire - salle avec vue panoramique, tables rondes dressées',
               en: { title: 'Seminar dinner', sub: 'Round tables & panoramic view', caption: 'Seminar dinner - room with panoramic view, round tables set' } },
@@ -1904,6 +1905,7 @@
         function openModal(m, list) {
             currentList = list || [m];
             currentIndex = Math.max(0, currentList.indexOf(m));
+            resetDrag(false);
             renderItem(m);
             lastFocus = document.activeElement;
             modal.classList.remove('hidden');
@@ -1949,18 +1951,48 @@
         nextBtn.addEventListener('click', () => step(1));
         modal.addEventListener('click', (e) => { if (e.target === modal && !justOpened()) closeModal(); });
 
-        let touchX = null, touchY = null, touchOnVideo = false;
+        /* Gestes tactiles : glisser vers le haut ou le bas ferme l'aperçu (le contenu suit le doigt), glisser de côté change de média.
+           Ils fonctionnent aussi quand le doigt part de la vidéo, sauf sur sa barre de commandes (curseur de lecture, volume, plein écran) qui garde ses propres gestes. */
+        const modalBody = document.getElementById('modal-body');
+        let touchX = null, touchY = null, touchOnControls = false, touchDrag = false;
+        const resetDrag = (animate) => {
+            modalBody.style.transition = animate ? 'transform .25s ease' : '';
+            modalBody.style.transform = '';
+            modal.style.opacity = '';
+            touchDrag = false;
+        };
         modal.addEventListener('touchstart', (e) => {
-            touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY;
-            touchOnVideo = !!(e.target.closest && e.target.closest('video'));
+            if (e.touches.length !== 1) { touchX = null; resetDrag(false); return; }   // pincement : on laisse faire
+            touchX = e.changedTouches[0].clientX; touchY = e.changedTouches[0].clientY; touchDrag = false;
+            const v = e.target.closest && e.target.closest('video');
+            touchOnControls = !!v && touchY > v.getBoundingClientRect().bottom - 52;
+            modalBody.style.transition = 'none';
+        }, { passive: true });
+        modal.addEventListener('touchmove', (e) => {
+            if (touchX === null || touchOnControls) return;
+            const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+            if (!touchDrag && Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx) * 1.5) touchDrag = true;
+            if (touchDrag) {
+                modalBody.style.transform = 'translateY(' + dy + 'px)';
+                modal.style.opacity = String(Math.max(.3, 1 - Math.abs(dy) / 420));
+            }
         }, { passive: true });
         modal.addEventListener('touchend', (e) => {
             if (touchX === null) return;
             const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
-            if (!touchOnVideo && Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) closeModal();   // glisser vers le haut ou le bas : fermer
-            else if (!touchOnVideo && Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
             touchX = null;
+            if (touchOnControls) { resetDrag(false); return; }
+            if (Math.abs(dy) > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) {      // glisser vers le haut ou le bas : fermer
+                modalBody.style.transition = 'transform .3s ease'; modalBody.style.transform = 'translateY(' + (dy * 1.6) + 'px)';
+                closeModal();
+                modal.style.opacity = '';                                   // le fondu de fermeture repart de l'opacité actuelle
+                setTimeout(() => resetDrag(false), 340);
+                return;
+            }
+            resetDrag(true);
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);   // glisser de côté : média suivant / précédent
         });
+        modal.addEventListener('touchcancel', () => { touchX = null; resetDrag(true); });
 
         document.addEventListener('keydown', (e) => {
             if (modal.classList.contains('hidden')) { if (e.key === 'Escape') { if (sheetIsOpen) closeSheet(); else if (F.full) setFull(false); } return; }

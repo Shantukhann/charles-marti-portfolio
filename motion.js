@@ -101,7 +101,7 @@
         const DUR = 6000;                                  // levée de secours sans aucun geste (ms), après 14 s d'inactivité
         const REACH = 300;                                 // rayon (px) autour du passage où la brume peut se dissiper de proche en proche, de l'intérieur vers l'extérieur
         const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
-        const SPREAD = 42;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
+        const SPREAD = 30;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
         const R = 100;                                     // rayon de dissipation autour du pointeur (px)
         const dens = new Uint8Array(COLS * ROWS).fill(255);
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
@@ -223,15 +223,29 @@
             const sp = lx > -900 ? Math.hypot(x - lx, y - ly) / Math.max(1, now - lt) : 0;
             lx = x; ly = y; lt = now; lastTouch = now; simActive = true;
             if (!auto) { hint.classList.add('gone'); touchedEver = true; lastUser = performance.now(); }   // l'ouverture automatique ne compte pas comme un geste : l'indice reste visible tant que la brume est là
-            /* chaque passage libère toute la brume affichée à l'écran : elle se dissipe à partir de l'épicentre, vers l'extérieur */
-            for (let i = Math.max(0, Math.floor(scrollY / CELL)) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1) * COLS; i < e; i++) { live[i] = 1; rowAct[(i / COLS) | 0] = 1; }
+            /* chaque passage libère toute la brume affichée à l'écran, plus une hauteur d'écran au-dessus et en dessous : elle se dissipe à partir de l'épicentre, vers l'extérieur,
+               et le bord de la zone dégagée n'est jamais visible en défilant (aucune brume coincée entre ce qui est affiché et ce qui ne l'est pas) */
+            const mg = Math.ceil(innerHeight / CELL);
+            for (let i = Math.max(0, Math.floor(scrollY / CELL) - mg) * COLS, e = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1 + mg) * COLS; i < e; i++) { live[i] = 1; rowAct[(i / COLS) | 0] = 1; }
             clearAt(x, y, Math.min(.6, .12 + sp * .3));
         };
         window.__fogPoke = stroke;
-        /* premier écran : si personne ne bouge, il se dégage seul après 2,5 s (le contenu d'accueil doit toujours être lisible) ; le reste attend le geste */
+        /* premier écran : si personne ne bouge, il se dégage seul après 1,8 s (le contenu d'accueil doit toujours être lisible) ; le reste attend le geste */
         let autoTimer = 0;
-        const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 3600) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 3800); };
+        const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 1600) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 1800); };
         window.__fogArm = armAuto; armAuto();
+        /* après un défilement : s'il reste de la brume à l'écran et que personne ne la gratte, elle se lève seule (même délai que pour le premier écran), à partir du milieu de la brume visible */
+        let scrollTimer = 0;
+        addEventListener('scroll', () => {
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                if (performance.now() - lastTouch < 1600) return;           // l'utilisateur est en train de la gratter
+                const r0 = Math.max(0, Math.floor(scrollY / CELL)), r1 = Math.min(ROWS, Math.ceil((scrollY + innerHeight) / CELL) + 1);
+                let sum = 0, n = 0;
+                for (let r = r0; r < r1; r++) { for (let c = 0, i = r * COLS; c < COLS; c++, i++) if (dens[i] > 25) { sum += r; n++; break; } }
+                if (n) stroke(innerWidth * .5, (sum / n) * CELL - scrollY, true);
+            }, 1800);
+        }, { passive: true });
         /* clavier : un élément qui prend le focus (Tab…) est révélé là où il se trouve */
         document.addEventListener('focusin', e => { const r = e.target.getBoundingClientRect(); if (r.width && r.height && r.bottom > 0 && r.top < innerHeight) stroke(r.left + r.width / 2, r.top + r.height / 2); });
         /* Les navigateurs envoient parfois un « faux » mouvement de souris à l'ouverture de la page ou après un changement d'affichage (la souris n'a pas bougé) : on l'ignore.
@@ -247,6 +261,7 @@
         addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { lx = -999; stroke(t.clientX, t.clientY); } }, { passive: true });
 
         const t00 = performance.now();
+        let bgUpload = -1e9;
         /* appelée par le fond juste après qu'il a dessiné son image : la brume en reprend les pixels */
         window.__fogDraw = function (src, now) {
             const dt = Math.min(64, now - lastT); lastT = now;
@@ -298,7 +313,8 @@
             if (any) {
                 canvas.style.display = '';
                 gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bgTex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+                // copier le canvas du fond dans une texture force une lecture GPU synchrone : le fond évolue lentement, 20 copies/s suffisent (la brume garde sa fluidité à chaque image)
+                if (now - bgUpload >= 50) { bgUpload = now; gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); }
                 gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, r0, COLS, r1 - r0, gl.LUMINANCE, gl.UNSIGNED_BYTE, dens.subarray(r0 * COLS, r1 * COLS));
                 gl.uniform2f(uRes, canvas.width, canvas.height); gl.uniform2f(uCss, innerWidth, innerHeight);
@@ -900,11 +916,14 @@ void main(){
             curK = dark ? 1.0 : 0.8;
         };
         const ease = x => 0.5 - 0.5 * Math.cos(Math.PI * x);
-        let from = 0, to = 0, t0 = 0, dur = 1, p = 0, running = false;
+        let from = 0, to = 0, t0 = 0, dur = 1, p = 0, running = false, covered = false;
+        // quand le voile recouvre tout l'écran, le fond et la brume (cachés derrière) ne dessinent plus rien : le GPU ne sert que le rideau pendant le changement de page
+        const setCovered = on => { if (on !== covered) { covered = on; root.classList.toggle('cv-cover', on); } };
 
         function draw(now) {
             const k = Math.min(1, (now - t0) / dur);
             p = from + (to - from) * ease(k);
+            setCovered(running && p >= 0.999 && p <= 1.001);
             cur.forEach((c, i) => gl.uniform3f(uC[i], c[0], c[1], c[2]));
             gl.uniform3f(uBase, curBase[0], curBase[1], curBase[2]);
             gl.uniform1f(uK, curK);
@@ -921,12 +940,11 @@ void main(){
 
         return {
             canvas,
-            freeze(v) { running = false; from = to = v; dur = 1; t0 = -1e9; requestAnimationFrame(draw); },
             set(state) {
                 if (state === 'is-in') { snap(); gl.uniform1f(uS, Math.random() * 100); go(0, 1, 1100); }
                 else if (state === 'is-hold') { snap(); gl.uniform1f(uS, Math.random() * 100); from = to = 1; dur = 1; t0 = performance.now(); if (!running) { running = true; requestAnimationFrame(draw); } }
                 else if (state === 'is-out') go(1, 2, 1100);
-                else { running = false; p = 0; from = to = 0; }
+                else { running = false; p = 0; from = to = 0; setCovered(false); }
             }
         };
     }
@@ -1217,7 +1235,7 @@ void main(){
         let skip = false, warm = 0, fpsAcc = 0, fpsN = 0;
         function frame(now) {
             if (low && (skip = !skip)) { requestAnimationFrame(frame); return; } // 30 i/s en mode allégé
-            if (root.classList.contains('f-full')) { last = now; requestAnimationFrame(frame); return; } // plan en plein écran : le fond est entièrement recouvert, inutile de le calculer
+            if (root.classList.contains('f-full') || root.classList.contains('cv-cover')) { last = now; requestAnimationFrame(frame); return; } // plan en plein écran ou rideau fermé : le fond est entièrement recouvert, inutile de le calculer
             const raw = now - last;
             const dt = Math.min(0.05, raw / 1000);
             last = now;
