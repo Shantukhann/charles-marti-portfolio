@@ -146,7 +146,7 @@
             --t-blue: #D9E4FC; --t-pink: #FBDDE4; --t-green: #DDF0C2; --t-grad: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%);
             --f-shadow: 0 10px 30px -8px rgba(0,0,0,.16);
             position: relative; width: 100%; height: calc(100vh - 4.75rem); height: calc(100svh - 4.75rem); min-height: 560px; max-height: 1200px; overflow: hidden; color: var(--f-ink); user-select: none; -webkit-user-select: none; }
-        html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #c3c6cf; --f-muted: rgba(195,198,207,.75); --f-glass: rgba(28,31,38,.72); --f-line: rgba(255,255,255,.09);
+        html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #d4d7df; --f-muted: rgba(212,215,223,.85); --f-glass: rgba(44,48,62,.9); --f-line: rgba(255,255,255,.22);
             --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
         @media (max-width: 719px) { .f-stage { height: calc(100vh - 11.5rem); height: calc(100svh - 11.5rem); min-height: 400px; } }
@@ -207,6 +207,9 @@
         .f-short { display: none; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
+        html.dark .f-nav .filter-btn, html.dark .cs-tabs .filter-btn { background: rgba(44,48,62,.9); border-color: rgba(255,255,255,.24); color: #f1f2f5; }
+        html.dark .f-nav .filter-btn:hover, html.dark .cs-tabs .filter-btn:hover { background: rgba(70,76,96,.95); }
+        html.dark .f-nav .filter-btn.is-active, html.dark .cs-tabs .filter-btn.is-active { background: linear-gradient(135deg, #2c3f7a, #5a2f5e); border-color: rgba(255,255,255,.35); color: #fff; }
         .f-nav .filter-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .f-cursor { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; margin: 16px 0 0 20px; padding: .35rem .85rem; border-radius: 9999px; background: var(--f-ink); font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; transition: opacity .2s ease; white-space: nowrap; }
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
@@ -241,7 +244,8 @@
         .f-round { width: 2.75rem; height: 2.75rem; border-radius: 9999px; font-size: .95rem; flex: none; box-shadow: var(--f-shadow); }
         .f-pill-btn { padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; box-shadow: var(--f-shadow); }
         .f-round:hover, .f-pill-btn:hover, .f-ctl button:hover { background: #fff; transform: translateY(-1px); }
-        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.14); }
+        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.18); }
+        html.dark .f-ctl button { color: #f1f2f5; }
         .f-ctl button:active, .f-round:active { transform: scale(.94); }
         .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%); }
         html.dark .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #1f2a4d 0%, #3a2342 55%, #17342f 100%); }
@@ -288,7 +292,8 @@
         .cs-sub { font-weight: 300; font-size: 1.05rem; line-height: 1.5; max-width: 34rem; margin: 0; }
         .cs-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.1rem 0 0; }
         .cs-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; background: var(--chip, #D9E4FC); color: #2D3035; }
-        html.dark .cs-chip { color: #f1f2f5; }
+        html.dark .cs-chip { color: #f1f2f5; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); }
+        html.dark .cs-chip i { color: var(--chip, #D9E4FC); }
         .cs-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: 1.2rem 0 .3rem; scrollbar-width: none; }
         .cs-tabs::-webkit-scrollbar { display: none; }
         .cs-tabs .filter-btn { flex: none; cursor: pointer; }
