@@ -193,13 +193,8 @@
         .f-cross::before, .f-cross::after { content: ""; position: absolute; background: var(--f-ink); }
         .f-cross::before { left: 9px; top: 0; width: 1px; height: 20px; } .f-cross::after { top: 9px; left: 0; height: 1px; width: 20px; }
         .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
-        .f-hud--top { top: 0; } .f-hud--bottom { bottom: 0; }
+        .f-hud--top { top: 0; justify-content: flex-end; } .f-hud--bottom { bottom: 0; }
         .f-label { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .f-back { pointer-events: auto; cursor: pointer; text-decoration: none; color: var(--f-ink); transition: background-color .25s ease, transform .25s ease; }
-        .f-back:hover { background: #fff; transform: translateX(-2px); }
-        html.dark .f-back:hover { background: rgba(255,255,255,.14); }
-        .f-back i { font-size: .7rem; }
-        .f-back span { letter-spacing: .12em; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
         .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -207,7 +202,7 @@
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
         @media (hover: none) { .f-cursor { display: none; } }
-        @media (max-width: 719px) { .f-back span { display: none; } .f-back { padding: .5rem .8rem; } }
+        @media (max-width: 719px) { .f-expand span { display: none; } .f-expand { padding: 0; width: 2.9rem; height: 2.9rem; justify-content: center; } }
         .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
         .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
         @keyframes f-blink { 50% { opacity: .35; } }
@@ -217,6 +212,13 @@
         /* ---- Boutons toujours présents sur le plan (déplacer, défiler la page, molette, agrandir) ---- */
         .f-round, .f-pill-btn, .f-ctl button { pointer-events: auto; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; color: var(--f-ink); background: var(--f-glass); border: 1px solid var(--f-line);
             -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease; font: inherit; }
+        .f-expand { pointer-events: auto; cursor: pointer; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; padding: .7rem 1.25rem; border-radius: 9999px; font: inherit; font-size: .88rem; font-weight: 500;
+            background: var(--f-ink); color: #fff; border: 1px solid transparent; box-shadow: 0 12px 28px -10px rgba(45,48,53,.55); transition: transform .25s ease, box-shadow .25s ease; }
+        html.dark .f-expand { color: #14161a; box-shadow: 0 12px 28px -10px rgba(0,0,0,.7); }
+        .f-expand:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -10px rgba(45,48,53,.6); }
+        .f-expand:active { transform: scale(.96); }
+        .motion .f-expand i { animation: f-nudge 2.6s ease-in-out infinite; }
+        @keyframes f-nudge { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.25); } }
         .f-round { width: 2.75rem; height: 2.75rem; border-radius: 9999px; font-size: .95rem; flex: none; box-shadow: var(--f-shadow); }
         .f-pill-btn { padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; box-shadow: var(--f-shadow); }
         .f-round:hover, .f-pill-btn:hover, .f-ctl button:hover { background: #fff; transform: translateY(-1px); }
@@ -235,7 +237,7 @@
         /* mode agrandi : la scène occupe tout l'écran */
         html.f-full body { overflow: hidden; }
         html.f-full #navbar { visibility: hidden; }
-        html.f-full #page-realisations { z-index: 45; }
+        html.f-full #page-realisations { z-index: 55; }
         .f-stage.is-full { position: fixed; inset: 0; z-index: 40; height: 100vh; height: 100svh; max-height: none; min-height: 0;
             background: radial-gradient(60vw 50vh at 12% 10%, #d6fcff, transparent 70%), radial-gradient(50vw 45vh at 88% 85%, #ffe1e5, transparent 70%), #FCFBF9; }
         html.dark .f-stage.is-full { background: radial-gradient(60vw 50vh at 12% 10%, rgba(106,140,240,.18), transparent 70%), radial-gradient(50vw 45vh at 88% 85%, rgba(221,130,159,.14), transparent 70%), #101216; }
@@ -879,17 +881,31 @@
     </div>
 
     <!-- PAGE 2 : RÉALISATIONS -->
-    <div id="page-realisations" class="hidden min-h-screen pt-[4.5rem] pb-24 relative z-10 bg-white/30">
+    <div id="page-realisations" class="hidden min-h-screen pt-28 pb-24 relative z-10 bg-white/30">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center md:text-left mb-10 reveal">
+                <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
+                    <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Retour au CV
+                </a>
+                <p class="eyebrow">Portfolio</p>
+                    <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
+                <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
+                <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
+                    Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Faites glisser le plan pour explorer, ou choisissez une catégorie.
+                </p>
+            </div>
+
+        </div>
+
         <!-- Plan interactif : on fait glisser les vignettes dans toutes les directions (construit par le script, section « Réalisations ») -->
         <div id="realisations-top"></div>
         <div id="field-stage" class="f-stage" data-i18n-skip aria-busy="true" role="region" aria-label="Plan des réalisations : faites glisser pour explorer">
             <div id="field-view" class="f-view" tabindex="0"><div id="field-world" class="f-world" aria-hidden="true"></div></div>
             <div class="f-cross" aria-hidden="true"></div>
             <header class="f-hud f-hud--top">
-                <a href="#accueil" class="f-mono f-label f-back" id="f-title"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour au CV</span></a>
                 <div class="f-top-right">
                     <nav id="f-nav" class="f-nav" aria-label="Aller à une catégorie"></nav>
-                    <button type="button" id="f-expand" class="f-round" aria-label="Agrandir le plan" aria-pressed="false" title="Agrandir"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                    <button type="button" id="f-expand" class="f-expand" aria-label="Plein écran" aria-pressed="false"><i class="fa-solid fa-expand" aria-hidden="true"></i><span id="f-expand-txt">Plein écran</span></button>
                 </div>
             </header>
             <footer class="f-hud f-hud--bottom">
@@ -1654,7 +1670,8 @@
                 fieldStage.classList.toggle('is-full', F.full);
                 document.documentElement.classList.toggle('f-full', F.full);
                 expandBtn.setAttribute('aria-pressed', String(F.full));
-                expandBtn.setAttribute('aria-label', F.full ? (isEn() ? 'Reduce the map' : 'Réduire le plan') : (isEn() ? 'Enlarge the map' : 'Agrandir le plan'));
+                document.getElementById('f-expand-txt').textContent = F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran');
+                expandBtn.setAttribute('aria-label', F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran'));
                 expandBtn.firstElementChild.className = 'fa-solid ' + (F.full ? 'fa-compress' : 'fa-expand');
                 if (F.full) pushLayer('full', () => setFull(false, true)); else if (fromPop !== true) popLayer('full');
                 kick();
@@ -1674,7 +1691,7 @@
             document.getElementById('f-lab-plan').textContent = isEn() ? 'Map' : 'Plan'; document.getElementById('f-lab-page').textContent = 'Page';
             document.getElementById('f-pgup-t').textContent = isEn() ? 'Top' : 'Haut'; document.getElementById('f-pgdn-t').textContent = isEn() ? 'Bottom' : 'Bas';
             if (F.paintWheel) F.paintWheel();
-            document.getElementById('f-title').lastElementChild.textContent = isEn() ? 'Back to CV' : 'Retour au CV';
+            document.getElementById('f-expand-txt').textContent = F.full ? (isEn() ? 'Exit full screen' : 'Quitter le plein écran') : (isEn() ? 'Full screen' : 'Plein écran');
         }
 
         async function buildGallery() {
