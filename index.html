@@ -146,7 +146,7 @@
             --t-blue: #D9E4FC; --t-pink: #FBDDE4; --t-green: #DDF0C2; --t-grad: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%);
             --f-shadow: 0 10px 30px -8px rgba(0,0,0,.16);
             position: relative; width: 100%; height: calc(100vh - 4.75rem); height: calc(100svh - 4.75rem); min-height: 560px; max-height: 1200px; overflow: hidden; color: var(--f-ink); user-select: none; -webkit-user-select: none; }
-        html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #c3c6cf; --f-muted: rgba(195,198,207,.75); --f-glass: rgba(28,31,38,.72); --f-line: rgba(255,255,255,.09);
+        html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #d4d7df; --f-muted: rgba(212,215,223,.85); --f-glass: rgba(44,48,62,.9); --f-line: rgba(255,255,255,.22);
             --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
         @media (max-width: 719px) { .f-stage { height: calc(100vh - 11.5rem); height: calc(100svh - 11.5rem); min-height: 400px; } }
@@ -204,13 +204,26 @@
         .f-hud { position: absolute; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 16px clamp(14px, 2.4vw, 32px); pointer-events: none; }
         .f-hud--top { top: 0; justify-content: flex-end; } .f-hud--bottom { bottom: 0; }
         .f-label { display: inline-flex; align-items: center; gap: .6rem; margin: 0; padding: .45rem .95rem; border-radius: 9999px; white-space: nowrap; background: var(--f-glass); border: 1px solid var(--f-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .f-short { display: none; }
         .f-nav { pointer-events: auto; display: flex; gap: 8px; overflow-x: auto; max-width: 100%; scrollbar-width: none; padding: 2px 2px 6px; }
         .f-nav::-webkit-scrollbar { display: none; }
-        .f-nav .filter-btn { flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        html.dark .f-nav .filter-btn, html.dark .cs-tabs .filter-btn { background: rgba(44,48,62,.9); border-color: rgba(255,255,255,.24); color: #f1f2f5; }
+        html.dark .f-nav .filter-btn:hover, html.dark .cs-tabs .filter-btn:hover { background: rgba(70,76,96,.95); }
+        html.dark .f-nav .filter-btn.is-active, html.dark .cs-tabs .filter-btn.is-active { background: linear-gradient(135deg, #2c3f7a, #5a2f5e); border-color: rgba(255,255,255,.35); color: #fff; }
+        .f-nav .filter-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; flex: none; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .f-cursor { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0; margin: 16px 0 0 20px; padding: .35rem .85rem; border-radius: 9999px; background: var(--f-ink); font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; transition: opacity .2s ease; white-space: nowrap; }
         html:not(.dark) .f-cursor { color: #fff; } html.dark .f-cursor { color: #14161a; }
         .f-cursor.is-on { opacity: 1; }
         @media (hover: none) { .f-cursor { display: none; } }
+        @media (max-width: 719px) {
+            /* toutes les catégories visibles d'un coup (libellés courts, retour à la ligne) : plus de défilement horizontal */
+            .f-hud--top { align-items: flex-start; }
+            .f-top-right { align-items: flex-start; width: 100%; justify-content: space-between; }
+            .f-nav { flex-wrap: wrap; overflow: visible; gap: 6px; padding: 0; flex: 1; min-width: 0; }
+            .f-nav .filter-btn { padding: .42rem .85rem; font-size: .8rem; }
+            .f-nav .f-long, .cs-tabs .f-long { display: none; } .f-nav .f-short, .cs-tabs .f-short { display: inline; }
+            .cs-tabs { flex-wrap: wrap; overflow: visible; }
+        }
         @media (max-width: 719px) { .f-expand span { display: none; } .f-expand { padding: 0; width: 2.9rem; height: 2.9rem; justify-content: center; } }
         .f-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 3; }
         .motion .f-loading { animation: f-blink 1.4s ease-in-out infinite; }
@@ -231,7 +244,8 @@
         .f-round { width: 2.75rem; height: 2.75rem; border-radius: 9999px; font-size: .95rem; flex: none; box-shadow: var(--f-shadow); }
         .f-pill-btn { padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; box-shadow: var(--f-shadow); }
         .f-round:hover, .f-pill-btn:hover, .f-ctl button:hover { background: #fff; transform: translateY(-1px); }
-        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.14); }
+        html.dark .f-round:hover, html.dark .f-pill-btn:hover, html.dark .f-ctl button:hover { background: rgba(255,255,255,.18); }
+        html.dark .f-ctl button { color: #f1f2f5; }
         .f-ctl button:active, .f-round:active { transform: scale(.94); }
         .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #d6fcff 0%, #ffe1e5 50%, #f4ffde 100%); }
         html.dark .f-pill-btn[aria-pressed="true"] { background: linear-gradient(135deg, #1f2a4d 0%, #3a2342 55%, #17342f 100%); }
@@ -278,7 +292,8 @@
         .cs-sub { font-weight: 300; font-size: 1.05rem; line-height: 1.5; max-width: 34rem; margin: 0; }
         .cs-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.1rem 0 0; }
         .cs-chip { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .9rem; border-radius: 9999px; font-size: .8rem; font-weight: 500; background: var(--chip, #D9E4FC); color: #2D3035; }
-        html.dark .cs-chip { color: #f1f2f5; }
+        html.dark .cs-chip { color: #f1f2f5; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); }
+        html.dark .cs-chip i { color: var(--chip, #D9E4FC); }
         .cs-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: 1.2rem 0 .3rem; scrollbar-width: none; }
         .cs-tabs::-webkit-scrollbar { display: none; }
         .cs-tabs .filter-btn { flex: none; cursor: pointer; }
@@ -1324,10 +1339,10 @@
            ===================================================================== */
         const CATEGORIES = { galas: 'Galas & dîners', cocktails: 'Cocktails & soirées', seminaires: 'Séminaires & cérémonies', videos: 'Vidéos' };
         const CAT_INFO = {
-            galas:      { sub: 'Dîners de gala, spectacles & mise en place', en: { title: 'Galas & dinners', sub: 'Gala dinners, shows & table setting' } },
-            cocktails:  { sub: 'Cocktails, buffets & soirées dansantes', en: { title: 'Cocktails & parties', sub: 'Cocktails, buffets & dance parties' } },
-            seminaires: { sub: 'Séminaires, buffets & cérémonies', en: { title: 'Seminars & ceremonies', sub: 'Seminars, buffets & ceremonies' } },
-            videos:     { sub: 'Les montages vidéo de mes événements', en: { title: 'Videos', sub: 'Video montages of my events' } }
+            galas:      { short: 'Galas', sub: 'Dîners de gala, spectacles & mise en place', en: { short: 'Galas', title: 'Galas & dinners', sub: 'Gala dinners, shows & table setting' } },
+            cocktails:  { short: 'Cocktails', sub: 'Cocktails, buffets & soirées dansantes', en: { short: 'Cocktails', title: 'Cocktails & parties', sub: 'Cocktails, buffets & dance parties' } },
+            seminaires: { short: 'Séminaires', sub: 'Séminaires, buffets & cérémonies', en: { short: 'Seminars', title: 'Seminars & ceremonies', sub: 'Seminars, buffets & ceremonies' } },
+            videos:     { short: 'Vidéos', sub: 'Les montages vidéo de mes événements', en: { short: 'Videos', title: 'Videos', sub: 'Video montages of my events' } }
         };
         const PROJECTS = [
             // `en` : traduction anglaise facultative (titre, détail, légende)
@@ -1411,6 +1426,8 @@
         const loc = p => (isEn() && p.en) ? Object.assign({}, p, p.en) : p;
         const isVid = p => !!(p.video || p.file);
         const catTitle = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.title : (CATEGORIES[c] || '');
+        const catShort = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.short : (CAT_INFO[c] ? CAT_INFO[c].short : '');
+        const labelHTML = c => '<span class="f-long">' + esc(catTitle(c)) + '</span><span class="f-short">' + esc(catShort(c)) + '</span>';
         const catSub = c => isEn() && CAT_INFO[c] ? CAT_INFO[c].en.sub : (CAT_INFO[c] ? CAT_INFO[c].sub : '');
         const plural = (n, fr, en) => isEn() ? n + ' ' + en + (n > 1 ? 's' : '') : n + ' ' + fr + (n > 1 ? 's' : '');
         const mediaLabel = c => {
@@ -1496,7 +1513,7 @@
             const items = fieldItems();
             const cols = Array.from({ length: F.nc }, () => ({ h: 0, list: [] }));
             // les colonnes démarrent décalées pour éviter un alignement trop régulier
-            cols.forEach((c, i) => { c.h = [0, 70, 24, 110][i % 4]; });
+            cols.forEach((c, i) => { c.off = [0, 70, 24, 110][i % 4]; c.h = c.off; });
             items.forEach((it, idx) => {
                 const h = tileHeight(it, F.cw);
                 let best = 0; cols.forEach((c, i) => { if (c.h < cols[best].h - 1) best = i; });
@@ -1511,11 +1528,11 @@
                 col.style.cssText = 'left:' + (hc * F.W + ci * (F.cw + F.gap)) + 'px;width:' + F.cw + 'px';
                 const vcop = Math.max(3, Math.ceil(vh / c.h) + 2);
                 let html = '';
-                for (let v = 0; v < vcop; v++) c.list.forEach(({ it, h, idx }) => {
+                for (let v = 0; v < vcop; v++) { if (c.off) html += '<div style="height:' + c.off + 'px"></div>'; c.list.forEach(({ it, h, idx }) => {
                     const main = hc === 1 && v === 1;
                     const d = Math.min(1.4, ci * 0.09 + idx * 0.035);
                     html += '<div class="f-slot" style="height:' + h + 'px;margin-bottom:' + F.gap + 'px;--d:' + d.toFixed(2) + 's" data-i="' + idx + '">' + tileHTML(it, main) + '</div>';
-                });
+                }); }
                 // ajustement : la hauteur d'un cycle est exactement F.colH
                 col.innerHTML = html;
                 world.append(col);
@@ -1622,7 +1639,8 @@
                 const d = F.drag; if (!d || d.id !== e.pointerId) return;
                 F.drag = null; view.classList.remove('is-drag');
                 try { view.releasePointerCapture(e.pointerId); } catch (_) {}
-                if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 7 && d.moved < 12) { F.vx = F.vy = 0; const el = document.elementFromPoint(e.clientX, e.clientY); activate(el && el.closest ? el.closest('.f-tile') : null); }
+                const touch = e.pointerType === 'touch';   // un doigt bouge toujours un peu : tolérance plus large qu'à la souris
+                if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < (touch ? 16 : 7) && d.moved < (touch ? 30 : 12)) { F.vx = F.vy = 0; const el = document.elementFromPoint(d.sx, d.sy); activate(el && el.closest ? el.closest('.f-tile') : null); }
                 else if (performance.now() - d.t > 90) { F.vx = F.vy = 0; }
                 kick();
             };
@@ -1694,7 +1712,7 @@
             F.nav.textContent = '';
             cats.forEach(c => {
                 const b = document.createElement('button');
-                b.type = 'button'; b.className = 'filter-btn'; b.dataset.cat = c; b.textContent = catTitle(c);
+                b.type = 'button'; b.className = 'filter-btn'; b.dataset.cat = c; b.setAttribute('aria-label', catTitle(c)); b.innerHTML = labelHTML(c);
                 b.addEventListener('click', () => openSheet(c));
                 F.nav.append(b);
             });
@@ -1752,7 +1770,7 @@
                 (nv ? '<span class="cs-chip" style="--chip:#FBDDE4"><i class="fa-solid fa-video" aria-hidden="true"></i>' + plural(nv, 'vidéo', 'video') + '</span>' : '') +
                 '<span class="cs-chip" style="--chip:#DDF0C2"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i>' + (isEn() ? 'Click to enlarge' : 'Cliquez pour agrandir') + '</span></div>' +
                 '<div class="cs-tabs" role="group" aria-label="' + (isEn() ? 'Categories' : 'Catégories') + '">' +
-                cats.map(c => '<button type="button" class="filter-btn' + (c === cat ? ' is-active' : '') + '" data-cat="' + c + '">' + esc(catTitle(c)) + '</button>').join('') + '</div>' +
+                cats.map(c => '<button type="button" class="filter-btn' + (c === cat ? ' is-active' : '') + '" data-cat="' + c + '" aria-label="' + esc(catTitle(c)) + '">' + labelHTML(c) + '</button>').join('') + '</div>' +
                 '<div class="cs-grid">' + list.map((m, i) => {
                     const d = m.dataset, isV = isVid(m.p), r = isV ? Math.min(1.78, Math.max(0.8, m.img.w / m.img.h)) : Math.min(1.6, Math.max(0.9, m.img.w / m.img.h));
                     return '<button type="button" class="cs-card" data-i="' + i + '" style="--i:' + i + '">' +
@@ -1787,7 +1805,7 @@
             kick();
         }
         document.getElementById('cs-close').addEventListener('click', () => closeSheet());
-        document.getElementById('cs-backdrop').addEventListener('click', () => closeSheet());
+        document.getElementById('cs-backdrop').addEventListener('click', () => { if (!justOpened()) closeSheet(); });
 
         /* ---------- Modale galerie (avec navigation) ---------- */
         const modal = document.getElementById('gallery-modal');
@@ -1861,7 +1879,10 @@
 
         /* ---------- Pile d'aperçus ouverts (volet de catégorie, visionneuse) : « retour » ferme le plus récent ---------- */
         const layers = []; let skipPop = 0;
-        function pushLayer(id, closeFn) { const l = { id, closeFn, pushed: false }; try { history.pushState({ gm: id }, ''); l.pushed = true; } catch (e) {} layers.push(l); }
+        // Sur écran tactile, le « clic » qui suit un appui arrive APRÈS l'ouverture de l'aperçu, sur le fond de l'aperçu : on l'ignore brièvement, sinon l'aperçu se referme aussitôt (« ça ne fait rien »)
+        let layerOpenedAt = 0;
+        const justOpened = () => performance.now() - layerOpenedAt < 600;
+        function pushLayer(id, closeFn) { layerOpenedAt = performance.now(); const l = { id, closeFn, pushed: false }; try { history.pushState({ gm: id }, ''); l.pushed = true; } catch (e) {} layers.push(l); }
         function popLayer(id) {
             const i = layers.map(l => l.id).lastIndexOf(id); if (i < 0) return;
             const l = layers.splice(i, 1)[0];
@@ -1915,7 +1936,7 @@
         closeBtn.addEventListener('click', closeModal);
         prevBtn.addEventListener('click', () => step(-1));
         nextBtn.addEventListener('click', () => step(1));
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        modal.addEventListener('click', (e) => { if (e.target === modal && !justOpened()) closeModal(); });
 
         let touchX = null, touchY = null, touchOnVideo = false;
         modal.addEventListener('touchstart', (e) => {

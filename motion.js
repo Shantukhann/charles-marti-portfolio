@@ -96,7 +96,8 @@
         canvas.className = 'fog-canvas';
         const gl = canvas.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power' });
         if (!gl) return;
-        const COLS = 160, ROWS = 2560, CELL = 8;           // grille de densité en coordonnées de la page (1 cellule = 8 px de haut)
+        const CELL = 8, ROWS = 2560;                       // grille de densité en coordonnées de la page : 1 cellule = 8 × 8 px, sur téléphone comme sur ordinateur
+        const COLS = Math.max(48, Math.min(256, Math.round(innerWidth / CELL)));   // nombre de colonnes selon la largeur de l'écran (la brume garde la même forme et la même vitesse partout)
         const DUR = 6000;                                  // levée de secours sans aucun geste (ms), après 14 s d'inactivité
         const REACH = 300;                                 // rayon (px) autour du passage où la brume peut se dissiper de proche en proche, de l'intérieur vers l'extérieur
         const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
@@ -107,17 +108,16 @@
         const PREC = hp && hp.precision > 0 ? 'precision highp float;' : 'precision mediump float;';
         const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
         const fs = PREC + `
-        uniform sampler2D uTex; uniform sampler2D uBg; uniform vec2 uRes; uniform float uSY, uVH, uRows, uTime, uDark;
+        uniform sampler2D uTex; uniform sampler2D uBg; uniform vec2 uRes, uCss; uniform float uSY, uVH, uRows, uTime, uDark;
         float h(vec2 p){ vec3 q=fract(vec3(p.xyx)*.1031); q+=dot(q,q.yzx+33.33); return fract((q.x+q.y)*q.z); }
         float vn(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
             return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y); }
         float fbm(vec2 p){ float s=0.,a=.5; for(int i=0;i<4;i++){ s+=a*vn(p); p=p*2.03+vec2(7.1,3.7); a*=.5; } return s; }
         void main(){
             vec2 uv=gl_FragCoord.xy/uRes; float yt=1.-uv.y;
-            float asp=uRes.x/uRes.y;
-            vec2 pg=vec2(uv.x*asp, (uSY+yt*uVH)/uVH);
+            vec2 pg=vec2(uv.x*uCss.x, uSY+yt*uCss.y)/820.;                  // coordonnées en pixels de la page : les volutes ont la même taille sur tous les écrans
             vec2 w=(vec2(fbm(pg*3.+vec2(uTime*.12,0.)),fbm(pg*3.+vec2(7.,uTime*.1)))-.5);   // le bord ondule : jamais de ligne droite
-            float d=texture2D(uTex, vec2(uv.x+w.x*.03, (uSY/${CELL}.+yt*uRows+w.y*34.)/${ROWS}.)).r;
+            float d=texture2D(uTex, vec2(uv.x+w.x*45./uCss.x, (uSY/${CELL}.+yt*uRows+w.y*34.)/${ROWS}.)).r;
             float n=fbm(pg*2.4+vec2(uTime*.05,-uTime*.03));
             float m=d*1.5-(1.-n)*.95*smoothstep(0.,.55,d);                 // alpha = 0 exactement quand la densité tombe à 0 : jamais de résidu
             float a=smoothstep(0.,.5,m)*.97;
@@ -135,7 +135,7 @@
         const loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
         const U = n => gl.getUniformLocation(prog, n);
         gl.uniform1i(U('uTex'), 0); gl.uniform1i(U('uBg'), 1);
-        const uRes = U('uRes'), uSY = U('uSY'), uVH = U('uVH'), uRows = U('uRows'), uTime = U('uTime'), uDark = U('uDark');
+        const uRes = U('uRes'), uCss = U('uCss'), uSY = U('uSY'), uVH = U('uVH'), uRows = U('uRows'), uTime = U('uTime'), uDark = U('uDark');
         const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -301,7 +301,7 @@
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
                 gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, r0, COLS, r1 - r0, gl.LUMINANCE, gl.UNSIGNED_BYTE, dens.subarray(r0 * COLS, r1 * COLS));
-                gl.uniform2f(uRes, canvas.width, canvas.height);
+                gl.uniform2f(uRes, canvas.width, canvas.height); gl.uniform2f(uCss, innerWidth, innerHeight);
                 gl.uniform1f(uSY, sy); gl.uniform1f(uVH, vh); gl.uniform1f(uRows, vh / CELL);
                 gl.uniform1f(uTime, (now - t00) / 1000);
                 gl.uniform1f(uDark, root.classList.contains('dark') ? 1 : 0);
