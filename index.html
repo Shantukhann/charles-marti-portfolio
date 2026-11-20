@@ -149,6 +149,7 @@
         html.dark .f-stage { --f-ink: #f1f2f5; --f-text: #c3c6cf; --f-muted: rgba(195,198,207,.75); --f-glass: rgba(28,31,38,.72); --f-line: rgba(255,255,255,.09);
             --t-blue: rgba(106,140,240,.24); --t-pink: rgba(221,130,159,.24); --t-green: rgba(61,165,122,.22);
             --t-grad: linear-gradient(135deg, rgba(106,140,240,.28), rgba(221,130,159,.24) 55%, rgba(61,165,122,.24)); --f-shadow: 0 10px 30px -8px rgba(0,0,0,.5); }
+        @media (max-width: 719px) { .f-stage { height: calc(100vh - 11.5rem); height: calc(100svh - 11.5rem); min-height: 400px; } }
         .f-view { position: absolute; inset: 0; touch-action: none; cursor: grab; outline: none;
             /* coupure haut et bas irrégulière, comme la brume du site (et non un dégradé uniforme) */
             -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201000%20600'%20preserveAspectRatio='none'%3E%3Cfilter%20id='f'%20x='-20%25'%20y='-20%25'%20width='140%25'%20height='140%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.010%200.024'%20numOctaves='3'%20seed='7'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='110'%20xChannelSelector='R'%20yChannelSelector='G'%20result='d'/%3E%3CfeGaussianBlur%20in='d'%20stdDeviation='13'/%3E%3C/filter%3E%3Crect%20x='-300'%20y='62'%20width='1600'%20height='476'%20fill='white'%20filter='url%28%23f%29'/%3E%3C/svg%3E"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
@@ -189,6 +190,14 @@
         .f-title { font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 600; letter-spacing: -.03em; line-height: 1.08; }
         .f-contact { cursor: inherit; }
         .f-contact .f-big, .f-contact .f-sub, .f-contact .f-mono { color: var(--f-ink); }
+        /* téléphone : bandes en haut et en bas de la scène où un glissement fait défiler la page (le reste de la scène déplace le plan) */
+        .f-edge { display: none; }
+        @media (pointer: coarse) {
+            .f-edge { display: block; position: absolute; left: 0; right: 0; height: 3.4rem; z-index: 4; touch-action: pan-y; }
+            .f-edge--top { top: 0; } .f-edge--bottom { bottom: 0; }
+            .f-cross { display: none; }
+            .f-view { -webkit-mask-image: none; mask-image: none; }
+        }
         .f-cross { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; z-index: 4; pointer-events: none; opacity: .4; }
         .f-cross::before, .f-cross::after { content: ""; position: absolute; background: var(--f-ink); }
         .f-cross::before { left: 9px; top: 0; width: 1px; height: 20px; } .f-cross::after { top: 9px; left: 0; height: 1px; width: 20px; }
@@ -881,16 +890,16 @@
     </div>
 
     <!-- PAGE 2 : RÉALISATIONS -->
-    <div id="page-realisations" class="hidden min-h-screen pt-28 pb-24 relative z-10 bg-white/30">
+    <div id="page-realisations" class="hidden min-h-screen pt-24 md:pt-28 pb-24 relative z-10 bg-white/30">
         <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center md:text-left mb-10 reveal">
-                <a href="#accueil" class="mb-6 flex w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
+            <div class="text-center md:text-left mb-3 md:mb-10 reveal">
+                <a href="#accueil" class="hidden md:flex mb-6 w-fit mx-auto md:mx-0 items-center text-sm text-pastel-text hover:text-pastel-heading transition-colors">
                     <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Retour au CV
                 </a>
-                <p class="eyebrow">Portfolio</p>
-                    <h3 class="text-4xl font-medium title-pastel mb-4">Mes <span class="grad">Réalisations</span></h3>
-                <div class="w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
-                <p class="mt-6 text-pastel-text font-light text-lg max-w-2xl">
+                <p class="eyebrow hidden md:flex">Portfolio</p>
+                    <h3 class="text-3xl md:text-4xl font-medium title-pastel mb-2 md:mb-4">Mes <span class="grad">Réalisations</span></h3>
+                <div class="hidden md:block w-16 h-1 bg-pastel-blue-accent mx-auto md:mx-0 rounded-full"></div>
+                <p class="hidden md:block mt-6 text-pastel-text font-light text-lg max-w-2xl">
                     Galas, soirées, séminaires : une sélection d'événements que j'ai conçus, produits et coordonnés. Faites glisser le plan pour explorer, ou choisissez une catégorie.
                 </p>
             </div>
@@ -927,6 +936,7 @@
                     </div>
                 </div>
             </footer>
+            <div class="f-edge f-edge--top" aria-hidden="true"></div><div class="f-edge f-edge--bottom" aria-hidden="true"></div>
             <div id="f-cursor" class="f-cursor" aria-hidden="true"></div>
             <div id="f-loading" class="f-loading f-mono">Chargement…</div>
             <ul id="f-sr" class="f-sr" aria-label="Liste des réalisations"></ul>
@@ -1697,7 +1707,7 @@
         async function buildGallery() {
             const usable = PROJECTS.filter(p => p.file ? !!p.poster : p.video ? /^[\w-]{11}$/.test(p.video) : !!p.src);
             const found = await Promise.all(usable.map(p => loadImage(
-                p.file ? [p.poster] : p.video ? [p.thumb, 'https://img.youtube.com/vi/' + p.video + '/hqdefault.jpg'].filter(Boolean) : [p.src])));
+                p.file ? [p.poster] : p.video ? [p.thumb, 'https://img.youtube.com/vi/' + p.video + '/hqdefault.jpg'].filter(Boolean) : [p.thumb || p.src.replace('images/', 'images/thumbs/'), p.src])));
             allMedia = usable.map((p, i) => ({ p, img: found[i], thumb: found[i] && found[i].url })).filter(m => m.img);
             allMedia.forEach(fillMember);
             if (!allMedia.length) {
