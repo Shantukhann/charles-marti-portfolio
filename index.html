@@ -1541,9 +1541,10 @@
         }
 
         /* Construit les colonnes (chacune boucle sur sa propre hauteur : le plan est sans fin) */
-        function layoutField() {
+        function layoutField(all) {
             const view = F.view, vw = view.clientWidth, vh = view.clientHeight;
-            if (!vw || !vh) return;
+            if (!vw || !vh) { F.lw = F.lh = 0; return; }          // page cachée : le plan devra être reconstruit à son affichage
+            F.lw = vw; F.lh = vh;
             const small = vw < 720;
             F.nc = vw >= 1100 ? 4 : vw >= 720 ? 3 : 2;
             F.gap = small ? 12 : 20;
@@ -1565,7 +1566,7 @@
                 const col = document.createElement('div');
                 col.className = 'f-col';
                 col.style.cssText = 'left:' + (hc * F.W + ci * (F.cw + F.gap)) + 'px;width:' + F.cw + 'px';
-                const vcop = Math.max(3, Math.ceil(vh / c.h) + 2);
+                const vcop = Math.max(2, Math.ceil(vh / c.h) + 1);   // un cycle couvre plus que la scène : 2 copies suffisent pour boucler sans trou
                 let html = '';
                 for (let v = 0; v < vcop; v++) { if (c.off) html += '<div style="height:' + c.off + 'px"></div>'; c.list.forEach(({ it, h, idx }) => {
                     const main = hc === 1 && v === 1;
@@ -1575,12 +1576,29 @@
                 // ajustement : la hauteur d'un cycle est exactement F.colH
                 col.innerHTML = html;
                 world.append(col);
-                F.cols.push({ el: col, ci, list: c.list });
+                F.cols.push({ el: col, ci, hc, list: c.list });
             });
             F.cycle = cols.map(c => c.h);
             F.items = items;
+            // colonnes hors écran : cachées au premier affichage (beaucoup moins d'éléments à styler et à mettre en page d'un coup, donc pas de saccade à l'ouverture), puis révélées une à une
+            clearTimeout(F.lateTimer); F.lateTimer = 0; F.late = [];
+            const T0 = mod(F.px, F.W) - F.W, lo = -T0 - vw * .35, hi = -T0 + vw * 1.35;
+            if (!all) F.cols.forEach(c => { const l = c.hc * F.W + c.ci * (F.cw + F.gap); if (l + F.cw < lo || l > hi) { c.el.hidden = true; F.late.push(c); } });
             applyPan();
+            if (F.vis) startLate();
         }
+        function startLate() {
+            if (F.lateTimer || !F.late || !F.late.length) return;
+            const step = () => { F.lateTimer = 0; const c = F.late.shift(); if (!c) return; c.el.hidden = false; if (F.late.length) F.lateTimer = setTimeout(step, 60); };
+            F.lateTimer = setTimeout(step, 100);
+        }
+        function ensureAllCols() {                                     // dès qu'un geste peut déplacer le plan, toutes les colonnes doivent être présentes
+            if (!F.late || !F.late.length) return;
+            clearTimeout(F.lateTimer); F.lateTimer = 0;
+            while (F.late.length) F.late.shift().el.hidden = false;
+        }
+        // depuis un geste : à l'image suivante, pour ne pas retarder le traitement du glissement (le plan doit bouger de plus de 500 px avant d'atteindre une colonne cachée)
+        const ensureSoon = () => { if (F.late && F.late.length) requestAnimationFrame(ensureAllCols); };
 
         function applyPan() {
             F.world.style.transform = 'translate3d(' + (mod(F.px, F.W) - F.W) + 'px,0,0)';
@@ -1629,6 +1647,7 @@
         }
 
         function flyTo(cat, fx) {
+            ensureSoon();
             const target = F.cols.find(c => c.list.some(x => x.it.k === 'cat' && x.it.cat === cat));
             if (!target) return;
             const ent = target.list.find(x => x.it.k === 'cat' && x.it.cat === cat), hc = 1;
@@ -1657,6 +1676,7 @@
             const view = F.view;
             // pointeur : glisser pour déplacer, simple clic pour ouvrir
             view.addEventListener('pointerdown', e => {
+                ensureSoon();
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 F.tween = null; F.vx = F.vy = 0;
                 F.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: 0, t: performance.now(), sx: e.clientX, sy: e.clientY };
@@ -1693,6 +1713,7 @@
             // molette / pavé tactile : déplacent le plan dans toutes les directions (Maj + molette = horizontal).
             // Sur les bords haut et bas de la scène, la molette fait défiler la page normalement.
             view.addEventListener('wheel', e => {
+                ensureSoon();
                 if (F.wheelMode === 'page' && !F.full) return;
                 const r = view.getBoundingClientRect(), y = e.clientY - r.top;
                 if (!F.full && (y < 56 || y > r.height - 56)) return;
@@ -1706,6 +1727,7 @@
             }, { passive: false });
             // clavier : flèches pour se déplacer, Entrée pour ouvrir la vignette sous le viseur
             view.addEventListener('keydown', e => {
+                ensureSoon();
                 const step = 150, map = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
                 if (map[e.key]) { e.preventDefault(); F.tween = { t0: performance.now(), d: motionOn() ? 420 : 1, x0: F.px, y0: F.py, x1: F.px + map[e.key][0], y1: F.py + map[e.key][1] }; kick(); }
                 else if (e.key === 'Enter' && e.target === view) { e.preventDefault(); activate(F.aim); }
@@ -1713,12 +1735,12 @@
             // le plan ne doit jamais défiler tout seul (focus clavier) : on remet toujours le défilement natif à zéro
             view.addEventListener('scroll', () => { view.scrollLeft = 0; view.scrollTop = 0; });
             // visibilité : on n'anime que si le plan est à l'écran
-            new IntersectionObserver(es => { F.vis = es[0].isIntersecting; if (F.vis) kick(); }, { threshold: 0.05 }).observe(fieldStage);
+            new IntersectionObserver(es => { F.vis = es[0].isIntersecting; if (F.vis) { kick(); startLate(); } }, { threshold: 0.05 }).observe(fieldStage);
             document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
             let rt = 0;
-            new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (F.ready) { layoutField(); buildNav(); } }, 160); }).observe(view);
+            new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (F.ready && (view.clientWidth !== F.lw || view.clientHeight !== F.lh)) { layoutField(); buildNav(); } }, 160); }).observe(view);
                         // ---- boutons toujours présents : déplacer le plan, défiler la page, molette, agrandir ----
-            const panBy = (dx, dy) => { F.vx = F.vy = 0; F.tween = { t0: performance.now(), d: motionOn() ? 380 : 1, x0: F.px, y0: F.py, x1: F.px + dx, y1: F.py + dy }; kick(); };
+            const panBy = (dx, dy) => { ensureSoon(); F.vx = F.vy = 0; F.tween = { t0: performance.now(), d: motionOn() ? 380 : 1, x0: F.px, y0: F.py, x1: F.px + dx, y1: F.py + dy }; kick(); };
             const DIR = { l: [260, 0], r: [-260, 0], u: [0, 260], d: [0, -260] };
             document.querySelectorAll('#f-pan [data-d]').forEach(b => {
                 const v = DIR[b.dataset.d]; let t = 0;
@@ -2131,6 +2153,24 @@
         if (/^#realisations/.test(location.hash)) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureGallery); else ensureGallery(); }
         window.addEventListener('hashchange', () => { if (/^#realisations/.test(location.hash)) ensureGallery(); });
         ('requestIdleCallback' in window ? requestIdleCallback : f => setTimeout(f, 2500))(ensureGallery, { timeout: 4000 });
+
+        /* Appelée par le rideau de transition : la page Réalisations est préparée pendant que l'écran est recouvert (construction du plan, mise en page, décodage des premières images) ;
+           le rideau ne s'ouvre qu'ensuite, donc l'ouverture est fluide. */
+        window.__pageReady = (id) => {
+            if (id !== 'page-realisations') return Promise.resolve();
+            return new Promise(res => {
+                const t0 = performance.now();
+                const go = () => {
+                    if (!F.ready) { if (performance.now() - t0 > 2500) return res(); return void setTimeout(go, 50); }
+                    try { if (!(F.cols && F.cols.length && F.lw === F.view.clientWidth && F.lh === F.view.clientHeight)) layoutField(true); ensureAllCols(); } catch (e) {}
+                    const imgs = [...F.view.querySelectorAll('.f-img img')].filter(i => { const r = i.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; });
+                    const dec = Promise.all(imgs.slice(0, 14).map(i => (i.decode ? i.decode().catch(() => {}) : null)));
+                    // on attend les deux premières images dessinées de la page (c'est le gros du rendu), 700 ms au plus
+                    Promise.race([dec, new Promise(r => setTimeout(r, 400))]).then(() => { const done = () => res(); requestAnimationFrame(() => requestAnimationFrame(done)); setTimeout(done, 700); });
+                };
+                ensureGallery(); go();
+            });
+        };
 
         // changement de langue : les tuiles, le compteur et la modale ouverte suivent
         document.addEventListener('langchange', () => {

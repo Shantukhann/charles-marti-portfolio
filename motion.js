@@ -1006,14 +1006,17 @@ void main(){
                 window.scrollTo({ top: 0, behavior: 'instant' });
                 if (window.__fogReset) window.__fogReset(page.id);
                 if (page.id === 'page-cv') drawLogo();
+                /* le rideau reste fermé tant que la page n'est pas prête (la page Réalisations se construit pendant ce temps), 3 s au plus */
+                const pageReady = () => { try { return Promise.race([window.__pageReady ? window.__pageReady(page.id) : Promise.resolve(), new Promise(r => setTimeout(r, 3000))]); } catch (e) { return Promise.resolve(); } };
                 if (curtained) {
                     pendingCover = false;
-                    setTimeout(uncover, 420);
+                    const tSwap = performance.now();
+                    pageReady().then(() => setTimeout(uncover, Math.max(0, 420 - (performance.now() - tSwap))));
                 } else if (!busy) { // retour navigateur : rideau express
                     busy = true;
                     setCurtain('is-hold', pageLabels[page.id]);
                     void curtain.offsetWidth;
-                    requestAnimationFrame(() => { uncover(); });
+                    pageReady().then(() => requestAnimationFrame(() => { uncover(); }));
                 }
                 setTimeout(onScroll, 50);
             }
