@@ -112,8 +112,6 @@
 .cursor-glow.on, .cursor-ring.on { opacity: 1; }
 .cursor-ring.hot { scale: 1.9; background: rgba(221,130,159,.12); border-color: rgba(221,130,159,.8); }
 
-/* ---------- Transitions de page ---------- */
-.motion .page-enter { animation: page-in .75s cubic-bezier(.2,.8,.2,1) backwards; }
 
 
 /* ---------- Modale ---------- */
@@ -134,7 +132,6 @@
 @keyframes marquee { to { transform: translateX(-50%); } }
 @keyframes stagger-in { from { opacity: 0; translate: 0 14px; scale: .96; } }
 @keyframes bar-grow { from { transform: scaleX(0); } }
-@keyframes page-in { from { opacity: 0; translate: 0 24px; } }
 @keyframes pop-in { from { opacity: 0; transform: scale(.9); } }
 @keyframes drop-in { from { opacity: 0; transform: translateY(-8px) scale(.96); } }
 @keyframes icon-spin { from { transform: rotate(-90deg) scale(.6); opacity: 0; } }
@@ -351,14 +348,6 @@
 .curtain.is-out .cv-title span { transform: translateY(-115%); transition: transform .55s cubic-bezier(.6,0,.4,1); }
 .curtain.is-out .cv-line     { opacity: 0; }
 
-/* La page qui part recule doucement pendant que le voile monte */
-.motion .page-leave {
-    transform: translateY(-4vh) scale(.985); opacity: .35;
-    transition: transform .85s cubic-bezier(.76,0,.24,1), opacity .85s ease;
-}
-/* La nouvelle page arrive en douceur sous le voile qui se lève */
-@keyframes page-in { from { opacity: 0; translate: 0 36px; } }
-.motion .page-enter { animation-duration: 1s; }
 
 /* =====================================================
    v8 : voile fluide WebGL
@@ -375,7 +364,6 @@
 .curtain.is-out .cv-logo path  { stroke-dashoffset: -1; transition: stroke-dashoffset .6s cubic-bezier(.65,0,.35,1); }
 
 /* ---------- v10 : fluide visqueux, rythme lent ---------- */
-.motion .page-leave { transition: transform 2s cubic-bezier(.45,0,.55,1), opacity 2s ease; }
 .curtain.is-in .cv-logo path    { transition: stroke-dashoffset 1.3s cubic-bezier(.65,0,.35,1) .9s; }
 .curtain.is-in .cv-eyebrow      { transition: opacity .6s ease 1.3s; }
 .curtain.is-in .cv-title span   { transition: transform .9s cubic-bezier(.2,.8,.2,1) 1.1s; }
@@ -383,7 +371,6 @@
 
 /* ---------- v11 : voile plus rapide, jamais bloquant ---------- */
 .curtain, .curtain.is-in, .curtain.is-hold, .curtain.is-out { pointer-events: none !important; }
-.motion .page-leave { transition: transform 1.1s cubic-bezier(.45,0,.55,1), opacity 1.1s ease; }
 .curtain.is-in .cv-logo path    { transition: stroke-dashoffset .9s cubic-bezier(.65,0,.35,1) .35s; }
 .curtain.is-in .cv-eyebrow      { transition: opacity .5s ease .6s; }
 .curtain.is-in .cv-title span   { transition: transform .7s cubic-bezier(.2,.8,.2,1) .5s; }
@@ -702,11 +689,6 @@ html.dark .cv-logo { filter: drop-shadow(0 8px 26px rgba(130,150,255,.5)); }
 /* =====================================================
    v37 : transition de page plus riche
    ===================================================== */
-/* La page qui part s'efface en douceur dans le flou, comme si le liquide la recouvrait */
-.motion .page-leave {
-    filter: blur(5px) saturate(.9);
-    transition: transform 1.1s cubic-bezier(.45,0,.55,1), opacity 1.1s ease, filter 1.1s ease;
-}
 /* Le logo apparaît avec un léger zoom et une lueur douce */
 .cv-logo {
     transform: scale(.86); opacity: 0;
@@ -853,7 +835,6 @@ html.dark #home h1 .ch { background-image: linear-gradient(115deg, #8fa8ff 0%, #
 }
 /* blocs et cartes */
 .motion .reveal.active { animation: rise-soft var(--t-block) var(--ease) var(--d, 0s) backwards; }
-.motion .page-enter { animation: rise-soft var(--t-block) var(--ease) backwards; }
 /* textes : ouverture « eau » */
 .motion :is(h2, p).reveal.active              { animation: smoke-in var(--t-text) var(--ease) var(--d, 0s) backwards; }
 .motion .reveal.active :is(h3, h4, h5, p)     { animation: smoke-in var(--t-text) var(--ease) calc(var(--d, 0s) + .15s) backwards; }
@@ -1051,3 +1032,30 @@ html.dark .fog-hint { color: #f1f3f8; background: linear-gradient(135deg, rgba(3
 html.dark .fog-hint-icon { background-image: linear-gradient(135deg, #8fa8ff, #b79bf0 55%, #f09ab8); }
 @media (max-width: 640px) { .fog-hint { bottom: 1.3rem; font-size: .85rem; padding: .6rem 1.1rem .6rem .9rem; } }
 @media (prefers-reduced-motion: reduce) { .fog-hint, .fog-hint::after, .fog-hint-icon { animation: none; } }
+
+/* Pas d'animation de page (fondu, déplacement, flou) : elle faisait tomber la page Réalisations à ~10 images/s dans Firefox (mesuré), et se voyait à peine sous le rideau.
+   Le rideau de transition suffit : la page change quand il recouvre l'écran. */
+
+/* =====================================================
+   Ouverture du site : le logo remplit la page, se trace, puis se réduit jusqu'à sa place pendant que la brume envahit l'écran.
+   Pendant ce temps le contenu de l'accueil est caché et ses animations sont en pause ; elles démarrent d'un coup à la fin, « comme d'habitude ».
+   ===================================================== */
+#intro { display: none; }
+html.intro-on #intro { display: block; position: fixed; inset: 0; z-index: 39; pointer-events: none; animation: intro-in .4s ease backwards; }   /* sous la brume (z 40) : elle recouvre le logo qui rétrécit */
+@keyframes intro-in { from { opacity: 0; } }
+/* départ : zoom extrême sur la tige droite du M (le point 80 % / 54 % du logo est au centre de l'écran) ; le trait est alors plus large que l'écran, la page est remplie.
+   motion.js dézoome ensuite jusqu'à la place du logo. Largeur = 21 fois la largeur de l'écran (2100vw) : trait = 0,06 x 21 x vw = 1,26 x vw. */
+#intro svg { position: absolute; width: 2100vw; height: auto; left: calc(50vw - 1680vw); top: calc(50vh - 1134vw); overflow: visible; }
+/* le tracé du vrai logo est caché tant qu'il n'a pas la classe .draw (règle plus haut) : après l'ouverture il reçoit .intro-drawn pour apparaître sans se retracer */
+.motion #home svg path.intro-drawn { opacity: 1; }
+html.intro-on #navbar, html.intro-on #home > div { visibility: hidden; }
+html.intro-on #home *, html.intro-on #navbar, html.intro-on #navbar * { animation-play-state: paused !important; }
+html.intro-on .fog-hint { display: none !important; }
+/* la barre de navigation arrive en douceur pendant que la brume recouvre l'écran (avant la fin de l'ouverture), au lieu d'apparaître d'un coup */
+html.intro-on.intro-nav #navbar { visibility: visible; animation: intro-nav 1s cubic-bezier(.2,.8,.2,1) backwards; }
+html.intro-on.intro-nav #navbar, html.intro-on.intro-nav #navbar * { animation-play-state: running !important; }
+@keyframes intro-nav { from { opacity: 0; transform: translateY(-14px); } }
+/* à l'arrivée du vrai logo : un petit « pop », le halo et le reflet démarrent tout de suite (ils attendaient la fin du tracé) */
+html.intro-done .motion #home svg.go { animation: float-gpu 7s ease-in-out infinite, logo-pop .9s var(--ease, cubic-bezier(.25,1.12,.4,1)) 0s backwards; }
+html.intro-done .motion #home svg.go path.logo-glow { animation: logo-glow-in .9s ease .2s backwards, logo-breathe 5s ease-in-out 1.2s infinite alternate; }
+html.intro-done .motion #home svg.go path.logo-glint { animation: logo-glint 7s cubic-bezier(.45,.05,.3,1) 1s infinite backwards; }

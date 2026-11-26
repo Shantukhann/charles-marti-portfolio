@@ -11,7 +11,23 @@
             if (t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches) d.classList.add('dark');
             d.lang = (q === 'en' || q === 'fr') ? q : (l || ((navigator.language || 'fr').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en'));
         } catch (e) {} })();
+        /* Ouverture du site (logo géant, brume) : une fois par session, sur l'accueil, jamais si « réduire les animations » est actif ; « ?intro » la rejoue */
+        (function () { try {
+            var d = document.documentElement, h = location.hash, seen = false;
+            try { seen = !!sessionStorage.getItem('intro-seen'); } catch (e) {}
+            if ((h === '' || h === '#' || h === '#accueil') && !matchMedia('(prefers-reduced-motion: reduce)').matches && (location.search.indexOf('intro') >= 0 || !seen)) {
+                d.classList.add('intro-on');
+                setTimeout(function () { d.classList.remove('intro-on'); }, 8000);      // filet de sécurité : le contenu ne reste jamais caché
+            }
+        } catch (e) {} })();
     </script>
+    <!-- Écran de chargement de l'ouverture : en ligne dans la page (n'attend ni la feuille de style ni les scripts), même bleu nuit que le gros plan du logo pour enchaîner sans coupure -->
+    <style>
+        html.intro-on::before { content: ""; position: fixed; inset: 0; z-index: 45; background: #3a3f5b; pointer-events: none; transition: opacity .4s ease; }
+        html.intro-on::after { content: "Charles Marti"; position: fixed; left: 0; right: 0; top: 50%; z-index: 46; margin-top: -.6em; text-align: center; font: 300 .95rem/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .5em; text-indent: .5em; text-transform: uppercase; color: rgba(255,255,255,.6); pointer-events: none; animation: intro-wait 1.8s ease-in-out .25s infinite backwards; transition: opacity .25s ease; }
+        @keyframes intro-wait { 0%, 100% { opacity: .25; } 50% { opacity: .8; } }
+        html.intro-on.intro-run::before, html.intro-on.intro-run::after { opacity: 0; animation: none; }
+    </style>
     <title>Charles Marti - Chef de Projet Événementiel</title>
     <meta name="description" content="Charles Marti, chef de projet événementiel à Paris : séminaires, galas et soirées jusqu'à 2000 participants, pour écoles et entreprises.">
     <meta name="theme-color" content="#FCFBF9">
@@ -456,9 +472,20 @@
     <noscript><style>.reveal { opacity: 1; }</style></noscript>
 
     <!-- Motion design -->
-    <link rel="stylesheet" href="motion.css?v=112">
+    <link rel="stylesheet" href="motion.css?v=119">
 </head>
 <body class="antialiased font-light selection:bg-pastel-blue selection:text-pastel-heading">
+    <!-- Ouverture du site : le logo remplit la page puis se réduit jusqu'à sa place (voir motion.js / motion.css) -->
+    <div id="intro" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+            <defs>
+                <linearGradient id="intro-degrade" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#2f3a55" /><stop offset="0.33" stop-color="#363d5a" /><stop offset="0.66" stop-color="#3e405c" /><stop offset="1" stop-color="#2f3a55" />
+                </linearGradient>
+            </defs>
+            <path d="M 24,37 A 14,14 0 0,1 24,13 L 32,25 L 40,13 L 40,42" fill="none" stroke="url(#intro-degrade)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>
+        </svg>
+    </div>
     <a href="#experience" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-white focus:rounded-full focus:text-sm focus:shadow-lg">Aller aux expériences</a>
 
     <button type="button" id="to-top" class="to-top" aria-label="Retour en haut" title="Retour en haut"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
@@ -1623,7 +1650,7 @@
                 F.px += F.vx * dt; F.py += F.vy * dt;
                 const damp = Math.pow(0.94, dt / 16.7); F.vx *= damp; F.vy *= damp;
                 if (Math.abs(F.vx) < 0.004) F.vx = 0; if (Math.abs(F.vy) < 0.004) F.vy = 0;
-                if (!F.vx && !F.vy && motionOn() && !F.hover && !F.sheetOpen()) { F.px -= 0.012 * dt; F.py -= 0.006 * dt; F.idle = true; }  // dérive lente
+                if (!F.vx && !F.vy && motionOn() && !F.hover && !F.sheetOpen() && !document.documentElement.classList.contains('cv-busy')) { F.px -= 0.012 * dt; F.py -= 0.006 * dt; F.idle = true; }  // dérive lente (suspendue pendant la transition de page)
                 busy = true;
             } else busy = true;
             applyPan();
@@ -2325,8 +2352,8 @@
             }, true);
         })();
     </script>
-    <script src="i18n.js?v=112" defer></script>
-    <script src="motion.js?v=112" defer></script>
+    <script src="i18n.js?v=119" defer></script>
+    <script src="motion.js?v=119" defer></script>
     <script>
     /* Confort de navigation : bouton « retour en haut » + lien de menu actif selon la section affichée */
     (function () {

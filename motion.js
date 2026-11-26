@@ -103,7 +103,8 @@
         const HEAT = 900;                                  // durée pendant laquelle la réaction en chaîne reste active autour du passage (ms)
         const SPREAD = 30;                                // vitesse de la réaction en chaîne (ms par cellule) : plus petit = plus rapide
         const R = 100;                                     // rayon de dissipation autour du pointeur (px)
-        const dens = new Uint8Array(COLS * ROWS).fill(255);
+        const introOn = root.classList.contains('intro-on');     // ouverture du site : la brume part de zéro puis envahit l'écran
+        const dens = new Uint8Array(COLS * ROWS).fill(introOn ? 0 : 255);
         const hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
         const PREC = hp && hp.precision > 0 ? 'precision highp float;' : 'precision mediump float;';
         const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
@@ -233,7 +234,24 @@
         /* premier écran : si personne ne bouge, il se dégage seul après 1,8 s (le contenu d'accueil doit toujours être lisible) ; le reste attend le geste */
         let autoTimer = 0;
         const armAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (lastTouch < performance.now() - 1600) stroke(innerWidth * .5, Math.min(innerHeight * .5, 380), true); }, 1800); };
-        window.__fogArm = armAuto; armAuto();
+        window.__fogArm = armAuto; if (!introOn) armAuto();
+        /* ouverture du site : la brume naît sur les bords de l'écran et avance vers le centre (bord irrégulier), puis tout le reste se déroule comme d'habitude */
+        let introT0 = 0, introDur = 1500;
+        const introEnd = () => { dens.fill(255); introT0 = 0; lastTouch = performance.now(); simActive = true; anyVisible = true; lastSY = -1; armAuto(); };
+        window.__fogIntro = dur => { introT0 = performance.now(); introDur = dur || 1500; };
+        window.__fogIntroEnd = () => { if (introT0) introEnd(); };
+        const introRamp = (now, r0, r1, sy) => {
+            const u = Math.min(1, (now - introT0) / introDur), vh = innerHeight;
+            for (let r = r0; r < r1; r++) {
+                const yy = ((r * CELL - sy) / vh) * 2 - 1;
+                for (let c = 0, i = r * COLS; c < COLS; c++, i++) {
+                    const d = Math.min(1, Math.hypot((c / COLS) * 2 - 1, yy) / 1.25);        // 0 au centre, 1 sur les bords
+                    const k = (u * 1.6 - (1 - d) * 1.1 + (wob[i] - 1) * .12) * 2.5;          // le front part des bords, atteint le centre vers 70 % puis tout se remplit
+                    dens[i] = k <= 0 ? 0 : k >= 1 ? 255 : (k * 255) | 0;
+                }
+            }
+            if (u >= 1) introEnd();
+        };
         /* après un défilement : s'il reste de la brume à l'écran et que personne ne la gratte, elle se lève seule (même délai que pour le premier écran), à partir du milieu de la brume visible */
         let scrollTimer = 0;
         addEventListener('scroll', () => {
@@ -309,6 +327,7 @@
                 for (let i = r0 * COLS, e = r1 * COLS; i < e; i++) if (dens[i]) { any = true; break; }
                 anyVisible = any; lastSY = sy;
             }
+            if (introT0) { introRamp(now, r0, r1, sy); any = anyVisible = true; }
             hint.classList.toggle('gone', !any || performance.now() - lastUser < 2500);   // l'indice s'affiche dès qu'il reste de la brume à l'écran et que rien ne bouge depuis 2,5 s (y compris sur les sections découvertes en défilant)
             if (any) {
                 canvas.style.display = '';
@@ -675,9 +694,11 @@
 
     /* ---------- Logo du hero : tracé animé ---------- */
     function drawLogo() {
+        if (root.classList.contains('intro-on')) return;          // l'ouverture du site trace déjà le logo : on le « pose » à la fin (voir plus bas)
         const path = $('#home svg path');
         if (!path || !path.getTotalLength) return;
         path.style.setProperty('--len', Math.ceil(path.getTotalLength()));
+        path.classList.remove('intro-drawn');
         restart(path, 'draw');
         const svg = $('#home svg');
         if (svg) { svg.style.setProperty('--len', Math.ceil(path.getTotalLength())); svg.classList.remove('fx-done'); restart(svg, 'go'); }
@@ -687,6 +708,54 @@
         if (/^(smoke-in|title-smoke|fog-logo)$/.test(e.animationName)) e.target.classList.add('fx-done');
     });
     const startDraw = () => requestAnimationFrame(() => requestAnimationFrame(drawLogo));
+
+    /* ---------- Ouverture du site : le logo remplit la page, se trace, puis se réduit jusqu'à sa place pendant que la brume envahit l'écran ---------- */
+    (function introSequence() {
+        if (!root.classList.contains('intro-on')) return;
+        const ov = document.getElementById('intro'), svg = ov && ov.querySelector('svg');
+        const real = document.querySelector('#home svg');
+        if (!ov || !svg || !real) { root.classList.remove('intro-on'); return; }
+        try { sessionStorage.setItem('intro-seen', '1'); } catch (e) {}
+        const ZOOM = 2500;                                          // durée du dézoome
+        let anim = null, ended = false, timer = 0, fogTimer = 0, navTimer = 0;
+        const finish = () => {
+            if (ended) return; ended = true; clearTimeout(timer); clearTimeout(fogTimer); clearTimeout(navTimer);
+            ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(n => removeEventListener(n, skip, true));
+            if (window.__fogIntroEnd) window.__fogIntroEnd();
+            const path = real.querySelector('path');
+            if (path && path.getTotalLength) { const len = Math.ceil(path.getTotalLength()); real.style.setProperty('--len', len); path.style.setProperty('--len', len); }
+            if (path) path.classList.add('intro-drawn');                                 // sans cette classe le tracé reste invisible (opacity 0 tant qu'il n'a pas .draw)
+            root.classList.remove('intro-on', 'intro-nav'); root.classList.add('intro-done');         // le contenu apparaît et ses animations démarrent d'un coup
+            real.classList.add('go');                                                    // pop, halo et reflet du vrai logo (déjà tracé)
+            ov.remove();
+        };
+        const skip = () => { if (anim) anim.finish(); finish(); };                       // un geste passe l'ouverture
+        ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(n => addEventListener(n, skip, { capture: true, passive: true }));
+        const FX = .8, FY = .54;                                     // point du tracé (tige droite du M) resté au centre de l'écran au départ
+        const start = () => {
+            if (ended) return;
+            // le logo géant est déjà à l'écran (CSS) ; on le ramène exactement sur le vrai logo par un dézoome autour de ce point : l'échelle varie de façon exponentielle (régulière à l'œil)
+            const big = svg.getBoundingClientRect(), r = real.getBoundingClientRect();
+            if (!r.width || !big.width) return finish();
+            root.classList.add('intro-run');                                         // l'écran de chargement s'efface : le gros plan prend le relais (même couleur)
+            svg.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;transform-origin:' + FX * 100 + '% ' + FY * 100 + '%';
+            const s0 = big.width / r.width, tx = (big.left + FX * big.width) - (r.left + FX * r.width), ty = (big.top + FY * big.height) - (r.top + FY * r.height);
+            const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, kf = [];
+            for (let i = 0; i <= 30; i++) { const e = ease(i / 30); kf.push({ transform: 'translate(' + tx * (1 - e) + 'px,' + ty * (1 - e) + 'px) scale(' + Math.pow(s0, 1 - e) + ')' }); }
+            anim = svg.animate(kf, { duration: ZOOM, easing: 'linear', fill: 'forwards' });
+            // gros plan sobre (bleu nuit) ; les couleurs du vrai logo reviennent pendant le dézoome, pour arriver identiques à lui
+            const cols = ['#5b7cf0', '#9b7ad8', '#e0759a', '#5b7cf0'];
+            svg.querySelectorAll('stop').forEach((s, i) => s.animate([{ stopColor: s.getAttribute('stop-color') }, { stopColor: cols[i] }], { duration: ZOOM, easing: 'ease-in-out', fill: 'forwards' }));
+            fogTimer = setTimeout(() => { if (window.__fogIntro) window.__fogIntro(ZOOM * .55 + 100); }, ZOOM * .45);   // la brume envahit l'écran pendant la seconde moitié du dézoome
+            navTimer = setTimeout(() => root.classList.add('intro-nav'), ZOOM * .7);        // la barre de navigation se glisse en place sous la brume
+            anim.onfinish = finish;
+        };
+        // le logo géant est affiché par le CSS dès le premier affichage ; on lance le dézoome un instant plus tard
+        const fp = (performance.getEntriesByName('first-paint')[0] || {}).startTime || 0;
+        const wait = Math.max(0, fp + 450 - performance.now());     // le logo géant reste un instant à l'écran (page remplie) avant de dézoomer
+        const go = () => { timer = setTimeout(start, wait); };
+        (document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 600))]) : Promise.resolve()).then(go);
+    })();
     if (document.readyState === 'complete') startDraw(); else addEventListener('load', startDraw, { once: true });
 
     /* ---------- Timelines qui se remplissent ---------- */
@@ -956,6 +1025,7 @@ void main(){
     let busy = false, pendingCover = false, pendingHash = null;
     const setCurtain = (state, label) => {
         if (label) curtainLabel.textContent = label;
+        root.classList.toggle('cv-busy', !!state);                 // transition en cours : la dérive lente du plan est suspendue (rien à y voir derrière le rideau, et ça libère le rendu de la page)
         curtain.className = 'curtain' + (fluidFx ? ' gl' : '') + (state ? ' ' + state : '');
         if (fluidFx) fluidFx.set(state);
     };
@@ -979,7 +1049,6 @@ void main(){
         e.preventDefault();
         busy = true; pendingCover = true;
         setCurtain('is-in', pageLabels[target]);
-        pageIds.forEach(id => document.getElementById(id).classList.toggle('page-leave', id === currentPage()));
         pendingHash = h;
         setTimeout(() => {
             location.hash = pendingHash;
@@ -996,9 +1065,6 @@ void main(){
             const isHidden = page.classList.contains('hidden');
             if (wasHidden && !isHidden) {
                 const curtained = pendingCover;
-                pageIds.forEach(id => document.getElementById(id).classList.remove('page-leave'));
-                page.style.animationDelay = curtained ? '.7s' : '';
-                restart(page, 'page-enter');
                 const newTint = page.id.replace('page-', '');
                 if (fluidFx && (curtained || !busy)) setTimeout(() => { root.dataset.page = newTint; }, 1500);
                 else root.dataset.page = newTint;
@@ -1022,9 +1088,6 @@ void main(){
             }
             wasHidden = isHidden;
         }).observe(page, { attributes: true, attributeFilter: ['class'] });
-        page.addEventListener('animationend', e => {
-            if (e.target === page) page.classList.remove('page-enter');
-        });
     });
 
     /* ---------- Modale ---------- */
@@ -1229,6 +1292,7 @@ void main(){
         }
         resize();
         addEventListener('resize', resize);
+        canvas.style.opacity = '0';                // invisible tant que la première image n'est pas dessinée : pas d'éclair noir à l'ouverture
         host.append(canvas);
         host.classList.add('gl-on');
 
@@ -1306,6 +1370,7 @@ void main(){
                 gl.uniform2f(dSimSize, SW, SH);
             }
             gl.drawArrays(gl.TRIANGLES, 0, 3);
+            if (canvas.style.opacity === '0') canvas.style.opacity = '';
             if (window.__fogDraw) window.__fogDraw(canvas, now);
             requestAnimationFrame(frame);
         }
